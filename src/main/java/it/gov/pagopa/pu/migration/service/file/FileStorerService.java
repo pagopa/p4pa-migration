@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,7 +39,7 @@ public class FileStorerService {
     }
 
     fileName = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(fileName));
-    FileService.validateFilename(fileName);
+    FileValidatorService.validateFilename(fileName);
     byte[] fileHash;
     Path relativeFileLocation = concatenatePaths(relativePath, fileName);
     Path organizationBasePath = buildOrganizationBasePath(organizationId);
@@ -74,17 +75,21 @@ public class FileStorerService {
     return AESUtils.decrypt(fileEncryptPassword, filePath, fileName);
   }
 
+  public void decryptFile(File cipherFile, File outputPlainFile) {
+    AESUtils.decrypt(fileEncryptPassword, cipherFile, outputPlainFile);
+  }
+
   public Path buildOrganizationBasePath(Long organizationId) {
     return concatenatePaths(foldersPathsConfig.getShared(), String.valueOf(organizationId));
   }
 
-  public boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String archivedSubFolder, String ingestionFlowFilePath, String fileName) {
-    return getUploadedOrArchivedPath(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName) != null;
+  public boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String archivedSubFolder, String filePath, String fileName) {
+    return getUploadedOrArchivedPath(organizationId, archivedSubFolder, filePath, fileName) != null;
   }
 
-  public Path getUploadedOrArchivedPath(Long organizationId, String archivedSubFolder, String ingestionFlowFilePath, String fileName) {
+  public Path getUploadedOrArchivedPath(Long organizationId, String archivedSubFolder, String filePathString, String fileName) {
     Path filePath = buildOrganizationBasePath(organizationId)
-      .resolve(ingestionFlowFilePath);
+      .resolve(filePathString);
     String fileNameCiphered = fileName + AESUtils.CIPHER_EXTENSION;
     Path originalPath = FileStorerService.concatenatePaths(filePath.toString(), fileNameCiphered);
     if (Files.exists(originalPath)) {

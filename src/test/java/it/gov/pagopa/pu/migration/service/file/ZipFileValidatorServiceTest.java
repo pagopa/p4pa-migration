@@ -16,7 +16,7 @@ import java.util.zip.ZipOutputStream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class ZipFileServiceTest {
+class ZipFileValidatorServiceTest {
 	private static final int MAX_ENTRIES = 1000;
 	private static final long MAX_UNCOMPRESSED_SIZE = 50 * 1024 * 1024L;
 	private static final double MAX_COMPRESSION_RATIO = 0.1;
