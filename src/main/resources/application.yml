@@ -1,5 +1,5 @@
 server:
-  http: "${SERVER_PORT:8080}"
+  http: "\${SERVER_PORT:8080}"
 
 spring:
   application:
@@ -8,16 +8,31 @@ spring:
   jmx.enabled: true
   threads:
     virtual:
-      enabled: true
+      enabled: "\${VIRTUAL_THREADS_ENABLED:true}"
+  jpa:
+    show-sql: "\${SHOW_SQL:false}"
+    hibernate:
+      ddl-auto: none
+  datasource:
+    url: "\${MIGRATION_DB_URL:jdbc:postgresql://\${MIGRATION_DB_HOST:localhost}:\${MIGRATION_DB_PORT:5432}/\${MGIRATION_DB_NAME:payhub}?currentSchema=migration}"
+    username: "\${MIGRATION_DB_USER}"
+    password: "\${MIGRATION_DB_PASSWORD}"
+    driverClassName: org.postgresql.Driver
+
 management:
   info:
     build.enabled: true
     java.enabled: true
     git.enabled: true
+  tracing:
+    baggage.remote-fields:
+      - X-user-id
   observations:
     http.server:
       filter.order: -100
   endpoints:
+    jmx:
+      exposure.include: "*"
     web:
       exposure:
         include: health, info, prometheus, metrics
@@ -57,6 +72,21 @@ logging:
     PERFORMANCE_LOG: "\${LOG_LEVEL_PERFORMANCE_LOG:INFO}"
     PERFORMANCE_LOG.API_REQUEST: "\${LOG_LEVEL_PERFORMANCE_LOG_API_REQUEST:\${logging.level.PERFORMANCE_LOG}}"
     PERFORMANCE_LOG.REST_INVOKE: "\${LOG_LEVEL_PERFORMANCE_LOG_REST_INVOKE:\${logging.level.PERFORMANCE_LOG}}"
+
+springdoc:
+  writer-with-default-pretty-printer: true
+
+jwt:
+  access-token:
+    public-key: "\${JWT_TOKEN_PUBLIC_KEY:-----BEGIN PUBLIC KEY-----
+                MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2ovm/rd3g69dq9PisinQ
+                6mWy8ZttT8D+GKXCsHZycsGnN7b74TPyYy+4+h+9cgJeizp8RDRrufHjiBrqi/2r
+                eOk/rD7ZHbpfQvHK8MYfgIVdtTxYMX/GGdOrX6/5TV2b8e2aCG6GmxF0UuEvxY9o
+                TmcZUxnIeDtl/ixz4DQ754eS363qWfEA92opW+jcYzr07sbQtR86e+Z/s/CUeX6W
+                1PHNvBqdlAgp2ecr/1DOLq1D9hEANBPSwbt+FM6FNe4vLphi7GTwiB0yaAuy+jE8
+                odND6HPvvvmgbK1/2qTHn/HJjWUm11LUC73BszR32BKbdEEhxPQnnwswVekWzPi1
+                IwIDAQAB
+                -----END PUBLIC KEY-----}"
 
 rest:
   defaults:
