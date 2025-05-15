@@ -88,6 +88,15 @@ jwt:
                 IwIDAQAB
                 -----END PUBLIC KEY-----}"
 
+folders:
+  shared: "\${SHARED_FOLDER_ROOT:/shared}"
+  tmp: "\${TMP_FOLDER:/tmp}"
+  migration-file-type-paths:
+    ORGANIZATIONS: "migration-data/organizations"
+
+encryption:
+  fileEncryptPassword: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"
+
 rest:
   defaults:
     connection-pool:

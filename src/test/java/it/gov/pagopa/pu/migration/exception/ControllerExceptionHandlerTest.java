@@ -102,6 +102,26 @@ class ControllerExceptionHandlerTest {
     }
 
     @Test
+    void handleInvalidFileException() throws Exception {
+      doThrow(new InvalidFileException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+      performRequest(DATA, MediaType.APPLICATION_JSON)
+        .andExpect(MockMvcResultMatchers.status().isBadRequest())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("INVALID_FILE"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+    }
+
+    @Test
+    void handleFileUploadException() throws Exception {
+      doThrow(new FileUploadException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+      performRequest(DATA, MediaType.APPLICATION_JSON)
+        .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("FILE_UPLOAD_ERROR"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+    }
+
+    @Test
     void handleMissingServletRequestParameterException() throws Exception {
 
         performRequest(null, MediaType.APPLICATION_JSON)
