@@ -1,3 +1,5 @@
+import java.util.Objects
+
 plugins {
   java
   id("org.springframework.boot") version "3.4.5"
@@ -33,11 +35,14 @@ val springDocOpenApiVersion = "2.8.6"
 val openApiToolsVersion = "0.2.6"
 val micrometerVersion = "1.4.6"
 val httpClientVersion = "5.4.4"
+val bouncycastleVersion = "1.80"
+val podamVersion = "8.0.2.RELEASE"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-validation")
+  implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion")
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
@@ -45,6 +50,7 @@ dependencies {
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
   implementation("org.openapitools:jackson-databind-nullable:$openApiToolsVersion")
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
+  implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
 
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
@@ -54,6 +60,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.mockito:mockito-core")
   testImplementation("org.projectlombok:lombok")
+  testImplementation ("uk.co.jemos.podam:podam:${podamVersion}")
 }
 
 tasks.withType<Test> {
