@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.service;
+package it.gov.pagopa.pu.migration.service.file;
 
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.dto.SaveFileResultDTO;

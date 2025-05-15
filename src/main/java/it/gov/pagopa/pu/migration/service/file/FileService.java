@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.service;
+package it.gov.pagopa.pu.migration.service.file;
 
 import it.gov.pagopa.pu.migration.exception.InvalidFileException;
 import lombok.extern.slf4j.Slf4j;
