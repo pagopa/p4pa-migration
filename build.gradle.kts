@@ -11,7 +11,7 @@ plugins {
 
 group = "it.gov.pagopa.payhub"
 version = "0.0.1"
-description = "template-payments-java-repository"
+description = "p4pa-migration"
 
 java {
   toolchain {
@@ -118,15 +118,15 @@ configure<SourceSetContainer> {
 
 springBoot {
   buildInfo()
-  mainClass.value("it.gov.pagopa.template.TemplateApplication")
+  mainClass.value("it.gov.pagopa.pu.migration.PuMigrationApplication")
 }
 
 openApiGenerate {
   generatorName.set("spring")
-  inputSpec.set("$rootDir/openapi/template-payments-java-repository.openapi.yaml")
+  inputSpec.set("$rootDir/openapi/p4pa-migration.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.template.controller.generated")
-  modelPackage.set("it.gov.pagopa.template.dto.generated")
+  apiPackage.set("it.gov.pagopa.pu.migration.controller.generated")
+  modelPackage.set("it.gov.pagopa.pu.migration.dto.generated")
   configOptions.set(mapOf(
     "dateLibrary" to "java8",
     "requestMappingMode" to "api_interface",

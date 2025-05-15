@@ -21,9 +21,9 @@ on:
         required: false
         default: 'true'
       argocd_target_branch:
-          description: 'argocd target branch name'
-          required: false
-          default: 'main'
+        description: 'argocd target branch name'
+        required: false
+        default: 'main'
       postman_branch:
         description: postman branch name'
         required: false
@@ -78,15 +78,15 @@ jobs:
         uses: pagopa/github-actions-template/azure-devops-trigger-pipeline@cad30356d9046af6e7b0cee43db4cf919cc408f9
         with:
           enable_azure_devops_step: 'true'
-          azure_devops_project_url: 'https://dev.azure.com/pagopaspa/CHANGEME'
-          azure_devops_pipeline_name: 'CHANGEME-deploy-aks.deploy'
+          azure_devops_project_url: 'https://dev.azure.com/pagopaspa/p4pa-projects'
+          azure_devops_pipeline_name: 'p4pa-payhub-deploy-aks.deploy'
           azure_devops_pat: ${{ secrets.AZURE_DEVOPS_TOKEN }}
           azure_template_parameters: |
             {
-              "APPS_TOP": "[CHANGEME]",
+              "APPS_TOP": "[]",
               "APPS_MID": "[]",
-              "APPS_EXT": "[]",
+              "APPS_EXT": "[p4pa-migration]",
               "ARGOCD_TARGET_BRANCH": "${{ github.event.inputs.argocd_target_branch }}",
               "POSTMAN_BRANCH": "${{ github.event.inputs.postman_branch }}",
-              "TRIGGER_MESSAGE": "CHANGEME"
+              "TRIGGER_MESSAGE": "p4pa-migration"
             }
