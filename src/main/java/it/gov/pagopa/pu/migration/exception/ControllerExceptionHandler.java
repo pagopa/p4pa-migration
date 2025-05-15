@@ -29,6 +29,16 @@ import java.util.stream.Collectors;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ControllerExceptionHandler {
 
+  @ExceptionHandler({InvalidFileException.class})
+  public ResponseEntity<ErrorDTO> handleInvalidFileError(RuntimeException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.BAD_REQUEST, ErrorDTO.CodeEnum.INVALID_FILE);
+  }
+
+  @ExceptionHandler({FileUploadException.class})
+  public ResponseEntity<ErrorDTO> handleFileStorageError(RuntimeException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, ErrorDTO.CodeEnum.FILE_UPLOAD_ERROR);
+  }
+
   @ExceptionHandler({ValidationException.class, HttpMessageNotReadableException.class, MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class})
   public ResponseEntity<ErrorDTO> handleViolationException(Exception ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.BAD_REQUEST, ErrorDTO.CodeEnum.BAD_REQUEST);

@@ -31,6 +31,10 @@ paths:
                     example: "Internal Server Error"
 components:
   schemas:
+    MigrationFileTypeEnum:
+      type: string
+      enum:
+        - ORGANIZATIONS
     ErrorDTO:
       type: object
       required:
@@ -43,5 +47,7 @@ components:
             - NOT_FOUND
             - BAD_REQUEST
             - GENERIC_ERROR
+            - FILE_UPLOAD_ERROR
+            - INVALID_FILE
         message:
           type: string
