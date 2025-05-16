@@ -15,7 +15,7 @@ public interface UploadsRepository extends JpaRepository<Uploads, Long> {
     "  numTotalFiles=:#{#migrationFileResult?.numTotalFiles}," +
     "  numCorrectlyProcessedFiles=:#{#migrationFileResult?.numCorrectlyProcessedFiles}," +
     "  errorDescription=:#{#migrationFileResult?.errorDescription}" +
-    "  where uploadId=:uploadId" +
-    " and status=:oldStatus")
+    " where uploadId=:uploadId" +
+    "  and status=:oldStatus")
   int updateStatus(Long uploadId, UploadsStatusEnum oldStatus, UploadsStatusEnum newStatus, MigrationFileResult migrationFileResult);
 }

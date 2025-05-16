@@ -1,9 +1,11 @@
 package it.gov.pagopa.pu.migration.wf.wf.ingestion;
 
 import io.temporal.workflow.Workflow;
-import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
+import it.gov.pagopa.pu.migration.mapper.UploadDetailsMapper;
+import it.gov.pagopa.pu.migration.model.UploadDetails;
 import it.gov.pagopa.pu.migration.wf.activity.IngestionFlowFileRetrieverActivity;
+import it.gov.pagopa.pu.migration.wf.activity.UploadDetailsUpdateActivity;
 import it.gov.pagopa.pu.migration.wf.activity.UploadsStatusUpdateActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.MigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.config.TemporalWFImplementationCustomizer;
@@ -13,7 +15,6 @@ import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -33,7 +34,8 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
   );
   private static final Duration SLEEP_BETWEEN_INGESTION_FLOW_STATUS_CHECK = Duration.ofMinutes(5);
 
-  private UploadsStatusUpdateActivity updateIngestionFlowStatusActivity;
+  private UploadsStatusUpdateActivity uploadsStatusUpdateActivity;
+  private UploadDetailsUpdateActivity uploadDetailsUpdateActivity;
   private IngestionFlowFileRetrieverActivity ingestionFlowFileRetrieverActivity;
 
   /**
@@ -46,7 +48,8 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
     DataMigrationWfConfig wfConfig = applicationContext.getBean(DataMigrationWfConfig.class);
 
-    updateIngestionFlowStatusActivity = wfConfig.buildUploadsStatusUpdateActivityStub();
+    uploadsStatusUpdateActivity = wfConfig.buildUploadsStatusUpdateActivityStub();
+    uploadDetailsUpdateActivity = wfConfig.buildUploadDetailsUpdateActivityStub();
     ingestionFlowFileRetrieverActivity = wfConfig.buildIngestionFlowFileRetrieverActivityStub();
 
     buildActivities(wfConfig);
@@ -64,7 +67,7 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
     log.info("Starting OrganizationDataMigrationWF on uploadId {}", uploadId);
     // FIXME: could start a new ingestion if there other organizationId uploads PROCESSING?
     //  Or should we await as done in it.gov.pagopa.pu.workflow.wf.ingestionflow.debtposition.wfingestion.DebtPositionIngestionFlowWFImpl
-    updateIngestionFlowStatusActivity.updateStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
+    uploadsStatusUpdateActivity.updateStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
 
     MigrationFileResult result;
     try {
@@ -77,9 +80,11 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
     }
 
     if(result.getErrorDescription() == null) {
-        // TODO: store UploadDetail for each result.ingestionFlowFileIds
+      List<UploadDetails> details = result.getIngestionFlowFiles().stream()
+        .map(i -> uploadDetailsUpdateActivity.save(UploadDetailsMapper.map(uploadId, i)))
+        .toList();
 
-      List<String> errors = waitProcessingAndUpdateDetails(uploadId, result);
+      List<String> errors = waitProcessingAndUpdateDetails(uploadId, details);
       if(!CollectionUtils.isEmpty(errors)){
         result.setErrorDescription("Something went wrong while waiting upload details processing:\n" + String.join("\n", errors));
       }
@@ -88,23 +93,28 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
     UploadsStatusEnum newStatus = result.getErrorDescription()!=null
       ? UploadsStatusEnum.ERROR
       : UploadsStatusEnum.COMPLETED;
-    updateIngestionFlowStatusActivity.updateStatus(uploadId, UploadsStatusEnum.PROCESSING, newStatus, result);
+    uploadsStatusUpdateActivity.updateStatus(uploadId, UploadsStatusEnum.PROCESSING, newStatus, result);
   }
 
-  private List<String> waitProcessingAndUpdateDetails(long uploadId, MigrationFileResult result) {
+  private List<String> waitProcessingAndUpdateDetails(long uploadId, List<UploadDetails> details) {
     List<String> errors = new ArrayList<>();
     int[] attemptCounter = {0};
-    for (Pair<Long, IngestionFlowFileType> ingestionFlowId : result.getIngestionFlowFileIds()) { // FIXME cycle on UploadDetail instead
-      waitIngestionFlowFileProcessing(uploadId, ingestionFlowId, attemptCounter);
-
-      // TODO update UploadDetail
+    for (UploadDetails detail : details) {
+      IngestionFlowFile ingestionFlowFile = waitIngestionFlowFileProcessing(uploadId, detail, attemptCounter);
+      uploadDetailsUpdateActivity.updateStatus(detail.getUploadDetailId(), ingestionFlowFile);
+      if(ingestionFlowFile.getErrorDescription()!=null){
+        errors.add("An error occurred while importing ingestionFlowFileId %d having type %s: %s".formatted(
+          ingestionFlowFile.getIngestionFlowFileId(),
+          ingestionFlowFile.getIngestionFlowFileType(),
+          ingestionFlowFile.getErrorDescription()));
+      }
     }
     return errors;
   }
 
-  private void waitIngestionFlowFileProcessing(long uploadId, Pair<Long, IngestionFlowFileType> ingestionFlowId, int[] attemptCounter) {
+  private IngestionFlowFile waitIngestionFlowFileProcessing(long uploadId, UploadDetails detail, int[] attemptCounter) {
     IngestionFlowFile ingestionFlowFile;
-    while ((ingestionFlowFile = ingestionFlowFileRetrieverActivity.getIngestionFlowFile(ingestionFlowId.getKey())) != null &&
+    while ((ingestionFlowFile = ingestionFlowFileRetrieverActivity.getIngestionFlowFile(detail.getIngestionFlowFileId())) != null &&
       !INGESTION_FLOW_FILE_TERMINAL_STATUSES.contains(ingestionFlowFile.getStatus())) {
       attemptCounter[0]++;
 
@@ -117,5 +127,7 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
         ingestionFlowFile.getStatus(), ingestionFlowFile.getIngestionFlowFileId());
       Workflow.sleep(SLEEP_BETWEEN_INGESTION_FLOW_STATUS_CHECK);
     }
+
+    return ingestionFlowFile;
   }
 }

@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.migration.wf.config.stub;
 
 import io.temporal.workflow.Workflow;
 import it.gov.pagopa.pu.migration.wf.activity.IngestionFlowFileRetrieverActivity;
+import it.gov.pagopa.pu.migration.wf.activity.UploadDetailsUpdateActivity;
 import it.gov.pagopa.pu.migration.wf.activity.UploadsStatusUpdateActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.organizations.OrganizationsMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.config.BaseWfConfig;
@@ -23,5 +24,9 @@ public class DataMigrationWfConfig extends BaseWfConfig {
 
   public IngestionFlowFileRetrieverActivity buildIngestionFlowFileRetrieverActivityStub() {
     return Workflow.newActivityStub(IngestionFlowFileRetrieverActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
+  }
+
+  public UploadDetailsUpdateActivity buildUploadDetailsUpdateActivityStub() {
+    return Workflow.newActivityStub(UploadDetailsUpdateActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
   }
 }
