@@ -1,0 +1,27 @@
+package it.gov.pagopa.pu.migration.wf.config.stub;
+
+import io.temporal.workflow.Workflow;
+import it.gov.pagopa.pu.migration.wf.activity.IngestionFlowFileRetrieverActivity;
+import it.gov.pagopa.pu.migration.wf.activity.UploadsStatusUpdateActivity;
+import it.gov.pagopa.pu.migration.wf.activity.ingestion.organizations.OrganizationsMigrationFileTypeHandlerActivity;
+import it.gov.pagopa.pu.migration.wf.config.BaseWfConfig;
+import it.gov.pagopa.pu.migration.wf.config.TemporalWFImplementationCustomizer;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ConfigurationProperties(prefix = "workflow.migration-data-ingestion")
+public class DataMigrationWfConfig extends BaseWfConfig {
+
+  public UploadsStatusUpdateActivity buildUploadsStatusUpdateActivityStub() {
+    return Workflow.newActivityStub(UploadsStatusUpdateActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
+  }
+
+  public OrganizationsMigrationFileTypeHandlerActivity buildOrganizationMigrationFileTypeHandlerActivityStub() {
+    return Workflow.newActivityStub(OrganizationsMigrationFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
+  }
+
+  public IngestionFlowFileRetrieverActivity buildIngestionFlowFileRetrieverActivityStub() {
+    return Workflow.newActivityStub(IngestionFlowFileRetrieverActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
+  }
+}

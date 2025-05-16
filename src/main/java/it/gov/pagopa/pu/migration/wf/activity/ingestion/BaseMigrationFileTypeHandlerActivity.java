@@ -16,13 +16,13 @@ import java.nio.file.Path;
 import java.util.List;
 
 @Slf4j
-public abstract class BaseIngestionFlowFileActivity<T extends MigrationFileResult> {
+public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFileResult> {
 
   private final UploadsRepository uploadsRepository;
 	private final MigrationFileRetrieverService fileRetrieverService;
 	private final FileArchiverService fileArchiverService;
 
-	protected BaseIngestionFlowFileActivity(
+	protected BaseMigrationFileTypeHandlerActivity(
     UploadsRepository uploadsRepository,
     MigrationFileRetrieverService fileRetrieverService,
     FileArchiverService fileArchiverService
@@ -32,6 +32,16 @@ public abstract class BaseIngestionFlowFileActivity<T extends MigrationFileResul
 		this.fileArchiverService = fileArchiverService;
 	}
 
+  /** It will:
+   * <ol>
+   *   <li>Search the {@link Uploads} record</li>
+   *   <li>Verify if it's type is supported by this Activity impl through the method {@link #getHandledMigrationFileType()}</li>
+   *   <li>Retrieve and unzipping the file</li>
+   *   <li>Call the {@link #handleRetrievedFiles(List, Uploads)} to demand to the Activity impl the handling of the extracted files</li>
+   *   <li>Archive the input file</li>
+   *   <li>Finally, it will delete unzipped files</li>
+   * </ol>
+   */
 	public T processFile(Long uploadId) {
 		log.info("Processing Upload {} using class {}", uploadId, getClass());
 		List<Path> retrievedFiles = null;
@@ -63,8 +73,8 @@ public abstract class BaseIngestionFlowFileActivity<T extends MigrationFileResul
 		Uploads upload = uploadsRepository.findById(uploadId)
 			.orElseThrow(() -> new UploadNotFoundException("Cannot found upload having id: "+ uploadId));
 
-		if (!(getHandledIngestionFlowFileType()).equals(upload.getFileType())) {
-			throw new MigrationFileTypeNotSupportedException("invalid migration file type: " + upload.getFileType() + " expected " + getHandledIngestionFlowFileType());
+		if (!(getHandledMigrationFileType()).equals(upload.getFileType())) {
+			throw new MigrationFileTypeNotSupportedException("invalid migration file type: " + upload.getFileType() + " expected " + getHandledMigrationFileType());
 		}
 
 		return upload;
@@ -100,7 +110,7 @@ public abstract class BaseIngestionFlowFileActivity<T extends MigrationFileResul
 	}
 
 	/** The {@link MigrationFileTypeEnum} supported */
-	protected abstract MigrationFileTypeEnum getHandledIngestionFlowFileType();
+	protected abstract MigrationFileTypeEnum getHandledMigrationFileType();
 
 	/** It will process retrieve files */
 	protected abstract T handleRetrievedFiles(List<Path> retrievedFiles, Uploads ingestionFlowFileDTO);

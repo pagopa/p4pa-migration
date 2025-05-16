@@ -3,15 +3,15 @@ package it.gov.pagopa.pu.migration.wf.activity;
 import io.temporal.spring.boot.ActivityImpl;
 import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
-import it.gov.pagopa.pu.migration.wf.config.TemporalConfig;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.UploadNotFoundException;
+import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-@ActivityImpl(taskQueues = TemporalConfig.TASK_QUEUE_MIGRATION)
+@ActivityImpl(taskQueues = WfConstants.TASK_QUEUE_MIGRATION)
 public class UploadsStatusUpdateActivityImpl implements UploadsStatusUpdateActivity {
 
   private final UploadsRepository repository;

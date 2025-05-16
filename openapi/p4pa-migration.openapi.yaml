@@ -35,6 +35,25 @@ components:
       type: string
       enum:
         - ORGANIZATIONS
+    WorkflowCreatedDTO:
+      type: object
+      required:
+        - workflowId
+        - runId
+      properties:
+        workflowId:
+          type: string
+        runId:
+          type: string
+    WorkflowStatusDTO:
+      type: object
+      required:
+        - workflowId
+      properties:
+        workflowId:
+          type: string
+        status:
+          type: string
     ErrorDTO:
       type: object
       required:

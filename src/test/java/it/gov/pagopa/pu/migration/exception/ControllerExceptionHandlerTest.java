@@ -121,6 +121,16 @@ class ControllerExceptionHandlerTest {
         .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
     }
 
+  @Test
+  void handleWorkflowNotFoundException() throws Exception {
+    doThrow(new WorkflowNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isNotFound())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("NOT_FOUND"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+  }
+
     @Test
     void handleMissingServletRequestParameterException() throws Exception {
 

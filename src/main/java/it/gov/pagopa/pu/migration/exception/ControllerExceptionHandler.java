@@ -35,8 +35,13 @@ public class ControllerExceptionHandler {
   }
 
   @ExceptionHandler({FileUploadException.class})
-  public ResponseEntity<ErrorDTO> handleFileStorageError(RuntimeException ex, HttpServletRequest request) {
+  public ResponseEntity<ErrorDTO> handleFileUploadException(RuntimeException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, ErrorDTO.CodeEnum.FILE_UPLOAD_ERROR);
+  }
+
+  @ExceptionHandler({WorkflowNotFoundException.class})
+  public ResponseEntity<ErrorDTO> handleNotFoundException(Exception ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.NOT_FOUND, ErrorDTO.CodeEnum.NOT_FOUND);
   }
 
   @ExceptionHandler({ValidationException.class, HttpMessageNotReadableException.class, MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class})

@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class TemporalConfig {
-  public static final String TASK_QUEUE_MIGRATION = "MigrationTaskQueue";
 
   @Bean
   public Tracer globalTracer(OpenTelemetry openTelemetry){
