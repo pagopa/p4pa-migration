@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.service;
+package it.gov.pagopa.pu.migration.service.file;
 
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.exception.FileUploadException;
@@ -51,7 +51,7 @@ class FileStorerServiceTest {
   @Test
   void givenInvalidFilenameWhenSaveToSharedFolderThenInvalidFileException() {
     MockMultipartFile file = new MockMultipartFile(
-      "ingestionFlowFile",
+      "file",
       "test.txt",
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
@@ -64,7 +64,7 @@ class FileStorerServiceTest {
   @Test
   void givenErrorWhenSaveToSharedFolderThenFileUploadException() throws IOException {
     MockMultipartFile fileSpy = Mockito.spy(new MockMultipartFile(
-      "ingestionFlowFile",
+      "file",
       "test.txt",
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
@@ -93,7 +93,7 @@ class FileStorerServiceTest {
   @Test
   void givenValidFileWhenSaveToSharedFolderThenOK() throws IOException {
     MockMultipartFile fileSpy = Mockito.spy(new MockMultipartFile(
-      "ingestionFlowFile",
+      "file",
       "test.txt",
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
@@ -122,7 +122,7 @@ class FileStorerServiceTest {
   @Test
   void givenInvalidPathWhenSaveToSharedFolderThenInvalidFileException() {
     MockMultipartFile file = new MockMultipartFile(
-      "ingestionFlowFile",
+      "file",
       "test.txt",
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()

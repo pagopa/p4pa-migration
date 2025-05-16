@@ -39,6 +39,10 @@ val httpClientVersion = "5.4.4"
 val bouncycastleVersion = "1.80"
 val postgresJdbcVersion = "42.7.5"
 val podamVersion = "8.0.2.RELEASE"
+val temporalVersion = "1.29.0"
+val protobufJavaVersion = "4.30.2"
+val guavaVersion = "33.4.8-jre"
+val otelVersion = "1.43.0"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -55,6 +59,14 @@ dependencies {
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
   implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
   implementation ("org.postgresql:postgresql:${postgresJdbcVersion}")
+  //temporal
+  implementation("io.temporal:temporal-spring-boot-starter:$temporalVersion") {
+    exclude(group = "com.google.protobuf", module = "protobuf-java")
+    exclude(group = "com.google.guava", module = "guava")
+  }
+  implementation("com.google.protobuf:protobuf-java:$protobufJavaVersion")
+  implementation("com.google.guava:guava:$guavaVersion")
+  implementation ("io.opentelemetry:opentelemetry-opentracing-shim:${otelVersion}")
 
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
@@ -65,6 +77,7 @@ dependencies {
   testImplementation("org.mockito:mockito-core")
   testImplementation("org.projectlombok:lombok")
   testImplementation ("uk.co.jemos.podam:podam:${podamVersion}")
+  testImplementation("com.h2database:h2")
 }
 
 tasks.withType<Test> {

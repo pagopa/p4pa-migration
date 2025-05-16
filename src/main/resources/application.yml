@@ -18,6 +18,14 @@ spring:
     username: "\${MIGRATION_DB_USER}"
     password: "\${MIGRATION_DB_PASSWORD}"
     driverClassName: org.postgresql.Driver
+  temporal:
+    connection:
+      enable-https: "\${TEMPORAL_SERVER_ENABLE_HTTPS:false}"
+      target: "\${TEMPORAL_SERVER_HOST:localhost}:\${TEMPORAL_SERVER_PORT:7233}"
+      target.namespace: "\${TEMPORAL_SERVER_NAMESPACE:pu-migration}"
+    workers-auto-discovery:
+      packages:
+        - it.gov.pagopa.pu.migration.wf
 
 management:
   info:
@@ -91,11 +99,19 @@ jwt:
 folders:
   shared: "\${SHARED_FOLDER_ROOT:/shared}"
   tmp: "\${TMP_FOLDER:/tmp}"
+  process-target-sub-folders:
+    archive: "\${PROCESS_TARGET_SUB_FOLDER_ARCHIVE:archive}"
+    errors: "\${PROCESS_TARGET_SUB_FOLDER_ERRORS:errors}"
   migration-file-type-paths:
     ORGANIZATIONS: "migration-data/organizations"
 
 encryption:
-  fileEncryptPassword: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"
+  file-encrypt-password: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"
+
+zip-file:
+  max-entries: "\${ZIP_MAX_ENTRIES:1000}"
+  max-uncompressed-size: "\${ZIP_MAX_UNCOMPRESSED_SIZE:52428800}" # 50MB
+  max-compression-ratio: "\${ZIP_MAX_COMPRESSION_RATIO:0.1}"
 
 rest:
   defaults:
@@ -123,3 +139,17 @@ rest:
     max-attempts: "\${FILE_SHARE_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${FILE_SHARE_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${FILE_SHARE_PRINT_BODY_WHEN_ERROR:true}"
+
+workflow:
+  default:
+    startToCloseTimeoutInSeconds: "\${DEFAULT_ACTIVITY_CONFIG_START_TO_CLOSE_TIMEOUT_IN_SECONDS:300}"
+    retryInitialIntervalInMillis: "\${DEFAULT_ACTIVITY_CONFIG_RETRY_INITIAL_INTERVAL_IN_MILLIS:1000}"
+    retryBackoffCoefficient: "\${DEFAULT_ACTIVITY_CONFIG_RETRY_BACKOFF_COEFFICIENT:1.5}"
+    retryMaximumAttempts: "\${DEFAULT_ACTIVITY_CONFIG_RETRY_MAXIMUM_ATTEMPTS:30}"
+
+  # migration data
+  migration-data-ingestion:
+    start-to-close-timeout-in-seconds: "\${MIGRATION_ACTIVITY_CONFIG_START_TO_CLOSE_TIMEOUT_IN_SECONDS:\${workflow.default.startToCloseTimeoutInSeconds}}"
+    retry-initial-interval-in-millis: "\${MIGRATION_ACTIVITY_CONFIG_RETRY_INITIAL_INTERVAL_IN_MILLIS:\${workflow.default.retryInitialIntervalInMillis}}"
+    retry-backoff-coefficient: "\${MIGRATION_ACTIVITY_CONFIG_RETRY_BACKOFF_COEFFICIENT:\${workflow.default.retryBackoffCoefficient}}"
+    retry-maximum-attempts: "\${MIGRATION_ACTIVITY_CONFIG_RETRY_MAXIMUM_ATTEMPTS:\${workflow.default.retryMaximumAttempts}}"
