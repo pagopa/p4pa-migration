@@ -1,8 +1,11 @@
 package it.gov.pagopa.pu.migration.config;
 
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -14,6 +17,9 @@ import java.util.Optional;
 @Slf4j
 @Getter
 @Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @Configuration
 @ConfigurationProperties(prefix = "folders")
 public class FoldersPathsConfig {
@@ -34,6 +40,7 @@ public class FoldersPathsConfig {
 
   @Getter
   @Setter
+  @SuperBuilder
   public static class ProcessTargetSubFolders {
     private String archive;
     private String errors;

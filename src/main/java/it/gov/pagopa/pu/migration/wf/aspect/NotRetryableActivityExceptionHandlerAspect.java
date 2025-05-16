@@ -1,5 +1,8 @@
 package it.gov.pagopa.pu.migration.wf.aspect;
 
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityInfo;
+import io.temporal.failure.ApplicationFailure;
 import it.gov.pagopa.pu.migration.performancelogger.PerformanceLogger;
 import it.gov.pagopa.pu.migration.performancelogger.PerformanceLoggerThresholdLevels;
 import it.gov.pagopa.pu.migration.wf.exception.NotRetryableActivityException;

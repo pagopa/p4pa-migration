@@ -42,6 +42,7 @@ val podamVersion = "8.0.2.RELEASE"
 val temporalVersion = "1.29.0"
 val protobufJavaVersion = "4.30.2"
 val guavaVersion = "33.4.8-jre"
+val otelVersion = "1.43.0"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -65,6 +66,7 @@ dependencies {
   }
   implementation("com.google.protobuf:protobuf-java:$protobufJavaVersion")
   implementation("com.google.guava:guava:$guavaVersion")
+  implementation ("io.opentelemetry:opentelemetry-opentracing-shim:${otelVersion}")
 
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")

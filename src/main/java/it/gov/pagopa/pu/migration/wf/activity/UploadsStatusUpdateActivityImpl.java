@@ -3,11 +3,15 @@ package it.gov.pagopa.pu.migration.wf.activity;
 import io.temporal.spring.boot.ActivityImpl;
 import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
+import it.gov.pagopa.pu.migration.wf.config.TemporalConfig;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
+import it.gov.pagopa.pu.migration.wf.exception.UploadNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-@ActivityImpl(taskQueues = "MIGRATION_TASK_QUEUE")
 @Service
+@Slf4j
+@ActivityImpl(taskQueues = TemporalConfig.TASK_QUEUE_MIGRATION)
 public class UploadsStatusUpdateActivityImpl implements UploadsStatusUpdateActivity {
 
   private final UploadsRepository repository;
@@ -17,7 +21,10 @@ public class UploadsStatusUpdateActivityImpl implements UploadsStatusUpdateActiv
   }
 
   @Override
-  public void updateStatus(Long id, UploadsStatusEnum oldStatus, UploadsStatusEnum newStatus, MigrationFileResult migrationResult) {
-    repository.
+  public void updateStatus(Long uploadId, UploadsStatusEnum oldStatus, UploadsStatusEnum newStatus, MigrationFileResult migrationResult) {
+    log.info("Updating upload status: uploadId:{}, oldStatus:{}, newStatus:{}", uploadId, oldStatus, newStatus);
+    if(repository.updateStatus(uploadId, oldStatus, newStatus, migrationResult) != 1){
+      throw new UploadNotFoundException("Cannot update uploads having id " + uploadId + " from status " + oldStatus + " to status " + newStatus);
+    }
   }
 }

@@ -1,6 +1,8 @@
 package it.gov.pagopa.pu.migration.service.file;
 
+import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.exception.InvalidFileException;
+import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,91 +26,133 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FileArchiverServiceTest {
-	private static final String TEST_PASSWORD = "mockPassword";
+  private static final String TEST_PASSWORD = "mockPassword";
 
-	@Mock
-	private ZipFileService zipFileServiceMock;
+  @Mock
+  private FileStorerService fileStorerServiceMock;
+  @Mock
+  private ZipFileService zipFileServiceMock;
 
-	private FileArchiverService service;
+  private FileArchiverService service;
 
-	private final Path targetDir = Path.of("build", "tmp");
+  private final FoldersPathsConfig foldersPathsConfig = FoldersPathsConfig.builder()
+    .shared("/shared")
+    .processTargetSubFolders(FoldersPathsConfig.ProcessTargetSubFolders.builder()
+      .archive("archive")
+      .errors("error")
+      .build())
+    .build();
 
-	@BeforeEach
-	void setUp() {
-		service = new FileArchiverService(TEST_PASSWORD, zipFileServiceMock);
-	}
+  private final Path targetDir = Path.of("build", "tmp");
 
-	@AfterEach
-	void verifyNoMoreInteractions(){
-		Mockito.verifyNoMoreInteractions(
-				zipFileServiceMock
-		);
-	}
+  @BeforeEach
+  void setUp() {
+    service = new FileArchiverService(TEST_PASSWORD, foldersPathsConfig, fileStorerServiceMock, zipFileServiceMock);
+  }
 
-//region test compressAndArchive
-	@Test
-	void givenSuccessfulConditionsWhenCompressAndArchiveThenOk(@TempDir Path sourceDir) throws Exception {
-		//given
-		Path file1 = Files.createFile(sourceDir.resolve("file1.txt"));
-		Path file2 = Files.createFile(sourceDir.resolve("file2.txt"));
-		List<Path> files = List.of(file1, file2);
+  @AfterEach
+  void verifyNoMoreInteractions() {
+    Mockito.verifyNoMoreInteractions(
+      fileStorerServiceMock,
+      zipFileServiceMock
+    );
+  }
 
-		Path zipFilePath = Files.createFile(sourceDir.resolve("output.zip"));
-		File mockZippedFile = zipFilePath.toFile();
-		Path mockEncryptedFile = Files.copy(zipFilePath, sourceDir.resolve(zipFilePath.getFileName() + AESUtils.CIPHER_EXTENSION));
+  //region test compressAndArchive
+  @Test
+  void givenSuccessfulConditionsWhenCompressAndArchiveThenOk(@TempDir Path sourceDir) throws Exception {
+    //given
+    Path file1 = Files.createFile(sourceDir.resolve("file1.txt"));
+    Path file2 = Files.createFile(sourceDir.resolve("file2.txt"));
+    List<Path> files = List.of(file1, file2);
 
-		when(zipFileServiceMock.zipper(zipFilePath, files)).thenReturn(mockZippedFile);
-			assertTrue(Files.exists(mockEncryptedFile));
+    Path zipFilePath = Files.createFile(sourceDir.resolve("output.zip"));
+    File mockZippedFile = zipFilePath.toFile();
+    Path mockEncryptedFile = Files.copy(zipFilePath, sourceDir.resolve(zipFilePath.getFileName() + AESUtils.CIPHER_EXTENSION));
 
-		try (MockedStatic<AESUtils> mockedAESUtils = mockStatic(AESUtils.class)) {
-			mockedAESUtils.when(() -> AESUtils.encrypt(TEST_PASSWORD, mockZippedFile)).thenReturn(mockEncryptedFile.toFile());
-			// when
-			service.compressAndArchive(files, zipFilePath, targetDir);
+    when(zipFileServiceMock.zipper(zipFilePath, files)).thenReturn(mockZippedFile);
+    assertTrue(Files.exists(mockEncryptedFile));
 
-			//then
-			assertFalse(zipFilePath.toFile().exists(), "zipped file should be deleted");
-			assertFalse(mockEncryptedFile.toFile().exists(), "encrypted file should be deleted from source directory");
-			assertTrue(targetDir.resolve("output.zip" + AESUtils.CIPHER_EXTENSION).toFile().exists(), "Success");
-		}
-	}
+    try (MockedStatic<AESUtils> mockedAESUtils = mockStatic(AESUtils.class)) {
+      mockedAESUtils.when(() -> AESUtils.encrypt(TEST_PASSWORD, mockZippedFile)).thenReturn(mockEncryptedFile.toFile());
+      // when
+      service.compressAndArchive(files, zipFilePath, targetDir);
 
-	@Test
-	void givenExceptionOnEncryptionWhenCompressAndArchiveThenThrowsIllegalStateException(@TempDir Path sourceDir) throws Exception {
-		//given
-		Path file1 = Files.createFile(sourceDir.resolve("file1.txt"));
-		Path file2 = Files.createFile(sourceDir.resolve("file2.txt"));
-		List<Path> mockFiles = List.of(file1, file2);
+      //then
+      assertFalse(zipFilePath.toFile().exists(), "zipped file should be deleted");
+      assertFalse(mockEncryptedFile.toFile().exists(), "encrypted file should be deleted from source directory");
+      assertTrue(targetDir.resolve("output.zip" + AESUtils.CIPHER_EXTENSION).toFile().exists(), "Success");
+    }
+  }
 
-		Path zipFilePath = Files.createFile(sourceDir.resolve("output.zip"));
-		File mockZippedFile = zipFilePath.toFile();
+  @Test
+  void givenExceptionOnEncryptionWhenCompressAndArchiveThenThrowsIllegalStateException(@TempDir Path sourceDir) throws Exception {
+    //given
+    Path file1 = Files.createFile(sourceDir.resolve("file1.txt"));
+    Path file2 = Files.createFile(sourceDir.resolve("file2.txt"));
+    List<Path> mockFiles = List.of(file1, file2);
 
-		when(zipFileServiceMock.zipper(zipFilePath, mockFiles)).thenReturn(mockZippedFile);
+    Path zipFilePath = Files.createFile(sourceDir.resolve("output.zip"));
+    File mockZippedFile = zipFilePath.toFile();
 
-		try (MockedStatic<AESUtils> mockedAESUtils = mockStatic(AESUtils.class)) {
-			mockedAESUtils.when(() -> AESUtils.encrypt(TEST_PASSWORD, mockZippedFile)).thenThrow(IllegalStateException.class);
+    when(zipFileServiceMock.zipper(zipFilePath, mockFiles)).thenReturn(mockZippedFile);
 
-			// when then
-			assertThrows(IllegalStateException.class,
-				() -> service.compressAndArchive(mockFiles, zipFilePath, targetDir),
-				"encryption failed");
-		}
-	}
+    try (MockedStatic<AESUtils> mockedAESUtils = mockStatic(AESUtils.class)) {
+      mockedAESUtils.when(() -> AESUtils.encrypt(TEST_PASSWORD, mockZippedFile)).thenThrow(IllegalStateException.class);
 
-	@Test
-	void givenExceptionOnZippingWhenCompressAndArchiveThenThrowsInvalidFileException(@TempDir Path sourceDir) throws Exception {
-		//given
-		Path file1 = Files.createFile(sourceDir.resolve("file1.txt"));
-		Path file2 = Files.createFile(sourceDir.resolve("file2.txt"));
-		List<Path> mockFiles = List.of(file1, file2);
+      // when then
+      assertThrows(IllegalStateException.class,
+        () -> service.compressAndArchive(mockFiles, zipFilePath, targetDir),
+        "encryption failed");
+    }
+  }
 
-		Path zipFilePath = Files.createFile(sourceDir.resolve("output.zip"));
+  @Test
+  void givenExceptionOnZippingWhenCompressAndArchiveThenThrowsInvalidFileException(@TempDir Path sourceDir) throws Exception {
+    //given
+    Path file1 = Files.createFile(sourceDir.resolve("file1.txt"));
+    Path file2 = Files.createFile(sourceDir.resolve("file2.txt"));
+    List<Path> mockFiles = List.of(file1, file2);
 
-		when(zipFileServiceMock.zipper(zipFilePath, mockFiles)).thenThrow(InvalidFileException.class);
+    Path zipFilePath = Files.createFile(sourceDir.resolve("output.zip"));
 
-		// when then
-		assertThrows(InvalidFileException.class,
-			() -> service.compressAndArchive(mockFiles, zipFilePath, targetDir),
-			"zipping failed");
-	}
+    when(zipFileServiceMock.zipper(zipFilePath, mockFiles)).thenThrow(InvalidFileException.class);
+
+    // when then
+    assertThrows(InvalidFileException.class,
+      () -> service.compressAndArchive(mockFiles, zipFilePath, targetDir),
+      "zipping failed");
+  }
 //endregion
+
+  @Test
+  void whenArchiveThenOk() {
+    // Given
+    Uploads upload = Uploads.builder()
+      .organizationId(1L)
+      .filePathName("path/to/file")
+      .fileName("fileName.zip")
+      .build();
+
+    Path srcPath = Path.of("/shared").resolve("1").resolve("path/to/file");
+    Path srcFile = srcPath.resolve(upload.getFileName() + AESUtils.CIPHER_EXTENSION);
+    Path archivePath = srcPath.resolve("archive");
+    Path archiveFile = archivePath.resolve(srcFile.getFileName());
+
+    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(upload.getOrganizationId()))
+      .thenReturn(Path.of(foldersPathsConfig.getShared()).resolve("1"));
+
+    try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
+      // When
+      service.archive(upload);
+
+      // Then
+      mockedFiles.verify(() -> Files.createDirectories(archivePath));
+      mockedFiles.verify(() -> Files.copy(
+        srcFile,
+        archiveFile,
+        StandardCopyOption.REPLACE_EXISTING));
+      mockedFiles.verify(() -> Files.deleteIfExists(srcFile));
+    }
+  }
 }

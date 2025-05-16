@@ -54,6 +54,7 @@ io.opentelemetry:opentelemetry-api:1.43.0=compileClasspath
 io.opentelemetry:opentelemetry-bom:1.25.0=compileClasspath
 io.opentelemetry:opentelemetry-context:1.43.0=compileClasspath
 io.opentelemetry:opentelemetry-extension-trace-propagators:1.43.0=compileClasspath
+io.opentelemetry:opentelemetry-opentracing-shim:1.43.0=compileClasspath
 io.opentelemetry:opentelemetry-sdk-common:1.43.0=compileClasspath
 io.opentelemetry:opentelemetry-sdk-logs:1.43.0=compileClasspath
 io.opentelemetry:opentelemetry-sdk-metrics:1.43.0=compileClasspath
