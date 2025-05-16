@@ -12,6 +12,7 @@ import it.gov.pagopa.pu.migration.wf.config.TemporalWFImplementationCustomizer;
 import it.gov.pagopa.pu.migration.wf.config.stub.DataMigrationWfConfig;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
+import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -67,21 +68,23 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
     log.info("Starting OrganizationDataMigrationWF on uploadId {}", uploadId);
     // FIXME: could start a new ingestion if there other organizationId uploads PROCESSING?
     //  Or should we await as done in it.gov.pagopa.pu.workflow.wf.ingestionflow.debtposition.wfingestion.DebtPositionIngestionFlowWFImpl
-    uploadsStatusUpdateActivity.updateStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
+    uploadsStatusUpdateActivity.updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
 
     MigrationFileResult result;
     try {
+      log.info("Processing files related to uploadId {}", uploadId);
       result = getMigrationFileTypeHandlerActivity().processFile(uploadId);
     } catch (Exception e){
       log.error("Something gone wrong while processing uploadId {}", uploadId, e);
       result = MigrationFileResult.builder()
-        .errorDescription(e.getMessage())
+        .errorDescription(WfUtilities.getWorkflowExceptionMessage(e))
         .build();
     }
 
     if(result.getErrorDescription() == null) {
+      log.info("Files related to uploadId {} handled successfully", uploadId);
       List<UploadDetails> details = result.getIngestionFlowFiles().stream()
-        .map(i -> uploadDetailsUpdateActivity.save(UploadDetailsMapper.map(uploadId, i)))
+        .map(i -> uploadDetailsUpdateActivity.saveDetail(UploadDetailsMapper.map(uploadId, i)))
         .toList();
 
       List<String> errors = waitProcessingAndUpdateDetails(uploadId, details);
@@ -93,7 +96,7 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
     UploadsStatusEnum newStatus = result.getErrorDescription()!=null
       ? UploadsStatusEnum.ERROR
       : UploadsStatusEnum.COMPLETED;
-    uploadsStatusUpdateActivity.updateStatus(uploadId, UploadsStatusEnum.PROCESSING, newStatus, result);
+    uploadsStatusUpdateActivity.updateUploadStatus(uploadId, UploadsStatusEnum.PROCESSING, newStatus, result);
   }
 
   private List<String> waitProcessingAndUpdateDetails(long uploadId, List<UploadDetails> details) {
@@ -101,7 +104,11 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
     int[] attemptCounter = {0};
     for (UploadDetails detail : details) {
       IngestionFlowFile ingestionFlowFile = waitIngestionFlowFileProcessing(uploadId, detail, attemptCounter);
-      uploadDetailsUpdateActivity.updateStatus(detail.getUploadDetailId(), ingestionFlowFile);
+      log.info("IngestionFlowFileId {} having type {} terminated with status {}",
+        ingestionFlowFile.getIngestionFlowFileId(),
+        ingestionFlowFile.getIngestionFlowFileType(),
+        ingestionFlowFile.getStatus());
+      uploadDetailsUpdateActivity.updateDetailStatus(detail.getUploadDetailId(), ingestionFlowFile);
       if(ingestionFlowFile.getErrorDescription()!=null){
         errors.add("An error occurred while importing ingestionFlowFileId %d having type %s: %s".formatted(
           ingestionFlowFile.getIngestionFlowFileId(),

@@ -32,7 +32,7 @@ class UploadsStatusUpdateActivityTest {
   }
 
   @Test
-  void givenValidIdAndNewStatusWhenUpdateStatusThenTrue(){
+  void givenValidIdAndNewStatusWhenUpdateUploadStatusThenTrue(){
     // Given
     long uploadId = 1L;
     UploadsStatusEnum oldStatus = UploadsStatusEnum.UPLOADED;
@@ -43,11 +43,11 @@ class UploadsStatusUpdateActivityTest {
       .thenReturn(1);
 
     // When, Then
-    Assertions.assertDoesNotThrow(() -> activity.updateStatus(uploadId, oldStatus, newStatus, migrationFileResult));
+    Assertions.assertDoesNotThrow(() -> activity.updateUploadStatus(uploadId, oldStatus, newStatus, migrationFileResult));
   }
 
   @Test
-  void givenInvalidIdAndNewStatusWhenUpdateStatusThenFalse(){
+  void givenInvalidIdAndNewStatusWhenUpdateUploadStatusThenFalse(){
     // Given
     long uploadId = 1L;
     UploadsStatusEnum oldStatus = UploadsStatusEnum.UPLOADED;
@@ -58,6 +58,6 @@ class UploadsStatusUpdateActivityTest {
       .thenReturn(0);
 
     // When, Then
-    Assertions.assertThrows(UploadNotFoundException.class, () -> activity.updateStatus(uploadId, oldStatus, newStatus, migrationFileResult));
+    Assertions.assertThrows(UploadNotFoundException.class, () -> activity.updateUploadStatus(uploadId, oldStatus, newStatus, migrationFileResult));
   }
 }

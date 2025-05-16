@@ -36,6 +36,6 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
   @Override
   protected MigrationFileResult handleRetrievedFiles(List<Path> retrievedFiles, Uploads ingestionFlowFileDTO) {
     // TODO
-    return null;
+    return new MigrationFileResult();
   }
 }

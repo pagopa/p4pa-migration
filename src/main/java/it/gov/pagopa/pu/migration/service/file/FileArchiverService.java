@@ -27,7 +27,7 @@ public class FileArchiverService {
   private final ZipFileService zipFileService;
 
   public FileArchiverService(
-    @Value("${cipher.file-encrypt-psw}") String dataCipherPsw,
+    @Value("${encryption.file-encrypt-password}") String dataCipherPsw,
 
     FoldersPathsConfig foldersPathsConfig,
     FileStorerService fileStorerService,

@@ -77,6 +77,7 @@ dependencies {
   testImplementation("org.mockito:mockito-core")
   testImplementation("org.projectlombok:lombok")
   testImplementation ("uk.co.jemos.podam:podam:${podamVersion}")
+  testImplementation("com.h2database:h2")
 }
 
 tasks.withType<Test> {

@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.migration.wf.utils;
 
+import io.temporal.failure.ActivityFailure;
+import io.temporal.failure.ApplicationFailure;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,6 +18,16 @@ public class WfUtilities {
       throw new IllegalArgumentException("The ID or the workflow must not be null");
     }
     return String.format("%s-%s", workflowInterface.getSimpleName(), id);
+  }
+
+  public static String getWorkflowExceptionMessage(Exception e){
+    if(e instanceof ActivityFailure activityFailure){
+      if(activityFailure.getCause() instanceof ApplicationFailure applicationFailure) {
+        return applicationFailure.getOriginalMessage();
+      }
+      return activityFailure.getMessage();
+    }
+    return e.getMessage();
   }
 
 }

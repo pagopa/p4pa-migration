@@ -21,7 +21,7 @@ public class UploadsStatusUpdateActivityImpl implements UploadsStatusUpdateActiv
   }
 
   @Override
-  public void updateStatus(Long uploadId, UploadsStatusEnum oldStatus, UploadsStatusEnum newStatus, MigrationFileResult migrationResult) {
+  public void updateUploadStatus(Long uploadId, UploadsStatusEnum oldStatus, UploadsStatusEnum newStatus, MigrationFileResult migrationResult) {
     log.info("Updating upload status: uploadId:{}, oldStatus:{}, newStatus:{}", uploadId, oldStatus, newStatus);
     if(repository.updateStatus(uploadId, oldStatus, newStatus, migrationResult) != 1){
       throw new UploadNotFoundException("Cannot update uploads having id " + uploadId + " from status " + oldStatus + " to status " + newStatus);

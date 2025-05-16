@@ -32,7 +32,7 @@ class UploadDetailsUpdateActivityTest {
   }
 
   @Test
-  void whenSaveThenInvokeRepository(){
+  void whenSaveDetailThenInvokeRepository(){
     // Given
     UploadDetails newEntity = new UploadDetails();
     UploadDetails storedEntity = new UploadDetails();
@@ -41,14 +41,14 @@ class UploadDetailsUpdateActivityTest {
       .thenReturn(storedEntity);
 
     // When
-    UploadDetails result = activity.save(newEntity);
+    UploadDetails result = activity.saveDetail(newEntity);
 
     // Then
     Assertions.assertSame(storedEntity, result);
   }
 
   @Test
-  void givenValidIdAndNewStatusWhenUpdateStatusThenTrue(){
+  void givenValidIdAndNewStatusWhenUpdateDetailStatusThenTrue(){
     // Given
     long uploadDetailId = 1L;
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
@@ -57,11 +57,11 @@ class UploadDetailsUpdateActivityTest {
       .thenReturn(1);
 
     // When, Then
-    Assertions.assertDoesNotThrow(() -> activity.updateStatus(uploadDetailId, ingestionFlowFile));
+    Assertions.assertDoesNotThrow(() -> activity.updateDetailStatus(uploadDetailId, ingestionFlowFile));
   }
 
   @Test
-  void givenInvalidIdAndNewStatusWhenUpdateStatusThenFalse(){
+  void givenInvalidIdAndNewStatusWhenUpdateDetailStatusThenFalse(){
     // Given
     long uploadDetailId = 1L;
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
@@ -70,6 +70,6 @@ class UploadDetailsUpdateActivityTest {
       .thenReturn(0);
 
     // When, Then
-    Assertions.assertThrows(UploadNotFoundException.class, () -> activity.updateStatus(uploadDetailId, ingestionFlowFile));
+    Assertions.assertThrows(UploadNotFoundException.class, () -> activity.updateDetailStatus(uploadDetailId, ingestionFlowFile));
   }
 }

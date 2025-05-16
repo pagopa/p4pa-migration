@@ -74,7 +74,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
 			.orElseThrow(() -> new UploadNotFoundException("Cannot found upload having id: "+ uploadId));
 
 		if (!(getHandledMigrationFileType()).equals(upload.getFileType())) {
-			throw new MigrationFileTypeNotSupportedException("invalid migration file type: " + upload.getFileType() + " expected " + getHandledMigrationFileType());
+			throw new MigrationFileTypeNotSupportedException("Invalid migration file type: " + upload.getFileType() + " expected " + getHandledMigrationFileType());
 		}
 
 		return upload;

@@ -106,7 +106,12 @@ folders:
     ORGANIZATIONS: "migration-data/organizations"
 
 encryption:
-  fileEncryptPassword: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"
+  file-encrypt-password: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"
+
+zip-file:
+  max-entries: "\${ZIP_MAX_ENTRIES:1000}"
+  max-uncompressed-size: "\${ZIP_MAX_UNCOMPRESSED_SIZE:52428800}" # 50MB
+  max-compression-ratio: "\${ZIP_MAX_COMPRESSION_RATIO:0.1}"
 
 rest:
   defaults:

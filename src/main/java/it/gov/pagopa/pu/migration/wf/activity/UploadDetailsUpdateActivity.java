@@ -10,7 +10,7 @@ import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 public interface UploadDetailsUpdateActivity {
 
   @ActivityMethod
-  UploadDetails save(UploadDetails entity);
+  UploadDetails saveDetail(UploadDetails entity);
   @ActivityMethod
-  void updateStatus(Long uploadDetailId, IngestionFlowFile ingestionFlowFile);
+  void updateDetailStatus(Long uploadDetailId, IngestionFlowFile ingestionFlowFile);
 }

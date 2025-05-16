@@ -21,13 +21,13 @@ public class UploadDetailsUpdateActivityImpl implements UploadDetailsUpdateActiv
   }
 
   @Override
-  public UploadDetails save(UploadDetails entity) {
+  public UploadDetails saveDetail(UploadDetails entity) {
     log.info("Saving new upload detail on uploadId: {} related to ingestionFlowFileId:{}", entity.getUploadId(), entity.getIngestionFlowFileId());
     return repository.save(entity);
   }
 
   @Override
-  public void updateStatus(Long uploadId, IngestionFlowFile ingestionFlowFile) {
+  public void updateDetailStatus(Long uploadId, IngestionFlowFile ingestionFlowFile) {
     log.info("Updating upload detail status: uploadDetailId:{}, newStatus:{}", uploadId, ingestionFlowFile.getStatus());
     if(repository.updateStatus(uploadId, ingestionFlowFile) != 1){
       throw new UploadNotFoundException("Cannot update uploads having id " + uploadId + " to status " + ingestionFlowFile.getStatus());

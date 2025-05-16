@@ -55,7 +55,7 @@ class NotRetryableActivityExceptionHandlerAspectTest {
       .thenThrow(expectedNestedException);
 
     // When
-    ApplicationFailure result = Assertions.assertThrows(ApplicationFailure.class, () -> statusActivitySpy.updateStatus(uploadId, oldStatus, newStatus, migrationFileResult));
+    ApplicationFailure result = Assertions.assertThrows(ApplicationFailure.class, () -> statusActivitySpy.updateUploadStatus(uploadId, oldStatus, newStatus, migrationFileResult));
 
     // Then
     Assertions.assertTrue(result.isNonRetryable());

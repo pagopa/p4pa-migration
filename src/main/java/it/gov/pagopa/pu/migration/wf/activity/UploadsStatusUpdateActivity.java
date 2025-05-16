@@ -10,5 +10,5 @@ import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 public interface UploadsStatusUpdateActivity {
 
   @ActivityMethod
-  void updateStatus(Long uploadId, UploadsStatusEnum oldStatus, UploadsStatusEnum newStatus, MigrationFileResult migrationResult);
+  void updateUploadStatus(Long uploadId, UploadsStatusEnum oldStatus, UploadsStatusEnum newStatus, MigrationFileResult migrationResult);
 }
