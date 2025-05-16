@@ -1,6 +1,8 @@
 package it.gov.pagopa.pu.migration.wf.service.temporal;
 
 import com.uber.m3.tally.NoopScope;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflow.v1.WorkflowExecutionInfo;
 import io.temporal.client.WorkflowClient;
@@ -11,7 +13,9 @@ import io.temporal.internal.client.WorkflowClientHelper;
 import io.temporal.workflow.Workflow;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowStatusDTO;
 import it.gov.pagopa.pu.migration.exception.WorkflowNotFoundException;
+import it.gov.pagopa.pu.migration.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -20,9 +24,13 @@ import java.time.*;
 @Slf4j
 public class WorkflowServiceImpl implements WorkflowService {
 
+  private final String namespace;
   private final WorkflowClient workflowClient;
 
-  public WorkflowServiceImpl(WorkflowClient workflowClient) {
+  public WorkflowServiceImpl(
+    @Value("${spring.temporal.namespace}") String namespace,
+    WorkflowClient workflowClient) {
+    this.namespace = namespace;
     this.workflowClient = workflowClient;
   }
 
@@ -52,20 +60,33 @@ public class WorkflowServiceImpl implements WorkflowService {
       log.debug("Retrieving workflow status for workflowId: {}", workflowId);
       WorkflowExecutionInfo info = WorkflowClientHelper.describeWorkflowInstance(
         workflowClient.getWorkflowServiceStubs(),
-        "default",
+        namespace,
         WorkflowExecution.newBuilder().setWorkflowId(workflowId).build(),
         new NoopScope()
       );
 
       return WorkflowStatusDTO.builder()
         .workflowId(workflowId)
+        .workflowType(info.getType().getName())
+        .runId(info.getExecution().getRunId())
+        .taskQueue(info.getTaskQueue())
         .status(info.getStatus().name())
+        .startDateTime(Utilities.protobufTimestamp2OffsetDateTime(info.getStartTime()))
+        .executionDateTime(Utilities.protobufTimestamp2OffsetDateTime(info.getExecutionTime()))
+        .endDateTime(Utilities.protobufTimestamp2OffsetDateTime(info.getCloseTime()))
+        .duration(Utilities.protobufDuration2Duration(info.getExecutionDuration()).toString())
         .build();
 
+    } catch (StatusRuntimeException e) {
+      if(Status.NOT_FOUND.getCode().equals(e.getStatus().getCode())) {
+        log.error("Workflow with ID {} not found", workflowId);
+        throw new WorkflowNotFoundException(e.getMessage());
+      }
+      log.error("An error occurred while retrieving the workflow status: {}", e.getMessage());
+      throw new IllegalStateException(e.getMessage());
     } catch (io.temporal.client.WorkflowNotFoundException e) {
       log.error("Workflow with ID {} not found", workflowId);
       throw new WorkflowNotFoundException(e.getMessage());
-
     } catch (TemporalException e) {
       log.error("An error occurred while retrieving the workflow status: {}", e.getMessage());
       throw new IllegalStateException(e.getMessage(), e);

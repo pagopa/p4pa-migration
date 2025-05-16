@@ -19,10 +19,10 @@ spring:
     password: "\${MIGRATION_DB_PASSWORD}"
     driverClassName: org.postgresql.Driver
   temporal:
+    namespace: "\${TEMPORAL_SERVER_NAMESPACE:pu-migration}"
     connection:
       enable-https: "\${TEMPORAL_SERVER_ENABLE_HTTPS:false}"
       target: "\${TEMPORAL_SERVER_HOST:localhost}:\${TEMPORAL_SERVER_PORT:7233}"
-      target.namespace: "\${TEMPORAL_SERVER_NAMESPACE:pu-migration}"
     workers-auto-discovery:
       packages:
         - it.gov.pagopa.pu.migration.wf

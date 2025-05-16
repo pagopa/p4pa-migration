@@ -41,6 +41,7 @@ import static org.mockito.Mockito.*;
   "spring.datasource.password=sa",
 
   "spring.temporal.test-server.enabled: true",
+  "spring.temporal.namespace: default",
 
   "workflow.migration-data-ingestion.retry-maximum-attempts: 3",
   "workflow.migration-data-ingestion.retry-maximum-interval: 100",
