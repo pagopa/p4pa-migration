@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface UploadDetailsRepository extends JpaRepository<UploadDetails, Long> {
 
   @Transactional
-  @Query("update Uploads" +
+  @Query("update UploadDetails" +
     " set status=:#{#ingestionFlowFile.status}," +
     "  numTotalRows=:#{#ingestionFlowFile.numTotalRows}," +
     "  numCorrectlyImportedRows=:#{#ingestionFlowFile.numCorrectlyImportedRows}," +
