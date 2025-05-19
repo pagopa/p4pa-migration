@@ -6,6 +6,49 @@ info:
 servers:
   - url: "http://localhost:8080/migration"
 paths:
+  /{migrationFileType}:
+    post:
+      tags:
+        - migration-file
+      summary: uploadMigrationFlowFile
+      description: Service to store an migration file
+      operationId: uploadMigrationFile
+      parameters:
+        - name: migrationFileType
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/MigrationFileTypeEnum"
+        - name: organizationId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          'multipart/form-data':
+            schema:
+              required:
+                - migrationFile
+              type: object
+              properties:
+                migrationFile:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadMigrationFileResponseDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
   /workflows/{workflowId}/status:
     get:
       tags:
@@ -50,6 +93,20 @@ components:
       type: string
       enum:
         - ORGANIZATIONS
+    UploadMigrationFileResponseDTO:
+      type: object
+      required:
+        - uploadId
+        - workflowId
+        - runId
+      properties:
+        uploadId:
+          type: integer
+          format: int64
+        workflowId:
+          type: string
+        runId:
+          type: string
     WorkflowCreatedDTO:
       type: object
       required:

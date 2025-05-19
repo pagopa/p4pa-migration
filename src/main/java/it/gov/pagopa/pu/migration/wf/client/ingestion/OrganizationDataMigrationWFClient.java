@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class OrganizationDataMigrationWFClient {
+public class OrganizationDataMigrationWFClient implements DataMigrationWfClient {
 
   private final WorkflowService workflowService;
   private final WorkflowClientService workflowClientService;

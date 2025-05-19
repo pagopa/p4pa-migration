@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.migration.utils;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.jupiter.api.Assertions;
 import uk.co.jemos.podam.api.AttributeMetadata;
 import uk.co.jemos.podam.api.DataProviderStrategy;
@@ -37,5 +38,9 @@ public class TestUtils {
         }
       });
     return podamFactory;
+  }
+
+  public static void assertEqualsByName(Object o1, Object o2, String... ignoredFields) {
+    Assertions.assertTrue(EqualsBuilder.reflectionEquals(o1, o2, Arrays.stream(ignoredFields).toList()));
   }
 }
