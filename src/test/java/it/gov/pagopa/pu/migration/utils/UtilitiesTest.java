@@ -39,8 +39,8 @@ public class UtilitiesTest {
   @Test
   void whenProtobufTimestamp2OffsetDateTimeThenReturnConversion(){
     // Given
-    OffsetDateTime now = OffsetDateTime.now();
-    Timestamp ts = Timestamp.getDefaultInstance().toBuilder()
+    OffsetDateTime now = OffsetDateTime.now(Utilities.ZONEID);
+    Timestamp ts = Timestamp.newBuilder()
       .setSeconds(now.toEpochSecond())
       .setNanos(now.getNano())
       .build();
@@ -56,7 +56,7 @@ public class UtilitiesTest {
   void whenProtobufDuration2DurationThenReturnConversion(){
     // Given
     Duration expectedResult = Duration.ofMillis(537L);
-    com.google.protobuf.Duration d = com.google.protobuf.Duration.getDefaultInstance().toBuilder()
+    com.google.protobuf.Duration d = com.google.protobuf.Duration.newBuilder()
       .setSeconds(expectedResult.getSeconds())
       .setNanos(expectedResult.getNano())
       .build();

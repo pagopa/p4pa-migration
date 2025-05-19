@@ -14,6 +14,7 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowStatusDTO;
 import it.gov.pagopa.pu.migration.exception.WorkflowNotFoundException;
 import it.gov.pagopa.pu.migration.utils.TestUtils;
+import it.gov.pagopa.pu.migration.utils.Utilities;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
 import it.gov.pagopa.pu.migration.wf.wf.ingestion.organizations.OrganizationsDataMigrationWF;
 import org.junit.jupiter.api.AfterEach;
@@ -85,9 +86,9 @@ class WorkflowServiceTest {
       .workflowType("WFTYPE")
       .runId("RUNID")
       .taskQueue("TASKQUEUE")
-      .startDateTime(OffsetDateTime.now())
-      .executionDateTime(OffsetDateTime.now().plusMinutes(1))
-      .endDateTime(OffsetDateTime.now().plusDays(1))
+      .startDateTime(OffsetDateTime.now(Utilities.ZONEID))
+      .executionDateTime(OffsetDateTime.now(Utilities.ZONEID).plusMinutes(1))
+      .endDateTime(OffsetDateTime.now(Utilities.ZONEID).plusDays(1))
       .duration("PT0S")
       .status(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_RUNNING.name())
       .build();
