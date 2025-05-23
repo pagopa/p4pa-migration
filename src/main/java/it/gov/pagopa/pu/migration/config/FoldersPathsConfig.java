@@ -1,10 +1,7 @@
 package it.gov.pagopa.pu.migration.config;
 
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -38,8 +35,9 @@ public class FoldersPathsConfig {
       });
   }
 
-  @Getter
-  @Setter
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
   @SuperBuilder
   public static class ProcessTargetSubFolders {
     private String archive;
