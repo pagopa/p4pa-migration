@@ -65,7 +65,7 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
   protected abstract MigrationFileTypeHandlerActivity getMigrationFileTypeHandlerActivity();
 
   public void migrate(long uploadId) {
-    log.info("Starting OrganizationDataMigrationWF on uploadId {}", uploadId);
+    log.info("Starting {} on uploadId {}", getClass().getSimpleName(), uploadId);
     // FIXME: could start a new ingestion if there other organizationId uploads PROCESSING?
     //  Or should we await as done in it.gov.pagopa.pu.workflow.wf.ingestionflow.debtposition.wfingestion.DebtPositionIngestionFlowWFImpl
     uploadsStatusUpdateActivity.updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
