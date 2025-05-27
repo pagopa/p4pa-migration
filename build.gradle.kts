@@ -150,7 +150,7 @@ springBoot {
 
 openApiGenerate {
   generatorName.set("spring")
-  inputSpec.set("$rootDir/openapi/p4pa-migration.openapi.yaml")
+  inputSpec.set(file("$rootDir/openapi/p4pa-migration.openapi.yaml").toURI().toString())
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.pu.migration.controller.generated")
   modelPackage.set("it.gov.pagopa.pu.migration.dto.generated")

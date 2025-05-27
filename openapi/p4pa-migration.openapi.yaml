@@ -18,7 +18,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: "#/components/schemas/MigrationFileTypeEnum"
+            $ref: '#/components/schemas/MigrationFileTypeEnum'
         - name: organizationId
           in: query
           required: true
