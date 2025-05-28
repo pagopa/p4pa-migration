@@ -6,7 +6,7 @@ package it.gov.pagopa.pu.migration.wf.exception;
  * during the application's processing operations.
  *
  */
-public class InvalidIngestionFileException extends NotRetryableActivityException {
+public class InvalidMigrationFileException extends NotRetryableActivityException {
 
 	/**
 	 * Constructs a new {@code InvalidIngestionFileException} with the specified detail message.
