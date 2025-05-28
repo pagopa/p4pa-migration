@@ -1,7 +1,5 @@
-package it.gov.pagopa.pu.migration.exception;
+package it.gov.pagopa.pu.migration.wf.exception;
 
-
-import it.gov.pagopa.pu.migration.wf.exception.NotRetryableActivityException;
 
 /**
  * A custom exception that indicates an invalid ingestion file encountered

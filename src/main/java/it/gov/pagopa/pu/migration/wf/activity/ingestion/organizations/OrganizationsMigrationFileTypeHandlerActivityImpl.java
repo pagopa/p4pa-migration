@@ -6,7 +6,7 @@ import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
-import it.gov.pagopa.pu.migration.exception.InvalidIngestionFileException;
+import it.gov.pagopa.pu.migration.wf.exception.InvalidIngestionFileException;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
