@@ -4,12 +4,14 @@ import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface UploadsRepository extends JpaRepository<Uploads, Long> {
 
   @Transactional
+  @Modifying
   @Query("update Uploads" +
     " set status=:newStatus," +
     "  numTotalFiles=:#{#migrationFileResult?.numTotalFiles}," +

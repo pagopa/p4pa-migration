@@ -23,8 +23,8 @@ public class FileShareClient {
         organizationId,
         ingestionFlowFileType,
         FileOrigin.SIL,
-        file.getFilename(),
         file,
+        file.getFilename(),
         null)
       .getIngestionFlowFileId();
   }
