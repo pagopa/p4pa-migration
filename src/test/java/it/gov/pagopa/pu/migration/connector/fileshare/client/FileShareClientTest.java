@@ -59,7 +59,8 @@ class FileShareClientTest {
         Mockito.same(ingestionFlowFileType),
         Mockito.eq(FileOrigin.SIL),
         Mockito.same(fileName),
-        Mockito.same(file)))
+        Mockito.same(file),
+        Mockito.isNull()))
       .thenReturn(UploadIngestionFlowFileResponseDTO.builder()
         .ingestionFlowFileId(expectedResult)
         .build());
