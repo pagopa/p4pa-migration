@@ -34,13 +34,11 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
     UploadsRepository uploadsRepository,
     MigrationFileRetrieverService fileRetrieverService,
     FileArchiverService fileArchiverService,
-    FileShareService fileShareService, AuthnService authnService, UploadsRepository uploadsRepository1
-
-  ) {
+    FileShareService fileShareService, AuthnService authnService) {
     super(uploadsRepository, fileRetrieverService, fileArchiverService);
     this.fileShareService = fileShareService;
     this.authnService = authnService;
-    this.uploadsRepository = uploadsRepository1;
+    this.uploadsRepository = uploadsRepository;
   }
 
   @Override
