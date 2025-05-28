@@ -55,7 +55,7 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
       log.error("organizationId is null in Uploads entity");
       throw new InvalidIngestionFileException("organizationId is required but was null");
     }
-    List<IngestionFlowFile> filesUploaded = new ArrayList<>();
+    List<IngestionFlowFile> filesUploaded = new ArrayList<>(retrievedFiles.size());
     for (Path file : retrievedFiles) {
       log.info("Processing unzipped file: {}", file);
       Long id = fileShareService.uploadIngestionFlowFile(
