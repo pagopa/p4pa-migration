@@ -100,28 +100,4 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
         );
         verify(fileArchiverServiceMock).archive(any(Uploads.class));
     }
-
-    @Test
-    void testHandleRetrievedFiles_organizationIdNull_shouldThrow() {
-        when(uploadsRepositoryMock.findById(1L)).thenReturn(Optional.of(
-          Uploads.builder()
-            .organizationId(null)
-            .fileType(MigrationFileTypeEnum.ORGANIZATIONS)
-            .fileName("test.csv")
-            .filePathName("/tmp")
-            .fileSize(123L)
-            .build()
-        ));
-        when(fileRetrieverServiceMock.retrieveAndUnzipFile(any(), any(), any()))
-            .thenReturn(List.of(Path.of("/tmp/test.csv")));
-
-        Exception ex = org.junit.jupiter.api.Assertions.assertThrows(
-            it.gov.pagopa.pu.migration.wf.exception.InvalidIngestionFileException.class,
-            () -> activity.processFile(1L)
-        );
-        org.junit.jupiter.api.Assertions.assertTrue(ex.getMessage().contains("organizationId is required"));
-        verify(fileRetrieverServiceMock).retrieveAndUnzipFile(any(), any(), any());
-        verify(uploadsRepositoryMock, times(1)).findById(1L);
-    }
-
 }

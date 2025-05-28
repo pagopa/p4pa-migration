@@ -10,7 +10,7 @@ import it.gov.pagopa.pu.migration.repository.UploadsRepository;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.BaseMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
-import it.gov.pagopa.pu.migration.wf.exception.InvalidIngestionFileException;
+import it.gov.pagopa.pu.migration.wf.exception.InvalidMigrationFileException;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
@@ -49,17 +49,14 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
   @Override
   protected MigrationFileResult handleRetrievedFiles(List<Path> retrievedFiles, Uploads upload) {
     if (retrievedFiles == null || retrievedFiles.isEmpty()) {
-      throw new InvalidIngestionFileException("No file found in the uploaded archive");
+      throw new InvalidMigrationFileException("No file found in the uploaded archive");
     }
-    if (ingestionFlowFileDTO.getOrganizationId() == null) {
-      log.error("organizationId is null in Uploads entity");
-      throw new InvalidIngestionFileException("organizationId is required but was null");
-    }
+
     List<IngestionFlowFile> filesUploaded = new ArrayList<>(retrievedFiles.size());
     for (Path file : retrievedFiles) {
       log.info("Processing unzipped file: {}", file);
       Long id = fileShareService.uploadIngestionFlowFile(
-        ingestionFlowFileDTO.getOrganizationId(),
+        upload.getOrganizationId(),
         IngestionFlowFileType.ORGANIZATIONS,
         new FileSystemResource(file.toFile()),
         authnService.getAccessToken()
@@ -69,15 +66,15 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
         .fileName(file.getFileName().toString())
         .fileSize(file.toFile().length())
         .ingestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.ORGANIZATIONS)
-        .organizationId(ingestionFlowFileDTO.getOrganizationId())
-        .operatorExternalId(ingestionFlowFileDTO.getUpdateOperatorExternalId())
+        .organizationId(upload.getOrganizationId())
+        .operatorExternalId(upload.getUpdateOperatorExternalId())
         .filePathName(file.getFileName().toString())
         .status(IngestionFlowFileStatus.UPLOADED)
         .fileOrigin("MIGRATION")
         .build());
     }
     return MigrationFileResult.builder()
-      .fileSize(ingestionFlowFileDTO.getFileSize())
+      .fileSize(upload.getFileSize())
       .numTotalFiles(retrievedFiles.size())
       .numCorrectlyProcessedFiles(filesUploaded.size())
       .ingestionFlowFiles(filesUploaded)
