@@ -74,10 +74,11 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
             .fileType(MigrationFileTypeEnum.ORGANIZATIONS)
             .fileName("test.csv")
             .filePathName("/tmp")
+            .fileSize(123L)
+            .updateOperatorExternalId("user")
             .build()
         ));
         when(authnServiceMock.getAccessToken()).thenReturn("token");
-        when(uploadsRepositoryMock.save(any(Uploads.class))).thenAnswer(i -> i.getArgument(0));
         when(fileShareServiceMock.uploadIngestionFlowFile(
                 anyLong(),
                 any(),
@@ -89,14 +90,38 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
 
         MigrationFileResult result = activity.processFile(1L);
         assertNotNull(result);
-        verify(uploadsRepositoryMock, times(1)).save(any(Uploads.class));
-      verify(fileArchiverServiceMock).archive(any(Uploads.class));
+        assertNotNull(result.getIngestionFlowFiles());
+        assertNotNull(result.getIngestionFlowFiles().get(0).getOrganizationId());
         verify(fileShareServiceMock, times(1)).uploadIngestionFlowFile(
                 eq(1L),
                 eq(IngestionFlowFileType.ORGANIZATIONS),
                 any(FileSystemResource.class),
                 eq("token")
         );
+        verify(fileArchiverServiceMock).archive(any(Uploads.class));
+    }
+
+    @Test
+    void testHandleRetrievedFiles_organizationIdNull_shouldThrow() {
+        when(uploadsRepositoryMock.findById(1L)).thenReturn(Optional.of(
+          Uploads.builder()
+            .organizationId(null)
+            .fileType(MigrationFileTypeEnum.ORGANIZATIONS)
+            .fileName("test.csv")
+            .filePathName("/tmp")
+            .fileSize(123L)
+            .build()
+        ));
+        when(fileRetrieverServiceMock.retrieveAndUnzipFile(any(), any(), any()))
+            .thenReturn(List.of(Path.of("/tmp/test.csv")));
+
+        Exception ex = org.junit.jupiter.api.Assertions.assertThrows(
+            it.gov.pagopa.pu.migration.wf.exception.InvalidIngestionFileException.class,
+            () -> activity.processFile(1L)
+        );
+        org.junit.jupiter.api.Assertions.assertTrue(ex.getMessage().contains("organizationId is required"));
+        verify(fileRetrieverServiceMock).retrieveAndUnzipFile(any(), any(), any());
+        verify(uploadsRepositoryMock, times(1)).findById(1L);
     }
 
 }

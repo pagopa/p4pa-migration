@@ -5,20 +5,22 @@ import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
-import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
-import it.gov.pagopa.pu.migration.wf.exception.InvalidIngestionFileException;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.BaseMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
+import it.gov.pagopa.pu.migration.wf.exception.InvalidIngestionFileException;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,7 +30,6 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
 
   private final FileShareService fileShareService;
   private final AuthnService authnService;
-  private final UploadsRepository uploadsRepository;
 
   public OrganizationsMigrationFileTypeHandlerActivityImpl(
     UploadsRepository uploadsRepository,
@@ -38,7 +39,6 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
     super(uploadsRepository, fileRetrieverService, fileArchiverService);
     this.fileShareService = fileShareService;
     this.authnService = authnService;
-    this.uploadsRepository = uploadsRepository;
   }
 
   @Override
@@ -48,31 +48,39 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
 
   @Override
   protected MigrationFileResult handleRetrievedFiles(List<Path> retrievedFiles, Uploads ingestionFlowFileDTO) {
-    try {
-      retrievedFiles.forEach(file -> {
-        log.info("Processing unzipped file: {}", file);
-        Uploads fileToProcess = Uploads.builder()
-          .organizationId(ingestionFlowFileDTO.getOrganizationId())
-          .filePathName(file.getParent().toString())
-          .fileName(file.getFileName().toString())
-          .fileSize(file.spliterator().estimateSize())
-          .fileType(ingestionFlowFileDTO.getFileType())
-          .status(UploadsStatusEnum.UPLOADED)
-          .build();
-
-        fileShareService.uploadIngestionFlowFile(
-          ingestionFlowFileDTO.getOrganizationId(),
-          IngestionFlowFileType.valueOf(ingestionFlowFileDTO.getFileType().name()),
-          new FileSystemResource(file.toFile()),
-          authnService.getAccessToken());
-
-        uploadsRepository.save(fileToProcess);
-
-      });
-    } catch (Exception e) {
-      log.error("Error processing file {}: {}", ingestionFlowFileDTO.getFileName(), e.getMessage(), e);
-      throw new InvalidIngestionFileException(String.format("Error processing file %s: %s", ingestionFlowFileDTO.getFileName(), e.getMessage()));
+    if (retrievedFiles == null || retrievedFiles.isEmpty()) {
+      throw new InvalidIngestionFileException("No file found in the uploaded archive");
     }
-    return new MigrationFileResult();
+    if (ingestionFlowFileDTO.getOrganizationId() == null) {
+      log.error("organizationId is null in Uploads entity");
+      throw new InvalidIngestionFileException("organizationId is required but was null");
+    }
+    List<IngestionFlowFile> filesUploaded = new ArrayList<>();
+    for (Path file : retrievedFiles) {
+      log.info("Processing unzipped file: {}", file);
+      Long id = fileShareService.uploadIngestionFlowFile(
+        ingestionFlowFileDTO.getOrganizationId(),
+        IngestionFlowFileType.ORGANIZATIONS,
+        new FileSystemResource(file.toFile()),
+        authnService.getAccessToken()
+      );
+      filesUploaded.add(IngestionFlowFile.builder()
+        .ingestionFlowFileId(id)
+        .fileName(file.getFileName().toString())
+        .fileSize(file.toFile().length())
+        .ingestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.ORGANIZATIONS)
+        .organizationId(ingestionFlowFileDTO.getOrganizationId())
+        .operatorExternalId(ingestionFlowFileDTO.getUpdateOperatorExternalId())
+        .filePathName(file.getFileName().toString())
+        .status(IngestionFlowFileStatus.UPLOADED)
+        .fileOrigin("MIGRATION")
+        .build());
+    }
+    return MigrationFileResult.builder()
+      .fileSize(ingestionFlowFileDTO.getFileSize())
+      .numTotalFiles(retrievedFiles.size())
+      .numCorrectlyProcessedFiles(filesUploaded.size())
+      .ingestionFlowFiles(filesUploaded)
+      .build();
   }
 }
