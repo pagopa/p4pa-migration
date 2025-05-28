@@ -47,7 +47,7 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
   }
 
   @Override
-  protected MigrationFileResult handleRetrievedFiles(List<Path> retrievedFiles, Uploads ingestionFlowFileDTO) {
+  protected MigrationFileResult handleRetrievedFiles(List<Path> retrievedFiles, Uploads upload) {
     if (retrievedFiles == null || retrievedFiles.isEmpty()) {
       throw new InvalidIngestionFileException("No file found in the uploaded archive");
     }
