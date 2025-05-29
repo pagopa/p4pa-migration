@@ -15,6 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileEntityClientTest {
 
@@ -73,6 +77,44 @@ class IngestionFlowFileEntityClientTest {
     IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
     Assertions.assertNull(result);
+  }
+
+
+  @Test
+  void whenFindByIdThenOk() {
+    // Given
+    Long ingestionFlowFileId = 1L;
+    String ingestionFlowFileIdString = String.valueOf(ingestionFlowFileId);
+    IngestionFlowFile expectedResponse = new IngestionFlowFile();
+
+    when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
+      .thenReturn(ingestionFlowFileEntityControllerApiMock);
+    when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileIdString))
+      .thenReturn(expectedResponse);
+
+    // When
+    IngestionFlowFile result = client.findById(ingestionFlowFileId, accessToken);
+
+    // Then
+    assertEquals(expectedResponse, result);
+  }
+
+  @Test
+  void givenNotExistentIngestionFlowFileWhenFindByIdThenNull() {
+    // Given
+    Long ingestionFlowFileId = 1L;
+    String ingestionFlowFileIdString = String.valueOf(ingestionFlowFileId);
+
+    when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
+      .thenReturn(ingestionFlowFileEntityControllerApiMock);
+    when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileIdString))
+      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+
+    // When
+    IngestionFlowFile result = client.findById(ingestionFlowFileId, accessToken);
+
+    // Then
+    assertNull(result);
   }
 
 }

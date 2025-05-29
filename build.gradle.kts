@@ -44,6 +44,7 @@ val protobufJavaVersion = "4.30.2"
 val guavaVersion = "33.4.8-jre"
 val otelVersion = "1.43.0"
 val openCsvVersion = "5.11"
+val commonsBeanUtilsVersion = "1.11.0"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -60,6 +61,7 @@ dependencies {
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
   implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
   implementation ("org.postgresql:postgresql:${postgresJdbcVersion}")
+  implementation("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}")
   //temporal
   implementation("io.temporal:temporal-spring-boot-starter:$temporalVersion") {
     exclude(group = "com.google.protobuf", module = "protobuf-java")
