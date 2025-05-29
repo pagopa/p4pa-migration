@@ -28,4 +28,14 @@ public class IngestionFlowFileEntityClient {
     }
   }
 
+  public IngestionFlowFile findById(Long ingestionFlowFileId, String accessToken) {
+    try{
+      return processExecutionsApisHolder.getIngestionFlowFileEntityControllerApi(accessToken)
+        .crudGetIngestionflowfile(String.valueOf(ingestionFlowFileId));
+    } catch (HttpClientErrorException.NotFound e){
+      log.info("Cannot find IngestionFlowFile having id {}", ingestionFlowFileId);
+      return null;
+    }
+  }
+
 }
