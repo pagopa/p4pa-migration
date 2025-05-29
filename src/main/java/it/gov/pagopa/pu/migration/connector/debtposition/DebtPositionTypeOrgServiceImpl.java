@@ -24,6 +24,6 @@ public class DebtPositionTypeOrgServiceImpl implements DebtPositionTypeOrgServic
     @Override
     public Optional<DebtPositionTypeOrg> getDebtPositionTypeOrgByCodeAndOrgId(String code, Long orgId, String accessToken) {
         log.info("Find DebtPositionTypeOrg by code: {} and organization id: {}", code, orgId);
-        return debtPositionTypeOrgClient.getDebtPositionTypeOrgByCodeAndOrgId(code, orgId, accessToken);
+        return Optional.ofNullable(debtPositionTypeOrgClient.getDebtPositionTypeOrgByCodeAndOrgId(code, orgId, accessToken));
     }
 }
