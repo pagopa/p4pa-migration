@@ -123,7 +123,7 @@ rest:
       connect-millis: "\${DEFAULT_REST_TIMEOUT_CONNECT_MILLIS:120000}"
       read-millis: "\${DEFAULT_REST_TIMEOUT_READ_MILLIS:120000}"
   auth:
-    base-url: "\${AUTH_SERVER_BASE_URL:}"
+    base-url: "\${AUTH_BASE_URL:}"
     max-attempts: "\${AUTH_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${AUTH_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${AUTH_PRINT_BODY_WHEN_ERROR:true}"
@@ -135,7 +135,7 @@ rest:
     wait-time-millis: "\${PROCESS_EXECUTIONS_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${PROCESS_EXECUTIONS_PRINT_BODY_WHEN_ERROR:true}"
   fileshare:
-    base-url: "\${FILESHARE_BASE_URL:}"
+    base-url: "\${FILE_SHARE_BASE_URL:}"
     max-attempts: "\${FILE_SHARE_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${FILE_SHARE_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${FILE_SHARE_PRINT_BODY_WHEN_ERROR:true}"
