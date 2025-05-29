@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.wf.client.ingestion.DataMigrationWfClient;
+import it.gov.pagopa.pu.migration.wf.client.ingestion.OperatorDebtPositionTypeOrgDataMigrationWFClient;
 import it.gov.pagopa.pu.migration.wf.client.ingestion.OrganizationDataMigrationWFClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -22,6 +23,8 @@ class MigrationFileWfInvokerServiceTest {
 
   @Mock
   private OrganizationDataMigrationWFClient organizationDataMigrationWFClientMock;
+  @Mock
+  private OperatorDebtPositionTypeOrgDataMigrationWFClient operatorDebtPositionTypeOrgDataMigrationWFClientMock;
 
   private MigrationFileWfInvokerService service;
 
@@ -29,16 +32,19 @@ class MigrationFileWfInvokerServiceTest {
 
   @BeforeEach
   void init(){
-    service = new MigrationFileWfInvokerServiceImpl(organizationDataMigrationWFClientMock);
+    service = new MigrationFileWfInvokerServiceImpl(organizationDataMigrationWFClientMock,
+      operatorDebtPositionTypeOrgDataMigrationWFClientMock);
 
     fileType2ExpectedClientMock = Map.of(
-      MigrationFileTypeEnum.ORGANIZATIONS, organizationDataMigrationWFClientMock
+      MigrationFileTypeEnum.ORGANIZATIONS, organizationDataMigrationWFClientMock,
+      MigrationFileTypeEnum.OPERATOR_DEBT_POSITION_TYPE_ORG, operatorDebtPositionTypeOrgDataMigrationWFClientMock
     );
   }
 
   @AfterEach
   void verifyNoMoreInteractions(){
-    Mockito.verifyNoMoreInteractions(organizationDataMigrationWFClientMock);
+    Mockito.verifyNoMoreInteractions(organizationDataMigrationWFClientMock,
+      operatorDebtPositionTypeOrgDataMigrationWFClientMock);
   }
 
   @ParameterizedTest
