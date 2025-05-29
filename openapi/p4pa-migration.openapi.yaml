@@ -81,6 +81,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
+  /operator/createOperatorDebtPositionTypeOrg:
+    post:
+      tags:
+        - create-operator-debt-position-type-org
+      summary: uploadOperatorFlowFile
+      description: Service to store an operator migration file
+      operationId: uploadOperatorsDebtPositionTypeOrgFile
+      parameters:
+        - name: organizationId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          'multipart/form-data':
+            schema:
+              required:
+                - operatorFile
+              type: object
+              properties:
+                operatorFile:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadMigrationFileResponseDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+
 security:
   - BearerAuth: [ ]
 components:
@@ -93,6 +132,7 @@ components:
       type: string
       enum:
         - ORGANIZATIONS
+        - OPERATOR_DEBT_POSITION_TYPE_ORG
     UploadMigrationFileResponseDTO:
       type: object
       required:
