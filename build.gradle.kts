@@ -43,6 +43,8 @@ val temporalVersion = "1.29.0"
 val protobufJavaVersion = "4.30.2"
 val guavaVersion = "33.4.8-jre"
 val otelVersion = "1.43.0"
+val openCsvVersion = "5.11"
+val commonsBeanUtilsVersion = "1.11.0"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -59,6 +61,7 @@ dependencies {
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
   implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
   implementation ("org.postgresql:postgresql:${postgresJdbcVersion}")
+  implementation("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}")
   //temporal
   implementation("io.temporal:temporal-spring-boot-starter:$temporalVersion") {
     exclude(group = "com.google.protobuf", module = "protobuf-java")
@@ -67,6 +70,9 @@ dependencies {
   implementation("com.google.protobuf:protobuf-java:$protobufJavaVersion")
   implementation("com.google.guava:guava:$guavaVersion")
   implementation ("io.opentelemetry:opentelemetry-opentracing-shim:${otelVersion}")
+
+  //openCsv
+  implementation("com.opencsv:opencsv:${openCsvVersion}")
 
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
@@ -133,7 +139,9 @@ tasks.register("dependenciesBuild") {
     "openApiGenerate",
     "openApiGenerateP4PAAUTH",
     "openApiGenerateFILESHARE",
-    "openApiGeneratePROCESSEXECUTION"
+    "openApiGeneratePROCESSEXECUTION",
+    "openApiGenerateORGANIZATION",
+    "openApiGenerateDEBTPOSITIONS"
   )
 }
 
@@ -243,6 +251,63 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
     "dateLibrary" to "java8",
+    "useSpringBoot3" to "true",
+    "useJakartaEe" to "true",
+    "serializationLibrary" to "jackson",
+    "generateSupportingFiles" to "true",
+    "generateConstructorWithAllArgs" to "true",
+    "generatedConstructorWithRequiredArgs" to "true",
+    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+  ))
+  library.set("resttemplate")
+}
+
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateORGANIZATION") {
+  group = "AutomaticallyGeneratedCode"
+  description = "openapi"
+
+  generatorName.set("java")
+  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-organization/refs/heads/$targetEnv/openapi/generated.openapi.json")
+  outputDir.set("$projectDir/build/generated")
+  invokerPackage.set("it.gov.pagopa.pu.organization.generated")
+  apiPackage.set("it.gov.pagopa.pu.organization.client.generated")
+  modelPackage.set("it.gov.pagopa.pu.organization.dto.generated")
+  configOptions.set(mapOf(
+    "swaggerAnnotations" to "false",
+    "openApiNullable" to "false",
+    "dateLibrary" to "java8",
+    "serializableModel" to "true",
+    "useSpringBoot3" to "true",
+    "useJakartaEe" to "true",
+    "serializationLibrary" to "jackson",
+    "generateSupportingFiles" to "true",
+    "generateConstructorWithAllArgs" to "true",
+    "generatedConstructorWithRequiredArgs" to "true",
+    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+  ))
+  library.set("resttemplate")
+}
+
+
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateDEBTPOSITIONS") {
+  group = "AutomaticallyGeneratedCode"
+  description = "openapi"
+
+  generatorName.set("java")
+  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-debt-positions/refs/heads/$targetEnv/openapi/generated.openapi.json")
+  outputDir.set("$projectDir/build/generated")
+  invokerPackage.set("it.gov.pagopa.pu.debtposition.generated")
+  apiPackage.set("it.gov.pagopa.pu.debtposition.client.generated")
+  modelPackage.set("it.gov.pagopa.pu.debtposition.dto.generated")
+  typeMappings.set(mapOf(
+    "LocalDateTime" to "java.time.LocalDateTime",
+    "object" to "com.fasterxml.jackson.databind.JsonNode"
+  ))
+  configOptions.set(mapOf(
+    "swaggerAnnotations" to "false",
+    "openApiNullable" to "false",
+    "dateLibrary" to "java8",
+    "serializableModel" to "true",
     "useSpringBoot3" to "true",
     "useJakartaEe" to "true",
     "serializationLibrary" to "jackson",
