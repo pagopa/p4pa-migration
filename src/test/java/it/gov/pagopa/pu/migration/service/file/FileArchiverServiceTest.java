@@ -45,9 +45,11 @@ class FileArchiverServiceTest {
 
   private final Path targetDir = Path.of("build", "tmp");
 
+  private final Path sharedDir = Path.of("build");
+
   @BeforeEach
   void setUp() {
-    service = new FileArchiverService(TEST_PASSWORD, foldersPathsConfig, fileStorerServiceMock, zipFileServiceMock);
+    service = new FileArchiverService(TEST_PASSWORD,sharedDir.toString(), targetDir.toString(), foldersPathsConfig, fileStorerServiceMock, zipFileServiceMock);
   }
 
   @AfterEach
@@ -156,3 +158,4 @@ class FileArchiverServiceTest {
     }
   }
 }
+

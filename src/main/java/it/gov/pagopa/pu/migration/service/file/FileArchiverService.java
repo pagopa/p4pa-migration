@@ -3,6 +3,8 @@ package it.gov.pagopa.pu.migration.service.file;
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
+import it.gov.pagopa.pu.migration.utils.FileShareUtils;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -25,10 +27,13 @@ public class FileArchiverService {
   private final FoldersPathsConfig foldersPathsConfig;
   private final FileStorerService fileStorerService;
   private final ZipFileService zipFileService;
+  private final Path sharedDirectoryPath;
+  private final String archiveFolder;
 
   public FileArchiverService(
     @Value("${encryption.file-encrypt-password}") String dataCipherPsw,
-
+    @Value("${folders.shared}") String sharedFolder,
+    @Value("${folders.process-target-sub-folders.archive}") String archiveFolder,
     FoldersPathsConfig foldersPathsConfig,
     FileStorerService fileStorerService,
     ZipFileService zipFileService
@@ -37,6 +42,12 @@ public class FileArchiverService {
     this.foldersPathsConfig = foldersPathsConfig;
     this.fileStorerService = fileStorerService;
     this.zipFileService = zipFileService;
+    this.sharedDirectoryPath = Path.of(sharedFolder);
+    this.archiveFolder = archiveFolder;
+
+    if (!Files.exists(sharedDirectoryPath)) {
+      throw new IllegalStateException("Shared folder doesn't exist: " + sharedDirectoryPath);
+    }
   }
 
   public void compressAndArchive(Path filePath, Path targetDirectory) throws IOException {
@@ -95,5 +106,24 @@ public class FileArchiverService {
       throw new IllegalStateException("Cannot archive files: " + files2Archive + " into destination: " + targetPath, e);
     }
   }
+
+  /**
+   * Archives the file specified in the given {@link IngestionFlowFile}. The file is moved to
+   * the archive directory located within the same file path.
+   *
+   * @param ingestionFlowFileDTO the DTO containing details of the file to be archived.
+   */
+  public void archive(IngestionFlowFile ingestionFlowFileDTO) {
+    Path originalFileFolder = FileShareUtils.buildOrganizationBasePath(sharedDirectoryPath,ingestionFlowFileDTO.getOrganizationId())
+      .resolve(ingestionFlowFileDTO.getFilePathName());
+
+    Path originalFilePath = originalFileFolder
+      .resolve(ingestionFlowFileDTO.getFileName() + AESUtils.CIPHER_EXTENSION);
+
+    Path targetDirectory = originalFileFolder.resolve(archiveFolder);
+
+    archive(List.of(originalFilePath), targetDirectory);
+  }
+
 }
 
