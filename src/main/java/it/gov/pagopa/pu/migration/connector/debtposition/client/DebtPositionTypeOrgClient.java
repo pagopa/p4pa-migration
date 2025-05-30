@@ -1,8 +1,6 @@
 package it.gov.pagopa.pu.migration.connector.debtposition.client;
 
 import it.gov.pagopa.pu.debtposition.dto.generated.DebtPositionTypeOrg;
-import it.gov.pagopa.pu.debtposition.dto.generated.IONotificationDTO;
-import it.gov.pagopa.pu.debtposition.dto.generated.PaymentEventType;
 import it.gov.pagopa.pu.migration.connector.debtposition.config.DebtPositionApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
@@ -20,7 +18,7 @@ public class DebtPositionTypeOrgClient {
         this.debtPositionApisHolder = debtPositionApisHolder;
     }
 
-    public DebtPositionTypeOrg findById(Long debtPositionTypeOrgId, String accessToken) {
+    public DebtPositionTypeOrg getById(Long debtPositionTypeOrgId, String accessToken) {
         try {
             return debtPositionApisHolder.getDebtPositionTypeOrgEntityApi(accessToken)
                     .crudGetDebtpositiontypeorg(String.valueOf(debtPositionTypeOrgId));

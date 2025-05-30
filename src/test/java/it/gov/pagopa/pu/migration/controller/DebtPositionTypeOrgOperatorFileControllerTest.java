@@ -19,9 +19,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(OperatorDebtPositionTypeOrgFileControllerImpl.class)
+@WebMvcTest(DebtPositionTypeOrgOperatorFileControllerImpl.class)
 @AutoConfigureMockMvc(addFilters = false)
-class OperatorDebtPositionTypeOrgFileControllerTest {
+class DebtPositionTypeOrgOperatorFileControllerTest {
   @Autowired
   private MockMvc mockMvc;
 
@@ -43,10 +43,10 @@ class OperatorDebtPositionTypeOrgFileControllerTest {
     wfCreated.setWorkflowId("WFID");
     wfCreated.setRunId("RUNID");
 
-    Mockito.when(serviceMock.upload(organizationId, MigrationFileTypeEnum.OPERATOR_DEBT_POSITION_TYPE_ORG,file))
+    Mockito.when(serviceMock.upload(organizationId, MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS,file))
       .thenReturn(Pair.of(upload, wfCreated));
 
-    mockMvc.perform(multipart("/migration/operator/createOperatorDebtPositionTypeOrg",MigrationFileTypeEnum.OPERATOR_DEBT_POSITION_TYPE_ORG)
+    mockMvc.perform(multipart("/migration/upload/debt-positions-type-org-operators",MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS)
         .file(file)
         .param("organizationId", String.valueOf(organizationId))
         .contentType(MediaType.MULTIPART_FORM_DATA)

@@ -37,7 +37,7 @@ class OrganizationSearchClientTest {
     }
 
     @Test
-    void whenFindByIpaCodeThenInvokeWithAccessToken(){
+    void whenGetByIpaCodeThenInvokeWithAccessToken(){
         // Given
         String accessToken = "ACCESSTOKEN";
         String orgIpaCode = "ORGIPACODE";
@@ -49,14 +49,14 @@ class OrganizationSearchClientTest {
                 .thenReturn(expectedResult);
 
         // When
-        Organization result = organizationSearchClient.findByIpaCode(orgIpaCode, accessToken);
+        Organization result = organizationSearchClient.getByIpaCode(orgIpaCode, accessToken);
 
         // Then
         Assertions.assertSame(expectedResult, result);
     }
 
   @Test
-  void givenNotExistentOrganizationWhenFindByIpaCodeThenNull(){
+  void givenNotExistentOrganizationWhenGetByIpaCodeThenNull(){
     // Given
     String accessToken = "ACCESSTOKEN";
     String orgIpaCode = "ORGIPACODE";
@@ -67,7 +67,7 @@ class OrganizationSearchClientTest {
       .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
 
     // When
-    Organization result = organizationSearchClient.findByIpaCode(orgIpaCode, accessToken);
+    Organization result = organizationSearchClient.getByIpaCode(orgIpaCode, accessToken);
 
     // Then
     Assertions.assertNull(result);

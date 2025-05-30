@@ -63,7 +63,7 @@ class DebtPositionTypeOrgClientTest {
 
 
   @Test
-  void whenFindByIdThenInvokeWithAccessToken(){
+  void whenGetByIdThenInvokeWithAccessToken(){
     // Given
     String accessToken = "ACCESSTOKEN";
     Long debtPositionTypeOrgId = 0L;
@@ -75,14 +75,14 @@ class DebtPositionTypeOrgClientTest {
       .thenReturn(expectedResult);
 
     // When
-    DebtPositionTypeOrg result = debtPositionTypeOrgClient.findById(debtPositionTypeOrgId, accessToken);
+    DebtPositionTypeOrg result = debtPositionTypeOrgClient.getById(debtPositionTypeOrgId, accessToken);
 
     // Then
     Assertions.assertSame(expectedResult, result);
   }
 
   @Test
-  void givenNotExistentDebtPositionTypeOrgWhenFindByIdThenNull(){
+  void givenNotExistentDebtPositionTypeOrgWhenGetByIdThenNull(){
     // Given
     String accessToken = "ACCESSTOKEN";
     Long debtPositionTypeOrgId = 0L;
@@ -93,7 +93,7 @@ class DebtPositionTypeOrgClientTest {
       .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
 
     // When
-    DebtPositionTypeOrg result = debtPositionTypeOrgClient.findById(debtPositionTypeOrgId, accessToken);
+    DebtPositionTypeOrg result = debtPositionTypeOrgClient.getById(debtPositionTypeOrgId, accessToken);
 
     // Then
     Assertions.assertNull(result);

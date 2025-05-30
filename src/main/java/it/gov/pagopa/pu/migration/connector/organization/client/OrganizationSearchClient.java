@@ -18,7 +18,7 @@ public class OrganizationSearchClient {
         this.organizationApisHolder = organizationApisHolder;
     }
 
-    public Organization findByIpaCode(String ipaCode, String accessToken) {
+    public Organization getByIpaCode(String ipaCode, String accessToken) {
         try {
             return organizationApisHolder.getOrganizationSearchControllerApi(accessToken)
                     .crudOrganizationsFindByIpaCode(ipaCode);

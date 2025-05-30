@@ -45,7 +45,7 @@ class OrganizationServiceTest {
     void givenNotExistentFiscalCodeWhenGetOrganizationByIpaCodeThenEmpty(){
         // Given
         String orgIpaCode = "ORGIPACODE";
-        Mockito.when(organizationSearchClientMock.findByIpaCode(orgIpaCode, accessToken))
+        Mockito.when(organizationSearchClientMock.getByIpaCode(orgIpaCode, accessToken))
                 .thenReturn(null);
 
         // When
@@ -60,7 +60,7 @@ class OrganizationServiceTest {
         // Given
         String orgIpaCode = "ORGIPACODE";
         Organization expectedResult = new Organization();
-        Mockito.when(organizationSearchClientMock.findByIpaCode(orgIpaCode, accessToken))
+        Mockito.when(organizationSearchClientMock.getByIpaCode(orgIpaCode, accessToken))
                 .thenReturn(expectedResult);
 
         // When

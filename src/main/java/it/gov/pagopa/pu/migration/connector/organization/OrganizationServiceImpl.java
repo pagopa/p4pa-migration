@@ -25,7 +25,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public Optional<Organization> getOrganizationByIpaCode(String ipaCode, String accessToken) {
         return Optional.ofNullable(
-                organizationSearchClient.findByIpaCode(ipaCode, accessToken)
+                organizationSearchClient.getByIpaCode(ipaCode, accessToken)
         );
     }
 

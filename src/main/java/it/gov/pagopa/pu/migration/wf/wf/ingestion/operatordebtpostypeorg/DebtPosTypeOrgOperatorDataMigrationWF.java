@@ -4,7 +4,7 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 
 @WorkflowInterface
-public interface OperatorDebtPosTypeOrgDataMigrationWF {
+public interface DebtPosTypeOrgOperatorDataMigrationWF {
   @WorkflowMethod
   void migrate(long uploadId);
 }

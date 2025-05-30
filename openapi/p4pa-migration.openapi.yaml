@@ -81,13 +81,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /operator/createOperatorDebtPositionTypeOrg:
+  /upload/debt-positions-type-org-operators:
     post:
       tags:
-        - create-operator-debt-position-type-org
+        - upload
       summary: uploadOperatorFlowFile
-      description: Service to store an operator migration file
-      operationId: uploadOperatorsDebtPositionTypeOrgFile
+      description: Service to store and process an operator/debtPositionTypeOrg migration file
+      operationId: uploadDebtPositionTypeOrgOperatorsFile
       parameters:
         - name: organizationId
           in: query
@@ -132,7 +132,7 @@ components:
       type: string
       enum:
         - ORGANIZATIONS
-        - OPERATOR_DEBT_POSITION_TYPE_ORG
+        - DEBT_POSITIONS_TYPE_ORG_OPERATORS
     UploadMigrationFileResponseDTO:
       type: object
       required:

@@ -93,7 +93,7 @@ class IngestionFlowFileEntityClientTest {
       .thenReturn(expectedResponse);
 
     // When
-    IngestionFlowFile result = client.findById(ingestionFlowFileId, accessToken);
+    IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
     // Then
     assertEquals(expectedResponse, result);
@@ -111,7 +111,7 @@ class IngestionFlowFileEntityClientTest {
       .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
 
     // When
-    IngestionFlowFile result = client.findById(ingestionFlowFileId, accessToken);
+    IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
     // Then
     assertNull(result);

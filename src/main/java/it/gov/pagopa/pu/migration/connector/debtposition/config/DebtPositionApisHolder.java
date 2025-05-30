@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.migration.connector.debtposition.config;
 
 import it.gov.pagopa.pu.debtposition.client.generated.*;
+import it.gov.pagopa.pu.debtposition.generated.ApiClient;
 import it.gov.pagopa.pu.debtposition.generated.BaseApi;
 import it.gov.pagopa.pu.migration.config.rest.RestTemplateConfig;
 import jakarta.annotation.PreDestroy;
@@ -25,10 +26,9 @@ public class DebtPositionApisHolder {
             RestTemplateBuilder restTemplateBuilder
     ) {
         RestTemplate restTemplate = restTemplateBuilder.build();
-        ApiClientExt apiClient = new ApiClientExt(restTemplate);
+        ApiClient apiClient = new ApiClient(restTemplate);
         apiClient.setBasePath(clientConfig.getBaseUrl());
         apiClient.setBearerToken(() -> authContextHolder.get().getKey());
-        apiClient.setUserIdSupplier(() -> authContextHolder.get().getValue());
         apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
         apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
         if (clientConfig.isPrintBodyWhenError()) {
