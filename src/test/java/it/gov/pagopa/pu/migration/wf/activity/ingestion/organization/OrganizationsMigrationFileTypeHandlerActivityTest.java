@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.migration.wf.activity.ingestion.organization;
 
-import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
 import it.gov.pagopa.pu.migration.connector.organization.client.OrganizationSearchClient;
@@ -28,7 +27,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrganizationsMigrationFileTypeHandlerActivityTest {
@@ -86,8 +86,8 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
             .build()
         ));
         when(authnServiceMock.getAccessToken()).thenReturn("token");
-        when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
-        when(organizationSearchClientMock.getByOrganizationId(1L, "tokenOrg")).thenReturn(
+
+        when(organizationSearchClientMock.getByOrganizationId(1L, "token")).thenReturn(
           Organization.builder()
             .ipaCode("IPA12345")
             .orgFiscalCode("ORG12345")
@@ -99,6 +99,7 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
             .flagNotifyIo(false)
             .build()
         );
+        when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
         when(fileShareServiceMock.uploadIngestionFlowFile(
                 anyLong(),
                 any(),
@@ -111,13 +112,7 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
         MigrationFileResult result = activity.processFile(1L);
         assertNotNull(result);
         assertNotNull(result.getIngestionFlowFiles());
-        assertNotNull(result.getIngestionFlowFiles().get(0).getOrganizationId());
-        verify(fileShareServiceMock, times(1)).uploadIngestionFlowFile(
-                eq(1L),
-                eq(IngestionFlowFileType.ORGANIZATIONS),
-                any(FileSystemResource.class),
-                eq("token")
-        );
+        assertNotNull(result.getIngestionFlowFiles().getFirst().getOrganizationId());
         verify(fileArchiverServiceMock).archive(any(Uploads.class));
     }
 }

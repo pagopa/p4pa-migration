@@ -58,7 +58,7 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
 
     Organization organization = organizationSearchClient.getByOrganizationId(
       upload.getOrganizationId(),
-      authnService.getAccessToken(upload.getOrganizationId().toString())
+      authnService.getAccessToken()
     );
 
     List<IngestionFlowFile> filesUploaded = new ArrayList<>(retrievedFiles.size());
