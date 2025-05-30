@@ -85,7 +85,7 @@ paths:
     post:
       tags:
         - upload
-      summary: uploadOperatorFlowFile
+      summary: uploadDebtPositionTypeOrgOperatorsFile
       description: Service to store and process an operator/debtPositionTypeOrg migration file
       operationId: uploadDebtPositionTypeOrgOperatorsFile
       parameters:
@@ -100,7 +100,7 @@ paths:
           'multipart/form-data':
             schema:
               required:
-                - operatorFile
+                - debtPositionTypeOrgOperatorsFile
               type: object
               properties:
                 operatorFile:
