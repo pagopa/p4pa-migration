@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.migration.connector.organization.config;
 
 import it.gov.pagopa.pu.migration.config.rest.RestTemplateConfig;
+import it.gov.pagopa.pu.organization.client.generated.OrganizationEntityControllerApi;
 import it.gov.pagopa.pu.organization.client.generated.OrganizationSearchControllerApi;
 import it.gov.pagopa.pu.organization.generated.ApiClient;
 import it.gov.pagopa.pu.organization.generated.BaseApi;
@@ -16,6 +17,7 @@ public class OrganizationApisHolder {
     private final OrganizationSearchControllerApi organizationSearchControllerApi;
 
     private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
+    private final OrganizationEntityControllerApi organizationEntityControllerApi;
 
     public OrganizationApisHolder(
         OrganizationApiClientConfig clientConfig,
@@ -32,6 +34,7 @@ public class OrganizationApisHolder {
         }
 
         this.organizationSearchControllerApi = new OrganizationSearchControllerApi(apiClient);
+        this.organizationEntityControllerApi = new OrganizationEntityControllerApi(apiClient);
     }
 
     @PreDestroy
@@ -44,7 +47,12 @@ public class OrganizationApisHolder {
         return getApi(accessToken, organizationSearchControllerApi);
     }
 
-    private <T extends BaseApi> T getApi(String accessToken, T api) {
+  public OrganizationEntityControllerApi getOrganizationEntityControllerApi(String accessToken) {
+    return getApi(accessToken, organizationEntityControllerApi);
+  }
+
+
+  private <T extends BaseApi> T getApi(String accessToken, T api) {
         bearerTokenHolder.set(accessToken);
         return api;
     }
