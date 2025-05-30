@@ -4,6 +4,7 @@ import io.temporal.spring.boot.ActivityImpl;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
+import it.gov.pagopa.pu.migration.connector.organization.client.OrganizationSearchClient;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
@@ -13,6 +14,7 @@ import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.InvalidMigrationFileException;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -30,15 +32,17 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
 
   private final FileShareService fileShareService;
   private final AuthnService authnService;
+  private final OrganizationSearchClient organizationSearchClient;
 
   public OrganizationsMigrationFileTypeHandlerActivityImpl(
     UploadsRepository uploadsRepository,
     MigrationFileRetrieverService fileRetrieverService,
     FileArchiverService fileArchiverService,
-    FileShareService fileShareService, AuthnService authnService) {
+    FileShareService fileShareService, AuthnService authnService, OrganizationSearchClient organizationSearchClient) {
     super(uploadsRepository, fileRetrieverService, fileArchiverService);
     this.fileShareService = fileShareService;
     this.authnService = authnService;
+    this.organizationSearchClient = organizationSearchClient;
   }
 
   @Override
@@ -52,6 +56,11 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
       throw new InvalidMigrationFileException("No file found in the uploaded archive");
     }
 
+    Organization organization = organizationSearchClient.getByOrganizationId(
+      upload.getOrganizationId(),
+      authnService.getAccessToken()
+    );
+
     List<IngestionFlowFile> filesUploaded = new ArrayList<>(retrievedFiles.size());
     for (Path file : retrievedFiles) {
       log.info("Processing unzipped file: {}", file);
@@ -59,7 +68,7 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
         upload.getOrganizationId(),
         IngestionFlowFileType.ORGANIZATIONS,
         new FileSystemResource(file.toFile()),
-        authnService.getAccessToken()
+        authnService.getAccessToken(organization.getIpaCode())
       );
       filesUploaded.add(IngestionFlowFile.builder()
         .ingestionFlowFileId(id)

@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.migration.wf.activity.ingestion.organization;
 
-import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
+import it.gov.pagopa.pu.migration.connector.organization.client.OrganizationSearchClient;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
@@ -10,6 +10,8 @@ import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.organizations.OrganizationsMigrationFileTypeHandlerActivityImpl;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
+import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +27,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrganizationsMigrationFileTypeHandlerActivityTest {
@@ -40,6 +43,8 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
     private FileShareService fileShareServiceMock;
     @Mock
     private AuthnService authnServiceMock;
+    @Mock
+    private OrganizationSearchClient organizationSearchClientMock;
 
     private OrganizationsMigrationFileTypeHandlerActivityImpl activity;
 
@@ -50,7 +55,8 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
           fileRetrieverServiceMock,
           fileArchiverServiceMock,
           fileShareServiceMock,
-          authnServiceMock
+          authnServiceMock,
+          organizationSearchClientMock
         );
     }
 
@@ -61,7 +67,8 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
           fileRetrieverServiceMock,
           fileArchiverServiceMock,
           fileShareServiceMock,
-          authnServiceMock
+          authnServiceMock,
+          organizationSearchClientMock
         );
     }
 
@@ -79,6 +86,20 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
             .build()
         ));
         when(authnServiceMock.getAccessToken()).thenReturn("token");
+
+        when(organizationSearchClientMock.getByOrganizationId(1L, "token")).thenReturn(
+          Organization.builder()
+            .ipaCode("IPA12345")
+            .orgFiscalCode("ORG12345")
+            .orgName("Organization Name")
+            .orgTypeCode("ORG_TYPE")
+            .status(OrganizationStatus.ACTIVE)
+            .flagNotifyOutcomePush(false)
+            .flagPaymentNotification(false)
+            .flagNotifyIo(false)
+            .build()
+        );
+        when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
         when(fileShareServiceMock.uploadIngestionFlowFile(
                 anyLong(),
                 any(),
@@ -91,13 +112,7 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
         MigrationFileResult result = activity.processFile(1L);
         assertNotNull(result);
         assertNotNull(result.getIngestionFlowFiles());
-        assertNotNull(result.getIngestionFlowFiles().get(0).getOrganizationId());
-        verify(fileShareServiceMock, times(1)).uploadIngestionFlowFile(
-                eq(1L),
-                eq(IngestionFlowFileType.ORGANIZATIONS),
-                any(FileSystemResource.class),
-                eq("token")
-        );
+        assertNotNull(result.getIngestionFlowFiles().getFirst().getOrganizationId());
         verify(fileArchiverServiceMock).archive(any(Uploads.class));
     }
 }

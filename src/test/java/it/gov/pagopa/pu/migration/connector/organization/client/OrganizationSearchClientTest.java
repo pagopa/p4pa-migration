@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.migration.connector.organization.client;
 
 import it.gov.pagopa.pu.migration.connector.organization.config.OrganizationApisHolder;
+import it.gov.pagopa.pu.organization.client.generated.OrganizationEntityControllerApi;
 import it.gov.pagopa.pu.organization.client.generated.OrganizationSearchControllerApi;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import org.junit.jupiter.api.AfterEach;
@@ -21,6 +22,8 @@ class OrganizationSearchClientTest {
     private OrganizationApisHolder organizationApisHolderMock;
     @Mock
     private OrganizationSearchControllerApi organizationSearchControllerApiMock;
+    @Mock
+    private OrganizationEntityControllerApi organizationEntityControllerApiMock;
 
     private OrganizationSearchClient organizationSearchClient;
 
@@ -72,5 +75,47 @@ class OrganizationSearchClientTest {
     // Then
     Assertions.assertNull(result);
   }
+
+
+  @Test
+  void whenGetByIdThenInvokeWithAccessToken(){
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    Long orgId = 1L;
+    Organization expectedResult = new Organization();
+
+    Mockito.when(organizationApisHolderMock.getOrganizationEntityControllerApi(accessToken))
+      .thenReturn(organizationEntityControllerApiMock);
+    Mockito.when(organizationEntityControllerApiMock.crudGetOrganization(orgId.toString()))
+      .thenReturn(expectedResult);
+
+    // When
+    Organization result = organizationSearchClient.getByOrganizationId(orgId, accessToken);
+
+    // Then
+    Assertions.assertSame(expectedResult, result);
+  }
+
+  @Test
+  void givenNotExistentOrganizationWhenGetByIdThenNull(){
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    Long orgId = 1L;
+
+    Mockito.when(organizationApisHolderMock.getOrganizationEntityControllerApi(accessToken))
+      .thenReturn(organizationEntityControllerApiMock);
+    Mockito.when(organizationEntityControllerApiMock.crudGetOrganization(orgId.toString()))
+      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+
+    // When
+    Organization result = organizationSearchClient.getByOrganizationId(orgId, accessToken);
+
+    // Then
+    Assertions.assertNull(result);
+  }
+
+
+
+
 
 }

@@ -29,4 +29,11 @@ public class OrganizationServiceImpl implements OrganizationService {
         );
     }
 
+  @Override
+  public Optional<Organization> getOrganizationById(Long orgId, String accessToken) {
+    return Optional.ofNullable(
+      organizationSearchClient.getByOrganizationId(orgId, accessToken)
+    );
+  }
+
 }
