@@ -7,6 +7,8 @@ import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
+import it.gov.pagopa.pu.migration.service.file.ZipFileService;
+import it.gov.pagopa.pu.migration.utils.AESUtils;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.organizations.OrganizationsMigrationFileTypeHandlerActivityImpl;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
@@ -16,16 +18,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.FileSystemResource;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,6 +51,8 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
     private AuthnService authnServiceMock;
     @Mock
     private OrganizationSearchClient organizationSearchClientMock;
+    @Mock
+    private ZipFileService zipFileServiceMock;
 
     private OrganizationsMigrationFileTypeHandlerActivityImpl activity;
 
@@ -56,7 +64,8 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
           fileArchiverServiceMock,
           fileShareServiceMock,
           authnServiceMock,
-          organizationSearchClientMock
+          organizationSearchClientMock,
+          zipFileServiceMock
         );
     }
 
@@ -74,19 +83,24 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
 
 
     @Test
-    void testHandleRetrievedFiles_success() {
+    void testHandleRetrievedFiles_success(@TempDir Path sourceDir) throws Exception {
+        Path file1 = Files.createFile(sourceDir.resolve("file1.txt"));
+
+        Path zipFilePath = Files.createFile(sourceDir.resolve("output.zip"));
+        File mockZippedFile = zipFilePath.toFile();
+        Path mockEncryptedFile = Files.copy(zipFilePath, sourceDir.resolve(zipFilePath.getFileName() + AESUtils.CIPHER_EXTENSION));
+
         when(uploadsRepositoryMock.findById(1L)).thenReturn(Optional.of(
           Uploads.builder()
             .organizationId(1L)
             .fileType(MigrationFileTypeEnum.ORGANIZATIONS)
-            .fileName("test.csv")
-            .filePathName("/tmp")
+            .fileName("file1.txt")
+            .filePathName(sourceDir.toString())
             .fileSize(123L)
             .updateOperatorExternalId("user")
             .build()
         ));
         when(authnServiceMock.getAccessToken()).thenReturn("token");
-
         when(organizationSearchClientMock.getByOrganizationId(1L, "token")).thenReturn(
           Organization.builder()
             .ipaCode("IPA12345")
@@ -106,8 +120,13 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
                 any(FileSystemResource.class),
                 anyString()
         )).thenReturn(1L);
+        when(zipFileServiceMock.zipper(
+              file1.getParent().resolve(file1.getFileName() + ".zip"),
+              List.of(file1)
+        )).thenReturn(mockZippedFile);
+        assertTrue(Files.exists(mockEncryptedFile));
         when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any()))
-            .thenReturn(List.of(Path.of("/tmp/test.csv")));
+          .thenReturn(List.of(file1));
 
         MigrationFileResult result = activity.processFile(1L);
         assertNotNull(result);
