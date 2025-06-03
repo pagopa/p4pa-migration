@@ -27,13 +27,9 @@ public class FileArchiverService {
   private final FoldersPathsConfig foldersPathsConfig;
   private final FileStorerService fileStorerService;
   private final ZipFileService zipFileService;
-  private final Path sharedDirectoryPath;
-  private final String archiveFolder;
 
   public FileArchiverService(
     @Value("${encryption.file-encrypt-password}") String dataCipherPsw,
-    @Value("${folders.shared}") String sharedFolder,
-    @Value("${folders.process-target-sub-folders.archive}") String archiveFolder,
     FoldersPathsConfig foldersPathsConfig,
     FileStorerService fileStorerService,
     ZipFileService zipFileService
@@ -42,12 +38,6 @@ public class FileArchiverService {
     this.foldersPathsConfig = foldersPathsConfig;
     this.fileStorerService = fileStorerService;
     this.zipFileService = zipFileService;
-    this.sharedDirectoryPath = Path.of(sharedFolder);
-    this.archiveFolder = archiveFolder;
-
-    if (!Files.exists(sharedDirectoryPath)) {
-      throw new IllegalStateException("Shared folder doesn't exist: " + sharedDirectoryPath);
-    }
   }
 
   public void compressAndArchive(Path filePath, Path targetDirectory) throws IOException {
@@ -114,13 +104,13 @@ public class FileArchiverService {
    * @param ingestionFlowFileDTO the DTO containing details of the file to be archived.
    */
   public void archive(IngestionFlowFile ingestionFlowFileDTO) {
-    Path originalFileFolder = FileShareUtils.buildOrganizationBasePath(sharedDirectoryPath,ingestionFlowFileDTO.getOrganizationId())
+    Path originalFileFolder = FileShareUtils.buildOrganizationBasePath(Path.of(foldersPathsConfig.getShared()),ingestionFlowFileDTO.getOrganizationId())
       .resolve(ingestionFlowFileDTO.getFilePathName());
 
     Path originalFilePath = originalFileFolder
       .resolve(ingestionFlowFileDTO.getFileName() + AESUtils.CIPHER_EXTENSION);
 
-    Path targetDirectory = originalFileFolder.resolve(archiveFolder);
+    Path targetDirectory = originalFileFolder.resolve(foldersPathsConfig.getProcessTargetSubFolders().getArchive());
 
     archive(List.of(originalFilePath), targetDirectory);
   }
