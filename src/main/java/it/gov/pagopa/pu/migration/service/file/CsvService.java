@@ -33,8 +33,8 @@ public class CsvService {
 
 
     public CsvService(
-            @Value("${export-flow-files.page-request-thresholds.warn}")int warnThreshold,
-            @Value("${export-flow-files.page-request-thresholds.error}")int errorThreshold) {
+            @Value("${migration-files.page-request-thresholds.warn}")int warnThreshold,
+            @Value("${migration-files.page-request-thresholds.error}")int errorThreshold) {
         this.warnThreshold = warnThreshold;
         this.errorThreshold = errorThreshold;
     }

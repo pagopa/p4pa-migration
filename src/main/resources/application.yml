@@ -96,6 +96,11 @@ jwt:
                 IwIDAQAB
                 -----END PUBLIC KEY-----}"
 
+migration-files:
+  page-request-thresholds:
+    warn: "\${MIGRATION_FILES_PAGE_REQUEST_THRESHOLDS_WARN: 100}"
+    error: "\${MIGRATION_FILES_PAGE_REQUEST_THRESHOLDS_ERROR: 1000}"
+
 folders:
   shared: "\${SHARED_FOLDER_ROOT:/shared}"
   tmp: "\${TMP_FOLDER:/tmp}"
