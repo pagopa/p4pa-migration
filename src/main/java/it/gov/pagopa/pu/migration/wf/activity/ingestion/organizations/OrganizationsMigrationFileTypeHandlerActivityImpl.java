@@ -9,6 +9,8 @@ import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
+import it.gov.pagopa.pu.migration.service.file.ZipFileService;
+import it.gov.pagopa.pu.migration.utils.Utilities;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.BaseMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.InvalidMigrationFileException;
@@ -21,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,16 +36,18 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
   private final FileShareService fileShareService;
   private final AuthnService authnService;
   private final OrganizationSearchClient organizationSearchClient;
+  private final ZipFileService zipFileService;
 
   public OrganizationsMigrationFileTypeHandlerActivityImpl(
     UploadsRepository uploadsRepository,
     MigrationFileRetrieverService fileRetrieverService,
     FileArchiverService fileArchiverService,
-    FileShareService fileShareService, AuthnService authnService, OrganizationSearchClient organizationSearchClient) {
+    FileShareService fileShareService, AuthnService authnService, OrganizationSearchClient organizationSearchClient, ZipFileService zipFileService) {
     super(uploadsRepository, fileRetrieverService, fileArchiverService);
     this.fileShareService = fileShareService;
     this.authnService = authnService;
     this.organizationSearchClient = organizationSearchClient;
+    this.zipFileService = zipFileService;
   }
 
   @Override
@@ -63,11 +68,16 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
 
     List<IngestionFlowFile> filesUploaded = new ArrayList<>(retrievedFiles.size());
     for (Path file : retrievedFiles) {
+      String fileName = file.getFileName().toString();
+      String zipName = Utilities.replaceFileExtension(fileName, ".zip");
+      Path zipFilePath = file.getParent().resolve(zipName);
+      File zippedFile = zipFileService.zipper(zipFilePath, List.of(file));
+
       log.info("Processing unzipped file: {}", file);
       Long id = fileShareService.uploadIngestionFlowFile(
         upload.getOrganizationId(),
         IngestionFlowFileType.ORGANIZATIONS,
-        new FileSystemResource(file.toFile()),
+        new FileSystemResource(zippedFile),
         authnService.getAccessToken(organization.getIpaCode())
       );
       filesUploaded.add(IngestionFlowFile.builder()

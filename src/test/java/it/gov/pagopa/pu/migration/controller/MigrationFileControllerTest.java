@@ -61,9 +61,8 @@ class MigrationFileControllerTest {
     Mockito.when(serviceMock.upload(Mockito.eq(organizationId), Mockito.eq(MigrationFileTypeEnum.ORGANIZATIONS), Mockito.eq(file), Mockito.same(loggedUser)))
       .thenReturn(Pair.of(upload, wfCreated));
 
-    mockMvc.perform(multipart("/migration/{migrationFileType}",MigrationFileTypeEnum.ORGANIZATIONS)
+    mockMvc.perform(multipart("/migration/{migrationFileType}/{organizationId}",MigrationFileTypeEnum.ORGANIZATIONS, organizationId)
         .file(file)
-        .param("organizationId", String.valueOf(organizationId))
         .contentType(MediaType.MULTIPART_FORM_DATA)
       ).andExpect(status().isOk())
       .andExpect(content().json("{\"uploadId\":1,\"workflowId\":\"WFID\",\"runId\":\"RUNID\"}"));

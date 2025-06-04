@@ -155,4 +155,5 @@ class FileArchiverServiceTest {
       mockedFiles.verify(() -> Files.deleteIfExists(srcFile));
     }
   }
+
 }

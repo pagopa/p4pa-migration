@@ -28,7 +28,6 @@ public class FileArchiverService {
 
   public FileArchiverService(
     @Value("${encryption.file-encrypt-password}") String dataCipherPsw,
-
     FoldersPathsConfig foldersPathsConfig,
     FileStorerService fileStorerService,
     ZipFileService zipFileService
@@ -95,5 +94,6 @@ public class FileArchiverService {
       throw new IllegalStateException("Cannot archive files: " + files2Archive + " into destination: " + targetPath, e);
     }
   }
+
 }
 
