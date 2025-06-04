@@ -10,6 +10,7 @@ import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
+import it.gov.pagopa.pu.migration.utils.Utilities;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.BaseMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.InvalidMigrationFileException;
@@ -68,8 +69,7 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
     List<IngestionFlowFile> filesUploaded = new ArrayList<>(retrievedFiles.size());
     for (Path file : retrievedFiles) {
       String fileName = file.getFileName().toString();
-      int dotIndex = fileName.lastIndexOf('.');
-      String zipName = (dotIndex > 0) ? fileName.substring(0, dotIndex) + ".zip" : fileName + ".zip";
+      String zipName = Utilities.replaceFileExtension(fileName, ".zip");
       Path zipFilePath = file.getParent().resolve(zipName);
       File zippedFile = zipFileService.zipper(zipFilePath, List.of(file));
 

@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.exception.InvalidFileException;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -146,37 +145,6 @@ class FileArchiverServiceTest {
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       // When
       service.archive(upload);
-
-      // Then
-      mockedFiles.verify(() -> Files.createDirectories(archivePath));
-      mockedFiles.verify(() -> Files.copy(
-        srcFile,
-        archiveFile,
-        StandardCopyOption.REPLACE_EXISTING));
-      mockedFiles.verify(() -> Files.deleteIfExists(srcFile));
-    }
-  }
-
-  @Test
-  void whenArchiveIngestionFlowFileThenOk() {
-    // Given
-    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
-    ingestionFlowFile.setOrganizationId(2L);
-    ingestionFlowFile.setFilePathName("path/to/ingestion");
-    ingestionFlowFile.setFileName("ingestionFile.zip");
-
-    Path orgBasePath = Path.of(foldersPathsConfig.getShared()).resolve("2");
-    Path srcPath = orgBasePath.resolve("path/to/ingestion");
-    Path srcFile = srcPath.resolve("ingestionFile.zip" + AESUtils.CIPHER_EXTENSION);
-    Path archivePath = srcPath.resolve("archive");
-    Path archiveFile = archivePath.resolve(srcFile.getFileName());
-
-    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(ingestionFlowFile.getOrganizationId()))
-      .thenReturn(orgBasePath);
-
-    try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
-      // When
-      service.archive(ingestionFlowFile);
 
       // Then
       mockedFiles.verify(() -> Files.createDirectories(archivePath));

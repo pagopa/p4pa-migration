@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CsvServiceTest {
 
   private final PodamFactory podamFactory = new PodamFactoryImpl();
-  private final CsvService csvService = new CsvService(';', '\"', "legacies", 5, 10);
+  private final CsvService csvService = new CsvService( 5, 10);
 
   @Test
   void testCreateCsv_success() throws IOException {

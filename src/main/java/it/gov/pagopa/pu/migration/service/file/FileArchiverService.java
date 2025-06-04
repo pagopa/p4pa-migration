@@ -3,7 +3,6 @@ package it.gov.pagopa.pu.migration.service.file;
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -94,24 +93,6 @@ public class FileArchiverService {
     } catch (IOException e) {
       throw new IllegalStateException("Cannot archive files: " + files2Archive + " into destination: " + targetPath, e);
     }
-  }
-
-  /**
-   * Archives the file specified in the given {@link IngestionFlowFile}. The file is moved to
-   * the archive directory located within the same file path.
-   *
-   * @param ingestionFlowFileDTO the DTO containing details of the file to be archived.
-   */
-  public void archive(IngestionFlowFile ingestionFlowFileDTO) {
-    Path originalFileFolder = fileStorerService.buildOrganizationBasePath(ingestionFlowFileDTO.getOrganizationId())
-      .resolve(ingestionFlowFileDTO.getFilePathName());
-
-    Path originalFilePath = originalFileFolder
-      .resolve(ingestionFlowFileDTO.getFileName() + AESUtils.CIPHER_EXTENSION);
-
-    Path targetDirectory = originalFileFolder.resolve(foldersPathsConfig.getProcessTargetSubFolders().getArchive());
-
-    archive(List.of(originalFilePath), targetDirectory);
   }
 
 }
