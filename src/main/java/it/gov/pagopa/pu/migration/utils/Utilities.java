@@ -28,4 +28,9 @@ public class Utilities {
   public static Duration protobufDuration2Duration(com.google.protobuf.Duration d) {
     return Duration.ofSeconds(d.getSeconds(), d.getNanos());
   }
+
+  /** It will remove and replace file extension */
+  public static String replaceFileExtension(String fileName, String newExtension){
+    return fileName.substring(0, fileName.lastIndexOf(".")) + newExtension;
+  }
 }

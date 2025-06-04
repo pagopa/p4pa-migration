@@ -6,7 +6,7 @@ info:
 servers:
   - url: http://localhost:8080/migration
 paths:
-  /{migrationFileType}:
+  /{migrationFileType}/{organizationId}:
     post:
       tags:
         - migration-file
@@ -20,7 +20,7 @@ paths:
           schema:
             $ref: '#/components/schemas/MigrationFileTypeEnum'
         - name: organizationId
-          in: query
+          in: path
           required: true
           schema:
             type: integer
@@ -81,45 +81,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /upload/debt-positions-type-org-operators:
-    post:
-      tags:
-        - upload
-      summary: uploadDebtPositionTypeOrgOperatorsFile
-      description: Service to store and process an operator/debtPositionTypeOrg migration file
-      operationId: uploadDebtPositionTypeOrgOperatorsFile
-      parameters:
-        - name: organizationId
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        content:
-          'multipart/form-data':
-            schema:
-              required:
-                - debtPositionTypeOrgOperatorsFile
-              type: object
-              properties:
-                operatorFile:
-                  type: string
-                  format: binary
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UploadMigrationFileResponseDTO'
-        '500':
-          description: Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDTO'
-
 security:
   - BearerAuth: [ ]
 components:
