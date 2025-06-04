@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.ErrorResponseException;
@@ -32,6 +33,11 @@ public class ControllerExceptionHandler {
   @ExceptionHandler({InvalidFileException.class})
   public ResponseEntity<ErrorDTO> handleInvalidFileError(RuntimeException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.BAD_REQUEST, ErrorDTO.CodeEnum.INVALID_FILE);
+  }
+
+  @ExceptionHandler({AuthorizationDeniedException.class})
+  public ResponseEntity<ErrorDTO> handleAuthorizationDeniedException(RuntimeException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.FORBIDDEN, ErrorDTO.CodeEnum.FORBIDDEN);
   }
 
   @ExceptionHandler({FileUploadException.class})

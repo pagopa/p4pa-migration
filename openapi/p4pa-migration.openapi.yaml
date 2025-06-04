@@ -202,5 +202,6 @@ components:
             - GENERIC_ERROR
             - FILE_UPLOAD_ERROR
             - INVALID_FILE
+            - FORBIDDEN
         message:
           type: string

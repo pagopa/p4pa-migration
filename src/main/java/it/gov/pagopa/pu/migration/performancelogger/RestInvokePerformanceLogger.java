@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.migration.performancelogger;
 
-import it.gov.pagopa.pu.migration.utils.SecurityUtils;
+import it.gov.pagopa.pu.migration.security.SecurityUtils;
 import jakarta.annotation.Nonnull;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;

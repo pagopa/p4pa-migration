@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.migration.connector.auth.client;
 
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.migration.connector.auth.config.AuthApisHolder;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -20,5 +21,10 @@ public class AuthnClient {
         return authApisHolder.getAuthnApi(null)
                 .postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret);
     }
+
+  public UserInfo getUserInfo(String accessToken) {
+    return authApisHolder.getAuthnApi(accessToken)
+      .getUserInfo();
+  }
 
 }
