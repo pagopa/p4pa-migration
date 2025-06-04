@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.migration.service;
 
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
@@ -31,7 +32,9 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   }
 
   @Override
-  public Pair<Uploads, WorkflowCreatedDTO> upload(Long organizationId, MigrationFileTypeEnum migrationFileType, MultipartFile migrationFile) {
+  public Pair<Uploads, WorkflowCreatedDTO> upload(Long organizationId, MigrationFileTypeEnum migrationFileType, MultipartFile migrationFile, UserInfo loggedUser) {
+    AuthorizationService.validateAdminRoleOnBroker(organizationId, loggedUser);
+
     validatorService.validateMultipartFile(migrationFile);
 
     String migrationFilePath = foldersPathsConfig.getMigrationFilePath(migrationFileType);

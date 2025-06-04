@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.UploadMigrationFileResponseDTO;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
 import it.gov.pagopa.pu.migration.model.Uploads;
+import it.gov.pagopa.pu.migration.security.SecurityUtils;
 import it.gov.pagopa.pu.migration.service.MigrationFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,7 +27,7 @@ public class MigrationFileControllerImpl implements MigrationFileApi {
   public ResponseEntity<UploadMigrationFileResponseDTO> uploadMigrationFile(MigrationFileTypeEnum migrationFileType, Long organizationId, MultipartFile migrationFile) {
     log.info("Uploading migration file type {} on organizationId {}: {}",
       migrationFileType, organizationId, migrationFile.getOriginalFilename());
-    Pair<Uploads, WorkflowCreatedDTO> upload = service.upload(organizationId, migrationFileType, migrationFile);
+    Pair<Uploads, WorkflowCreatedDTO> upload = service.upload(organizationId, migrationFileType, migrationFile, SecurityUtils.getLoggedUser());
     return ResponseEntity.ok(UploadMigrationFileResponseDTO.builder()
       .uploadId(upload.getKey().getUploadId())
       .workflowId(upload.getValue().getWorkflowId())
