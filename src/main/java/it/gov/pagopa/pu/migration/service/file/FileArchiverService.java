@@ -3,7 +3,6 @@ package it.gov.pagopa.pu.migration.service.file;
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
-import it.gov.pagopa.pu.migration.utils.FileShareUtils;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -104,7 +103,7 @@ public class FileArchiverService {
    * @param ingestionFlowFileDTO the DTO containing details of the file to be archived.
    */
   public void archive(IngestionFlowFile ingestionFlowFileDTO) {
-    Path originalFileFolder = FileShareUtils.buildOrganizationBasePath(Path.of(foldersPathsConfig.getShared()),ingestionFlowFileDTO.getOrganizationId())
+    Path originalFileFolder = fileStorerService.buildOrganizationBasePath(ingestionFlowFileDTO.getOrganizationId())
       .resolve(ingestionFlowFileDTO.getFilePathName());
 
     Path originalFilePath = originalFileFolder

@@ -120,10 +120,17 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
                 any(FileSystemResource.class),
                 anyString()
         )).thenReturn(1L);
+
+        String fileName = file1.getFileName().toString();
+        int dotIndex = fileName.lastIndexOf('.');
+        String baseName = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
+        Path zipFilePathForMock = file1.getParent().resolve(baseName + ".zip");
+
         when(zipFileServiceMock.zipper(
-              file1.getParent().resolve(file1.getFileName() + ".zip"),
+              zipFilePathForMock,
               List.of(file1)
         )).thenReturn(mockZippedFile);
+
         assertTrue(Files.exists(mockEncryptedFile));
         when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any()))
           .thenReturn(List.of(file1));

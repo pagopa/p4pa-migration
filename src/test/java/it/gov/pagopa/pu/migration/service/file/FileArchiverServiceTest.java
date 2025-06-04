@@ -171,6 +171,9 @@ class FileArchiverServiceTest {
     Path archivePath = srcPath.resolve("archive");
     Path archiveFile = archivePath.resolve(srcFile.getFileName());
 
+    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(ingestionFlowFile.getOrganizationId()))
+      .thenReturn(orgBasePath);
+
     try (MockedStatic<Files> mockedFiles = mockStatic(Files.class)) {
       // When
       service.archive(ingestionFlowFile);

@@ -67,8 +67,10 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
 
     List<IngestionFlowFile> filesUploaded = new ArrayList<>(retrievedFiles.size());
     for (Path file : retrievedFiles) {
-      Path zipFilePath = file.getParent().resolve(file.getFileName() + ".zip");
-
+      String fileName = file.getFileName().toString();
+      int dotIndex = fileName.lastIndexOf('.');
+      String zipName = (dotIndex > 0) ? fileName.substring(0, dotIndex) + ".zip" : fileName + ".zip";
+      Path zipFilePath = file.getParent().resolve(zipName);
       File zippedFile = zipFileService.zipper(zipFilePath, List.of(file));
 
       log.info("Processing unzipped file: {}", file);
