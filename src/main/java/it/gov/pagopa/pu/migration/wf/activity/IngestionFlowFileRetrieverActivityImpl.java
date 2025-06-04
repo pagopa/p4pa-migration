@@ -25,7 +25,7 @@ public class IngestionFlowFileRetrieverActivityImpl implements IngestionFlowFile
   @Override
   public IngestionFlowFile getIngestionFlowFile(long ingestionFlowFileId) {
     log.info("Retrieving ingestionFlowFileId {}", ingestionFlowFileId);
-    String accessToken = authnService.getAccessToken("SELC_99999000015");
+    String accessToken = authnService.getAccessToken();
     IngestionFlowFile result = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
     if(result == null){
       throw new IngestionFlowFileNotFoundException("Cannot find IngestionFlowFileResult having id " + ingestionFlowFileId);
