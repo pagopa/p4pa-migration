@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.auth.controller.generated.AuthnApi;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.migration.connector.auth.config.AuthApisHolder;
+import it.gov.pagopa.pu.migration.exception.InvalidAccessTokenException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +13,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.when;
 
@@ -76,5 +80,20 @@ class AuthnClientTest {
     UserInfo result = authnClient.getUserInfo(accessToken);
 
     assertSame(expectedResult, result);
+  }
+
+  @Test
+  void givenUnauthorizedExceptionWhenGetUserInfoThenThrowInvalidAccessTokenException() {
+    String accessToken = "ACCESSTOKEN";
+    String bodyMessage = "bodyMessage";
+
+    when(authApisHolderMock.getAuthnApi(accessToken))
+      .thenReturn(authnApiMock);
+    when(authnApiMock.getUserInfo())
+      .thenThrow(HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", null, bodyMessage.getBytes(), null));
+
+    InvalidAccessTokenException exception = Assertions.assertThrows(InvalidAccessTokenException.class, () -> authnClient.getUserInfo(accessToken));
+
+    assertEquals(bodyMessage, exception.getMessage());
   }
 }
