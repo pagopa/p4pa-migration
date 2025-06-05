@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.wf.client.ingestion.DataMigrationWfClient;
 import it.gov.pagopa.pu.migration.wf.client.ingestion.DebtPositionTypeOrgOperatorDataMigrationWFClient;
 import it.gov.pagopa.pu.migration.wf.client.ingestion.OrganizationDataMigrationWFClient;
+import it.gov.pagopa.pu.migration.wf.client.ingestion.PaymentsReportingDataMigrationWFClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,9 @@ class MigrationFileWfInvokerServiceTest {
   @Mock
   private DebtPositionTypeOrgOperatorDataMigrationWFClient debtPositionTypeOrgOperatorDataMigrationWFClientMock;
 
+  @Mock
+  private PaymentsReportingDataMigrationWFClient paymentsReportingDataMigrationWFClientMock;
+
   private MigrationFileWfInvokerService service;
 
   private Map<MigrationFileTypeEnum, DataMigrationWfClient> fileType2ExpectedClientMock;
@@ -33,18 +37,23 @@ class MigrationFileWfInvokerServiceTest {
   @BeforeEach
   void init(){
     service = new MigrationFileWfInvokerServiceImpl(organizationDataMigrationWFClientMock,
-            debtPositionTypeOrgOperatorDataMigrationWFClientMock);
+            debtPositionTypeOrgOperatorDataMigrationWFClientMock,
+            paymentsReportingDataMigrationWFClientMock
+    );
 
     fileType2ExpectedClientMock = Map.of(
       MigrationFileTypeEnum.ORGANIZATIONS, organizationDataMigrationWFClientMock,
-      MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS, debtPositionTypeOrgOperatorDataMigrationWFClientMock
+      MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS, debtPositionTypeOrgOperatorDataMigrationWFClientMock,
+      MigrationFileTypeEnum.PAYMENTS_REPORTING, paymentsReportingDataMigrationWFClientMock
     );
   }
 
   @AfterEach
   void verifyNoMoreInteractions(){
     Mockito.verifyNoMoreInteractions(organizationDataMigrationWFClientMock,
-            debtPositionTypeOrgOperatorDataMigrationWFClientMock);
+            debtPositionTypeOrgOperatorDataMigrationWFClientMock,
+            paymentsReportingDataMigrationWFClientMock
+      );
   }
 
   @ParameterizedTest
