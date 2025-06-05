@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.wf.activity.ingestion.organizations;
+package it.gov.pagopa.pu.migration.wf.activity.ingestion.paymentsreporting;
 
 import io.temporal.spring.boot.ActivityImpl;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
@@ -24,9 +24,9 @@ import java.util.List;
 @Service
 @ActivityImpl(taskQueues = WfConstants.TASK_QUEUE_MIGRATION)
 @Slf4j
-public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigrationFileTypeHandlerActivity<MigrationFileResult> implements OrganizationsMigrationFileTypeHandlerActivity {
+public class PaymentsReportingMigrationFileTypeHandlerActivityImpl extends BaseMigrationFileTypeHandlerActivity<MigrationFileResult> implements PaymentsReportingMigrationFileTypeHandlerActivity {
 
-  public OrganizationsMigrationFileTypeHandlerActivityImpl(
+  public PaymentsReportingMigrationFileTypeHandlerActivityImpl(
     UploadsRepository uploadsRepository,
     MigrationFileRetrieverService fileRetrieverService,
     FileArchiverService fileArchiverService,
@@ -39,7 +39,7 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
 
   @Override
   protected MigrationFileTypeEnum getHandledMigrationFileType() {
-    return MigrationFileTypeEnum.ORGANIZATIONS;
+    return MigrationFileTypeEnum.PAYMENTS_REPORTING;
   }
 
   @Override
@@ -47,8 +47,8 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
     return handleFilesUpload(
       retrievedFiles,
       upload,
-      IngestionFlowFileType.ORGANIZATIONS,
-      IngestionFlowFile.IngestionFlowFileTypeEnum.ORGANIZATIONS
+      IngestionFlowFileType.PAYMENTS_REPORTING,
+      IngestionFlowFile.IngestionFlowFileTypeEnum.PAYMENTS_REPORTING
     );
   }
 }

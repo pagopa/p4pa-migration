@@ -94,6 +94,7 @@ components:
       enum:
         - ORGANIZATIONS
         - DEBT_POSITIONS_TYPE_ORG_OPERATORS
+        - PAYMENTS_REPORTING
     UploadMigrationFileResponseDTO:
       type: object
       required:
