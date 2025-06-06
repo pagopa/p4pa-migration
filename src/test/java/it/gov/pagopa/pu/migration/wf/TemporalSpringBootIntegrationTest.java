@@ -85,7 +85,7 @@ class TemporalSpringBootIntegrationTest {
     upload.setFileType(null);
 
     MigrationFileResult expectedMigrationFileResult = MigrationFileResult.builder()
-      .errorDescription("Invalid migration file type: null expected ORGANIZATIONS")
+      .errorDescription("Invalid migration file type: null expected DEBT_POSITIONS_TYPE_ORG_OPERATORS")
       .build();
 
     when(uploadsRepositoryMock.updateStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null))
@@ -159,5 +159,6 @@ class TemporalSpringBootIntegrationTest {
     Assertions.assertEquals(status, info.getStatus());
   }
 }
+
 
 

@@ -123,7 +123,7 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     boolean consumed = service.consumeRow(1, dto, result, errorList, new Uploads());
     assertFalse(consumed);
     assertFalse(errorList.isEmpty());
-    assertEquals("OPERATOR_DEBT_POS_TYPE_ORG_ALREADY_EXISTS", errorList.get(0).getErrorCode());
+    assertEquals("OPERATOR_DEBT_POS_TYPE_ORG_ALREADY_EXISTS", errorList.getFirst().getErrorCode());
   }
 
   @Test
