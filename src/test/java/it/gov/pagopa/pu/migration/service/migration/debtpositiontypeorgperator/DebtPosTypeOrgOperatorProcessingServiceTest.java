@@ -103,17 +103,27 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
 
   @Test
   void consumeRowReturnsFalseAndAddsErrorIfDuplicate() {
+
+    DebtPositionTypeOrgOperators existingDebtPosTypeOrgOperator = DebtPositionTypeOrgOperators.builder()
+      .organizationId(0L)
+      .debtPositionTypeOrgCode("CODE")
+      .build();
+
     DebtPositionTypeOrgOperatorMigrationFileDTO dto = mock(DebtPositionTypeOrgOperatorMigrationFileDTO.class);
     when(dto.getOrgIpaCode()).thenReturn("IPA");
     when(dto.getDebtPositionTypeOrgCode()).thenReturn("CODE");
-    when(debtPositionTypeOrgOperatorsRepositoryMock.findByOrganizationIdAndDebtPositionTypeOrgCode(0L, "CODE")).thenReturn(Optional.of(mock(DebtPositionTypeOrgOperators.class)));
+    when(authnServiceMock.getAccessToken()).thenReturn("token");
+    when(organizationServiceMock.getOrganizationByIpaCode(any(), any())).thenReturn(Optional.of(new Organization().organizationId(0L)));
+    when(debtPositionTypeOrgOperatorsRepositoryMock.findByOrganizationIdAndDebtPositionTypeOrgCode(0L, "CODE"))
+        .thenReturn(Optional.of(existingDebtPosTypeOrgOperator));
+    when(debtPositionTypeOrgServiceMock.getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any()))
+        .thenReturn(Optional.of(new DebtPositionTypeOrg()));
     DebtPositionTypeOrgOperatorMigrationFileResult result = new DebtPositionTypeOrgOperatorMigrationFileResult();
     List<DebtPositionTypeOrgOperatorErrorDTO> errorList = new java.util.ArrayList<>();
     boolean consumed = service.consumeRow(1, dto, result, errorList, new Uploads());
     assertFalse(consumed);
     assertFalse(errorList.isEmpty());
     assertEquals("OPERATOR_DEBT_POS_TYPE_ORG_ALREADY_EXISTS", errorList.get(0).getErrorCode());
-    verify(debtPositionTypeOrgOperatorsRepositoryMock).findByOrganizationIdAndDebtPositionTypeOrgCode(0L, "CODE");
   }
 
   @Test
@@ -121,19 +131,19 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     DebtPositionTypeOrgOperatorMigrationFileDTO dto = mock(DebtPositionTypeOrgOperatorMigrationFileDTO.class);
     when(dto.getOrgIpaCode()).thenReturn("IPA");
     when(dto.getDebtPositionTypeOrgCode()).thenReturn("CODE");
-    when(debtPositionTypeOrgOperatorsRepositoryMock.findByOrganizationIdAndDebtPositionTypeOrgCode(0L, "CODE")).thenReturn(Optional.empty());
     when(organizationServiceMock.getOrganizationByIpaCode(anyString(), anyString())).thenReturn(Optional.of(new Organization().organizationId(1L)));
+    when(debtPositionTypeOrgOperatorsRepositoryMock.findByOrganizationIdAndDebtPositionTypeOrgCode(1L, "CODE")).thenReturn(Optional.empty());
     when(authnServiceMock.getAccessToken()).thenReturn("token");
     DebtPositionTypeOrg debtTypeOrgDTO = new DebtPositionTypeOrg();
     debtTypeOrgDTO.organizationId(2L);
-    when(debtPositionTypeOrgServiceMock.getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), anyString())).thenReturn(Optional.of(debtTypeOrgDTO));
+    when(debtPositionTypeOrgServiceMock.getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any())).thenReturn(Optional.of(debtTypeOrgDTO));
     DebtPositionTypeOrgOperatorMigrationFileResult result = new DebtPositionTypeOrgOperatorMigrationFileResult();
     List<DebtPositionTypeOrgOperatorErrorDTO> errorList = new java.util.ArrayList<>();
     boolean consumed = service.consumeRow(1, dto, result, errorList, new Uploads());
     assertTrue(consumed);
-    verify(debtPositionTypeOrgOperatorsRepositoryMock).findByOrganizationIdAndDebtPositionTypeOrgCode(0L, "CODE");
+    verify(debtPositionTypeOrgOperatorsRepositoryMock).findByOrganizationIdAndDebtPositionTypeOrgCode(1L, "CODE");
     verify(organizationServiceMock).getOrganizationByIpaCode(anyString(), anyString());
-    verify(debtPositionTypeOrgServiceMock).getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), anyString());
+    verify(debtPositionTypeOrgServiceMock).getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any());
     verify(debtPositionTypeOrgOperatorsRepositoryMock).save(any(DebtPositionTypeOrgOperators.class));
   }
 
