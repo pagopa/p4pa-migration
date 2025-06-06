@@ -26,53 +26,60 @@ public class AuthorizationService {
     return authClientImpl.getUserInfo(accessToken);
   }
 
-  public static void validateAdminRoleOnBroker(Long organizationId, UserInfo loggedUser) {
-    validateAdminRole(organizationId, loggedUser);
-    validateBrokerOrganization(organizationId, loggedUser);
+  public static UserOrganizationRoles validateAdminRoleOnBroker(Long organizationId, UserInfo loggedUser) {
+    UserOrganizationRoles userOrganizationRoles = validateAdminRole(organizationId, loggedUser);
+    validateBrokerOrganization(userOrganizationRoles, loggedUser, getUnauthorizedOrgException(organizationId));
+    return userOrganizationRoles;
   }
 
-  public static void validateAdminRoleOnBroker(String organizationIpaCode, UserInfo loggedUser) {
-    validateAdminRole(organizationIpaCode, loggedUser);
-    validateBrokerOrganization(organizationIpaCode, loggedUser);
+  public static UserOrganizationRoles validateAdminRoleOnBroker(String organizationIpaCode, UserInfo loggedUser) {
+    UserOrganizationRoles userOrganizationRoles = validateAdminRole(organizationIpaCode, loggedUser);
+    validateBrokerOrganization(userOrganizationRoles, loggedUser, getUnauthorizedOrgException(organizationIpaCode));
+    return userOrganizationRoles;
   }
 
-//region logged user authorizations
-  public static void validateAdminRole(Long organizationId, UserInfo loggedUser) {
-    boolean roleAdmin = isAdminRole(organizationId, loggedUser);
+  //region logged user authorizations
+  public static UserOrganizationRoles validateAdminRole(Long organizationId, UserInfo loggedUser) {
+    UserOrganizationRoles orgRoles = getUserOrganizationRoles(organizationId, loggedUser).orElse(null);
+    return validateAdminRole(orgRoles, getUnauthorizedUserException(organizationId, loggedUser));
+  }
+
+  public static UserOrganizationRoles validateAdminRole(String organizationIpaCode, UserInfo loggedUser) {
+    UserOrganizationRoles orgRoles = getUserOrganizationRoles(organizationIpaCode, loggedUser).orElse(null);
+    return validateAdminRole(orgRoles, getUnauthorizedUserException(organizationIpaCode, loggedUser));
+  }
+
+  public static UserOrganizationRoles validateAdminRole(UserOrganizationRoles orgRoles, AuthorizationDeniedException authorizationDeniedException) {
+    boolean roleAdmin = isAdminRole(orgRoles);
     if (!roleAdmin) {
-      handleUnauthorizedUser(organizationId, loggedUser);
+      throw authorizationDeniedException;
     }
-  }
-
-  public static void validateAdminRole(String organizationIpaCode, UserInfo loggedUser) {
-    boolean roleAdmin = isAdminRole(organizationIpaCode, loggedUser);
-    if (!roleAdmin) {
-      handleUnauthorizedUser(organizationIpaCode, loggedUser);
-    }
+    return orgRoles;
   }
 
   public static boolean isAdminRole(Long organizationId, UserInfo loggedUser) {
-    return getUserOrganizationRoles(organizationId, loggedUser)
-      .filter(o -> !CollectionUtils.isEmpty(o.getRoles()) && o.getRoles()
-        .contains(ROLE_ADMIN))
-      .isPresent();
+    return isAdminRole(getUserOrganizationRoles(organizationId, loggedUser).orElse(null));
   }
 
   public static boolean isAdminRole(String organizationIpaCode, UserInfo loggedUser) {
-    return loggedUser != null && getUserOrganizationRoles(organizationIpaCode, loggedUser)
-      .filter(o -> !CollectionUtils.isEmpty(o.getRoles()) && o.getRoles()
-        .contains(ROLE_ADMIN))
-      .isPresent();
+    return loggedUser != null &&
+      isAdminRole(getUserOrganizationRoles(organizationIpaCode, loggedUser).orElse(null));
+  }
+
+  public static boolean isAdminRole(UserOrganizationRoles o) {
+    return o != null &&
+      !CollectionUtils.isEmpty(o.getRoles()) &&
+      o.getRoles().contains(ROLE_ADMIN);
   }
 
   public static void validateUserForOrganizationId(Long organizationId, UserInfo loggedUser) {
     if (getUserOrganizationRoles(organizationId, loggedUser).isEmpty()) {
-      handleUnauthorizedUser(organizationId, loggedUser);
+      throw getUnauthorizedUserException(organizationId, loggedUser);
     }
   }
 
   public static String getOrgFiscalCodeFromUserInfo(UserInfo loggedUser, String organizationIpaCode) {
-    if(loggedUser == null || organizationIpaCode == null) {
+    if (loggedUser == null || organizationIpaCode == null) {
       return null;
     }
     return getUserOrganizationRoles(organizationIpaCode, loggedUser).map(UserOrganizationRoles::getOrganizationFiscalCode)
@@ -80,24 +87,22 @@ public class AuthorizationService {
   }
 
   public static Long getOrganizationIdFromUserInfo(UserInfo loggedUser, String organizationIpaCode) {
-    if(loggedUser == null || organizationIpaCode == null) {
+    if (loggedUser == null || organizationIpaCode == null) {
       return null;
     }
     return getUserOrganizationRoles(organizationIpaCode, loggedUser).map(UserOrganizationRoles::getOrganizationId)
       .orElse(null);
   }
 
-  private static void handleUnauthorizedUser(Long organizationId, UserInfo loggedUser) {
-    log.debug("Unauthorized user. [organizationId:{}]", organizationId);
-    throw new AuthorizationDeniedException("Access denied on organizationId " + organizationId + " to user " + loggedUser.getMappedExternalUserId());
+  private static AuthorizationDeniedException getUnauthorizedUserException(Long organizationId, UserInfo loggedUser) {
+    return new AuthorizationDeniedException("Access denied on organizationId " + organizationId + " to user " + loggedUser.getMappedExternalUserId());
   }
 
-  private static void handleUnauthorizedUser(String organizationIpaCode, UserInfo loggedUser) {
-    log.debug("Unauthorized user. [organizationIpaCode:{}]", organizationIpaCode);
-    throw new AuthorizationDeniedException("Access denied on organizationIpaCode " + organizationIpaCode + " to user " + loggedUser.getMappedExternalUserId());
+  private static AuthorizationDeniedException getUnauthorizedUserException(String organizationIpaCode, UserInfo loggedUser) {
+    return new AuthorizationDeniedException("Access denied on organizationIpaCode " + organizationIpaCode + " to user " + loggedUser.getMappedExternalUserId());
   }
 
-  private static Optional<UserOrganizationRoles> getUserOrganizationRoles(Long organizationId, UserInfo loggedUser) {
+  public static Optional<UserOrganizationRoles> getUserOrganizationRoles(Long organizationId, UserInfo loggedUser) {
     return loggedUser.getOrganizations().stream()
       .filter(o -> organizationId.equals(o.getOrganizationId()) && !CollectionUtils.isEmpty(o.getRoles()))
       .findFirst();
@@ -110,43 +115,47 @@ public class AuthorizationService {
   }
 //endregion
 
-//region logged user organization validation
-  public static void validateBrokerOrganization(Long organizationId, UserInfo loggedUser) {
-    boolean isBrokerOrg = isBrokerOrganization(organizationId, loggedUser);
-    if (!isBrokerOrg) {
-      handleUnauthorizedOrg(organizationId);
-    }
+  //region logged user organization validation
+  public static UserOrganizationRoles validateBrokerOrganization(Long organizationId, UserInfo loggedUser) {
+    UserOrganizationRoles orgRoles = getUserOrganizationRoles(organizationId, loggedUser).orElse(null);
+    validateBrokerOrganization(orgRoles, loggedUser, getUnauthorizedOrgException(organizationId));
+    return orgRoles;
   }
 
-  public static void validateBrokerOrganization(String organizationIpaCode, UserInfo loggedUser) {
-    boolean isBrokerOrg = isBrokerOrganization(organizationIpaCode, loggedUser);
+  public static UserOrganizationRoles validateBrokerOrganization(String organizationIpaCode, UserInfo loggedUser) {
+    UserOrganizationRoles orgRoles = getUserOrganizationRoles(organizationIpaCode, loggedUser).orElse(null);
+    validateBrokerOrganization(orgRoles, loggedUser, getUnauthorizedOrgException(organizationIpaCode));
+    return orgRoles;
+  }
+
+  public static void validateBrokerOrganization(UserOrganizationRoles orgRoles, UserInfo loggedUser, AuthorizationDeniedException authorizationDeniedException) {
+    boolean isBrokerOrg = isBrokerOrganization(orgRoles, loggedUser);
     if (!isBrokerOrg) {
-      handleUnauthorizedOrg(organizationIpaCode);
+      throw authorizationDeniedException;
     }
   }
 
   public static boolean isBrokerOrganization(Long organizationId, UserInfo loggedUser) {
-    String orgFiscalCode = getUserOrganizationRoles(organizationId, loggedUser)
-      .map(UserOrganizationRoles::getOrganizationFiscalCode)
-      .orElse(null);
-    return loggedUser.getBrokerFiscalCode() !=null && loggedUser.getBrokerFiscalCode().equals(orgFiscalCode);
+    return isBrokerOrganization(getUserOrganizationRoles(organizationId, loggedUser).orElse(null), loggedUser);
   }
 
   public static boolean isBrokerOrganization(String organizationIpaCode, UserInfo loggedUser) {
-    String orgFiscalCode = getUserOrganizationRoles(organizationIpaCode, loggedUser)
-      .map(UserOrganizationRoles::getOrganizationFiscalCode)
-      .orElse(null);
-    return loggedUser.getBrokerFiscalCode() !=null && loggedUser.getBrokerFiscalCode().equals(orgFiscalCode);
+    return isBrokerOrganization(getUserOrganizationRoles(organizationIpaCode, loggedUser).orElse(null), loggedUser);
   }
 
-  private static void handleUnauthorizedOrg(Long organizationId) {
-    log.debug("Unauthorized organization. [organizationId:{}]", organizationId);
-    throw new AuthorizationDeniedException("Access denied the organizationId " + organizationId + " is not a broker");
+  public static boolean isBrokerOrganization(UserOrganizationRoles orgRoles, UserInfo loggedUser) {
+    return orgRoles != null &&
+      loggedUser != null &&
+      loggedUser.getBrokerFiscalCode() != null &&
+      loggedUser.getBrokerFiscalCode().equals(orgRoles.getOrganizationFiscalCode());
   }
 
-  private static void handleUnauthorizedOrg(String organizationIpaCode) {
-    log.debug("Unauthorized organization. [organizationIpaCode:{}]", organizationIpaCode);
-    throw new AuthorizationDeniedException("Access denied the organizationIpaCode " + organizationIpaCode + " is not a broker");
+  protected static AuthorizationDeniedException getUnauthorizedOrgException(Long organizationId) {
+    return new AuthorizationDeniedException("Access denied the organizationId " + organizationId + " is not a broker");
+  }
+
+  protected static AuthorizationDeniedException getUnauthorizedOrgException(String organizationIpaCode) {
+    return new AuthorizationDeniedException("Access denied the organizationIpaCode " + organizationIpaCode + " is not a broker");
   }
 //endregion
 
