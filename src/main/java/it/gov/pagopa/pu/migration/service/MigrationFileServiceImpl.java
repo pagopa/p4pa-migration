@@ -11,7 +11,6 @@ import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,13 +34,9 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   @Override
   public Pair<Uploads, WorkflowCreatedDTO> upload(String orgIpaCode, MigrationFileTypeEnum migrationFileType, MultipartFile migrationFile, UserInfo loggedUser) {
 
-    Long organizationId = loggedUser.getOrganizations().stream()
-      .filter(org -> orgIpaCode.equals(org.getOrganizationIpaCode()))
-      .findFirst()
-      .orElseThrow(() -> new AuthorizationDeniedException("IPA code not found among the user's organizations"))
-      .getOrganizationId();
+    AuthorizationService.validateAdminRoleOnBroker(orgIpaCode, loggedUser);
 
-    AuthorizationService.validateAdminRoleOnBroker(organizationId, loggedUser);
+    Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(loggedUser, orgIpaCode);
 
     validatorService.validateMultipartFile(migrationFile);
 
