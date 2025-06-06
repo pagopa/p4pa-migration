@@ -117,8 +117,6 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
         return false;
       }
 
-
-
       // Mapping and saving
       DebtPositionTypeOrgOperators entity = DebtPositionTypeOrgOperatorMapper.mapToOperators(dto, debtPositionTypeOrgId, organizationId);
       repository.save(entity);

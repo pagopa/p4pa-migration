@@ -24,6 +24,5 @@ class DebtPositionTypeOrgOperatorMapperTest {
     Assertions.assertEquals(organizationId, result.getOrganizationId());
     Assertions.assertEquals(ingestionFlowFile.getDebtPositionTypeOrgCode(), result.getDebtPositionTypeOrgCode());
     Assertions.assertEquals(debtPositionTypeOrgId, result.getDebtPositionTypeOrgId());
-    Assertions.assertEquals(ingestionFlowFile.getOrgIpaCode(), result.getOrgIpaCode());
   }
 }

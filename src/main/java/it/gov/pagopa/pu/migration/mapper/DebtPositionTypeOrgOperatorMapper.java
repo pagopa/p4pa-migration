@@ -15,7 +15,6 @@ public class DebtPositionTypeOrgOperatorMapper {
       .organizationId(organizationId)
       .debtPositionTypeOrgCode(dto.getDebtPositionTypeOrgCode())
       .debtPositionTypeOrgId(debtPositionTypeOrgId)
-      .orgIpaCode(dto.getOrgIpaCode())
       .build();
   }
 

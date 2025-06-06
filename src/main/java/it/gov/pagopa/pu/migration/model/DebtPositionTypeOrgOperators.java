@@ -24,6 +24,4 @@ public class DebtPositionTypeOrgOperators extends BaseEntity {
     private Long debtPositionTypeOrgId;
     @NotNull
     private String debtPositionTypeOrgCode;
-    @NotNull
-    private String orgIpaCode;
 }
