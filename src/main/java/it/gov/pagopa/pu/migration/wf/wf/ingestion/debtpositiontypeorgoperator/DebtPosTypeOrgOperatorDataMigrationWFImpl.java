@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.wf.wf.ingestion.operatordebtpostypeorg;
+package it.gov.pagopa.pu.migration.wf.wf.ingestion.debtpositiontypeorgoperator;
 
 import io.temporal.spring.boot.WorkflowImpl;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.debtpositiontypeorgoperator.DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity;
@@ -15,7 +15,7 @@ public class DebtPosTypeOrgOperatorDataMigrationWFImpl extends BaseDataMigration
 
   @Override
   protected void buildActivities(DataMigrationWfConfig wfConfig) {
-    debtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity = wfConfig.buildOperatorMigrationFileTypeHandlerActivityStub();
+    debtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity = wfConfig.buildDebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivityStub();
   }
 
   @Override

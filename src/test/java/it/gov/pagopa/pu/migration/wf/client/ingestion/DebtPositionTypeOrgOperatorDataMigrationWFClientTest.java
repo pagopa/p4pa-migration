@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.migration.wf.service.temporal.WorkflowClientService;
 import it.gov.pagopa.pu.migration.wf.service.temporal.WorkflowService;
 import it.gov.pagopa.pu.migration.wf.utils.TemporalTestUtils;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
-import it.gov.pagopa.pu.migration.wf.wf.ingestion.operatordebtpostypeorg.DebtPosTypeOrgOperatorDataMigrationWF;
+import it.gov.pagopa.pu.migration.wf.wf.ingestion.debtpositiontypeorgoperator.DebtPosTypeOrgOperatorDataMigrationWF;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
