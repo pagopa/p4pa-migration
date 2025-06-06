@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 
@@ -51,17 +52,26 @@ class AuthorizationServiceTest {
     // Given
     long organizationId = 1L;
     UserInfo loggedUser = new UserInfo();
+    UserOrganizationRoles expectedResult = new UserOrganizationRoles();
+    AuthorizationDeniedException expectedConfiguredException = new AuthorizationDeniedException("DUMMY");
 
     try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)){
       authorizationServiceMockedStatic.when(() -> AuthorizationService.validateAdminRoleOnBroker(Mockito.same(organizationId), Mockito.same(loggedUser)))
         .thenCallRealMethod();
 
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.validateAdminRole(Mockito.same(organizationId), Mockito.same(loggedUser)))
+        .thenReturn(expectedResult);
+
+      //noinspection ThrowableNotThrown
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.getUnauthorizedOrgException(organizationId))
+        .thenReturn(expectedConfiguredException);
+
       // When
-      AuthorizationService.validateAdminRoleOnBroker(organizationId, loggedUser);
+      UserOrganizationRoles result = AuthorizationService.validateAdminRoleOnBroker(organizationId, loggedUser);
 
       // Then
-      authorizationServiceMockedStatic.verify(() -> AuthorizationService.validateAdminRole(Mockito.same(organizationId), Mockito.same(loggedUser)));
-      authorizationServiceMockedStatic.verify(() -> AuthorizationService.validateBrokerOrganization(Mockito.same(organizationId), Mockito.same(loggedUser)));
+      Assertions.assertSame(expectedResult, result);
+      authorizationServiceMockedStatic.verify(() -> AuthorizationService.validateBrokerOrganization(Mockito.same(expectedResult), Mockito.same(loggedUser), Mockito.same(expectedConfiguredException)));
     }
   }
 
@@ -70,17 +80,26 @@ class AuthorizationServiceTest {
     // Given
     String organizationIpaCode = "IPACODE";
     UserInfo loggedUser = new UserInfo();
+    UserOrganizationRoles expectedResult = new UserOrganizationRoles();
+    AuthorizationDeniedException expectedConfiguredException = new AuthorizationDeniedException("DUMMY");
 
     try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)){
       authorizationServiceMockedStatic.when(() -> AuthorizationService.validateAdminRoleOnBroker(Mockito.same(organizationIpaCode), Mockito.same(loggedUser)))
         .thenCallRealMethod();
 
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.validateAdminRole(Mockito.same(organizationIpaCode), Mockito.same(loggedUser)))
+        .thenReturn(expectedResult);
+
+      //noinspection ThrowableNotThrown
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.getUnauthorizedOrgException(organizationIpaCode))
+        .thenReturn(expectedConfiguredException);
+
       // When
-      AuthorizationService.validateAdminRoleOnBroker(organizationIpaCode, loggedUser);
+      UserOrganizationRoles result = AuthorizationService.validateAdminRoleOnBroker(organizationIpaCode, loggedUser);
 
       // Then
-      authorizationServiceMockedStatic.verify(() -> AuthorizationService.validateAdminRole(Mockito.same(organizationIpaCode), Mockito.same(loggedUser)));
-      authorizationServiceMockedStatic.verify(() -> AuthorizationService.validateBrokerOrganization(Mockito.same(organizationIpaCode), Mockito.same(loggedUser)));
+      Assertions.assertSame(expectedResult, result);
+      authorizationServiceMockedStatic.verify(() -> AuthorizationService.validateBrokerOrganization(Mockito.same(expectedResult), Mockito.same(loggedUser), Mockito.same(expectedConfiguredException)));
     }
   }
 
@@ -372,6 +391,7 @@ class AuthorizationServiceTest {
     // Then
     Assertions.assertEquals("Access denied the organizationId 1 is not a broker", result.getMessage());
   }
+
   @Test
   void givenBrokerOrgWhenValidateBrokerOrganizationOrgIpaCodeThenOk() {
     // Given
@@ -404,6 +424,56 @@ class AuthorizationServiceTest {
 
     // Then
     Assertions.assertEquals("Access denied the organizationIpaCode IPACODE1 is not a broker", result.getMessage());
+  }
+
+  @Test
+  void whenIsBrokerOrganizationOrgIdThenInvokeCommonCheck() {
+    // Given
+    Long orgId = 0L;
+    UserInfo userInfo = new UserInfo();
+    UserOrganizationRoles organizationRoles = new UserOrganizationRoles();
+    boolean expectedResult = true;
+
+    try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)) {
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.isBrokerOrganization(orgId, userInfo))
+        .thenCallRealMethod();
+
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.getUserOrganizationRoles(orgId, userInfo))
+        .thenReturn(Optional.of(organizationRoles));
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.isBrokerOrganization(organizationRoles, userInfo))
+        .thenReturn(expectedResult);
+
+      // When
+      boolean result = AuthorizationService.isBrokerOrganization(orgId, userInfo);
+
+      // Then
+      Assertions.assertEquals(expectedResult, result);
+    }
+  }
+
+  @Test
+  void whenIsBrokerOrganizationOrgIpaCodeThenInvokeCommonCheck() {
+    // Given
+    String orgIpaCode = "IPACODE1";
+    UserInfo userInfo = new UserInfo();
+    UserOrganizationRoles organizationRoles = new UserOrganizationRoles();
+    boolean expectedResult = true;
+
+    try(MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)) {
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.isBrokerOrganization(orgIpaCode, userInfo))
+        .thenCallRealMethod();
+
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.getUserOrganizationRoles(orgIpaCode, userInfo))
+          .thenReturn(Optional.of(organizationRoles));
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.isBrokerOrganization(organizationRoles, userInfo))
+        .thenReturn(expectedResult);
+
+      // When
+      boolean result = AuthorizationService.isBrokerOrganization(orgIpaCode, userInfo);
+
+      // Then
+      Assertions.assertEquals(expectedResult, result);
+    }
   }
 //end region
 }
