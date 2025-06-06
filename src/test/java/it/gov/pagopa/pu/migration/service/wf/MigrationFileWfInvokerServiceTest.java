@@ -3,10 +3,7 @@ package it.gov.pagopa.pu.migration.service.wf;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
 import it.gov.pagopa.pu.migration.model.Uploads;
-import it.gov.pagopa.pu.migration.wf.client.ingestion.DataMigrationWfClient;
-import it.gov.pagopa.pu.migration.wf.client.ingestion.DebtPositionTypeOrgOperatorDataMigrationWFClient;
-import it.gov.pagopa.pu.migration.wf.client.ingestion.OrganizationDataMigrationWFClient;
-import it.gov.pagopa.pu.migration.wf.client.ingestion.PaymentsReportingDataMigrationWFClient;
+import it.gov.pagopa.pu.migration.wf.client.ingestion.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +21,9 @@ class MigrationFileWfInvokerServiceTest {
 
   @Mock
   private OrganizationDataMigrationWFClient organizationDataMigrationWFClientMock;
+
+  @Mock
+  private DebtPositionTypeDataMigrationWFClient debtPositionTypeDataMigrationWFClientMock;
   @Mock
   private DebtPositionTypeOrgOperatorDataMigrationWFClient debtPositionTypeOrgOperatorDataMigrationWFClientMock;
 
@@ -35,30 +35,33 @@ class MigrationFileWfInvokerServiceTest {
   private Map<MigrationFileTypeEnum, DataMigrationWfClient> fileType2ExpectedClientMock;
 
   @BeforeEach
-  void init(){
+  void init() {
     service = new MigrationFileWfInvokerServiceImpl(organizationDataMigrationWFClientMock,
-            debtPositionTypeOrgOperatorDataMigrationWFClientMock,
-            paymentsReportingDataMigrationWFClientMock
+      debtPositionTypeDataMigrationWFClientMock,
+      debtPositionTypeOrgOperatorDataMigrationWFClientMock,
+      paymentsReportingDataMigrationWFClientMock
     );
 
     fileType2ExpectedClientMock = Map.of(
       MigrationFileTypeEnum.ORGANIZATIONS, organizationDataMigrationWFClientMock,
+      MigrationFileTypeEnum.DEBT_POSITIONS_TYPE, debtPositionTypeDataMigrationWFClientMock,
       MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS, debtPositionTypeOrgOperatorDataMigrationWFClientMock,
       MigrationFileTypeEnum.PAYMENTS_REPORTING, paymentsReportingDataMigrationWFClientMock
     );
   }
 
   @AfterEach
-  void verifyNoMoreInteractions(){
+  void verifyNoMoreInteractions() {
     Mockito.verifyNoMoreInteractions(organizationDataMigrationWFClientMock,
-            debtPositionTypeOrgOperatorDataMigrationWFClientMock,
-            paymentsReportingDataMigrationWFClientMock
-      );
+      debtPositionTypeDataMigrationWFClientMock,
+      debtPositionTypeOrgOperatorDataMigrationWFClientMock,
+      paymentsReportingDataMigrationWFClientMock
+    );
   }
 
   @ParameterizedTest
   @EnumSource(MigrationFileTypeEnum.class)
-  void test(MigrationFileTypeEnum fileType){
+  void test(MigrationFileTypeEnum fileType) {
     // Given
     Uploads uploads = new Uploads();
     uploads.setFileType(fileType);
