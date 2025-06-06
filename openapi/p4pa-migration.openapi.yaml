@@ -6,7 +6,7 @@ info:
 servers:
   - url: http://localhost:8080/migration
 paths:
-  /{migrationFileType}/{organizationId}:
+  /{migrationFileType}/{orgIpaCode}:
     post:
       tags:
         - migration-file
@@ -19,12 +19,11 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/MigrationFileTypeEnum'
-        - name: organizationId
+        - name: orgIpaCode
           in: path
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
       requestBody:
         content:
           'multipart/form-data':

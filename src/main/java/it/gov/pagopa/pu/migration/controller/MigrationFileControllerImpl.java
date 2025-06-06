@@ -24,10 +24,10 @@ public class MigrationFileControllerImpl implements MigrationFileApi {
   }
 
   @Override
-  public ResponseEntity<UploadMigrationFileResponseDTO> uploadMigrationFile(MigrationFileTypeEnum migrationFileType, Long organizationId, MultipartFile migrationFile) {
-    log.info("Uploading migration file type {} on organizationId {}: {}",
-      migrationFileType, organizationId, migrationFile.getOriginalFilename());
-    Pair<Uploads, WorkflowCreatedDTO> upload = service.upload(organizationId, migrationFileType, migrationFile, SecurityUtils.getLoggedUser());
+  public ResponseEntity<UploadMigrationFileResponseDTO> uploadMigrationFile(MigrationFileTypeEnum migrationFileType, String orgIpaCode, MultipartFile migrationFile) {
+    log.info("Uploading migration file type {} on organization ipa code {}: {}",
+      migrationFileType, orgIpaCode, migrationFile.getOriginalFilename());
+    Pair<Uploads, WorkflowCreatedDTO> upload = service.upload(orgIpaCode, migrationFileType, migrationFile, SecurityUtils.getLoggedUser());
     return ResponseEntity.ok(UploadMigrationFileResponseDTO.builder()
       .uploadId(upload.getKey().getUploadId())
       .workflowId(upload.getValue().getWorkflowId())
