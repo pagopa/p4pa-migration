@@ -92,7 +92,7 @@ class DebtPositionTypeMigrationFileTypeHandlerActivityTest {
         when(uploadsRepositoryMock.findById(1L)).thenReturn(Optional.of(
           Uploads.builder()
             .organizationId(1L)
-            .fileType(MigrationFileTypeEnum.PAYMENTS_REPORTING)
+            .fileType(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE)
             .fileName("file1.txt")
             .filePathName(sourceDir.toString())
             .fileSize(123L)
