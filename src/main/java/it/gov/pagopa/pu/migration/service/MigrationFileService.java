@@ -8,5 +8,5 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface MigrationFileService {
-  Pair<Uploads, WorkflowCreatedDTO> upload(Long organizationId, MigrationFileTypeEnum migrationFileType, MultipartFile migrationFile, UserInfo loggedUser);
+  Pair<Uploads, WorkflowCreatedDTO> upload(String orgIpaCode, MigrationFileTypeEnum migrationFileType, MultipartFile migrationFile, UserInfo loggedUser);
 }

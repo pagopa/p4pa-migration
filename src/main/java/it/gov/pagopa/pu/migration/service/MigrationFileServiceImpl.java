@@ -32,8 +32,10 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   }
 
   @Override
-  public Pair<Uploads, WorkflowCreatedDTO> upload(Long organizationId, MigrationFileTypeEnum migrationFileType, MultipartFile migrationFile, UserInfo loggedUser) {
-    AuthorizationService.validateAdminRoleOnBroker(organizationId, loggedUser);
+  public Pair<Uploads, WorkflowCreatedDTO> upload(String orgIpaCode, MigrationFileTypeEnum migrationFileType, MultipartFile migrationFile, UserInfo loggedUser) {
+
+    Long organizationId = AuthorizationService.validateAdminRoleOnBroker(orgIpaCode, loggedUser)
+       .getOrganizationId();
 
     validatorService.validateMultipartFile(migrationFile);
 

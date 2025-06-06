@@ -115,7 +115,7 @@ class MigrationFileServiceTest {
       .thenReturn(expectedWfCreated);
 
     // When
-    Pair<Uploads, WorkflowCreatedDTO> result = service.upload(organizationId, migrationFileType, file, loggedUser);
+    Pair<Uploads, WorkflowCreatedDTO> result = service.upload(orgIpaCode, migrationFileType, file, loggedUser);
 
     // Then
     Assertions.assertNotNull(result);
@@ -128,7 +128,6 @@ class MigrationFileServiceTest {
   @Test
   void givenNotAuthOrgWhenUploadThenInvokeServices() {
     // Given
-    long organizationId = 1L;
     String orgIpaCode = "IPACODE";
     MigrationFileTypeEnum migrationFileType = MigrationFileTypeEnum.ORGANIZATIONS;
     MultipartFile file = Mockito.mock(MultipartFile.class);
@@ -144,6 +143,6 @@ class MigrationFileServiceTest {
       .build()));
 
     // When
-    Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.upload(organizationId, migrationFileType, file, loggedUser));
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.upload(orgIpaCode, migrationFileType, file, loggedUser));
   }
 }
