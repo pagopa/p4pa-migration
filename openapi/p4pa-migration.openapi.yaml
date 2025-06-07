@@ -14,16 +14,16 @@ paths:
       description: Service to store an migration file
       operationId: uploadMigrationFile
       parameters:
-        - name: migrationFileType
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/MigrationFileTypeEnum'
         - name: orgIpaCode
           in: path
           required: true
           schema:
             type: string
+        - name: migrationFileType
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MigrationFileTypeEnum'
       requestBody:
         content:
           'multipart/form-data':
@@ -42,6 +42,147 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UploadMigrationFileResponseDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+    get:
+      tags:
+        - migration-file
+      summary: getMigrationFlows
+      description: Service to retrieve upload request statuses
+      operationId: getMigrationUploads
+      parameters:
+        - name: orgIpaCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: migrationFileType
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MigrationFileTypeEnum'
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: 'UploadsStatusEnum'
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: 'Uploads'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+  /organization/{orgIpaCode}/migrations/{uploadId}:
+    get:
+      tags:
+        - migration-file
+      summary: getMigrationFlow
+      description: Service to retrieve an upload request
+      operationId: getMigrationUpload
+      parameters:
+        - name: orgIpaCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: uploadId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: 'Uploads'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+  /organization/{orgIpaCode}/migrations/{uploadId}/details:
+    get:
+      tags:
+        - migration-file
+      summary: getMigrationFlowDetails
+      description: Service to retrieve upload request details
+      operationId: getMigrationUploadDetails
+      parameters:
+        - name: orgIpaCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: uploadId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: 'UploadDetails'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+  /organization/{orgIpaCode}/migrations/{uploadId}/details/{uploadDetailsId}:
+    get:
+      tags:
+        - migration-file
+      summary: getMigrationFlowDetail
+      description: Service to retrieve upload request detail
+      operationId: getMigrationUploadDetail
+      parameters:
+        - name: orgIpaCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: uploadId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: uploadDetailsId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: 'UploadDetails'
         '500':
           description: Server Error
           content:

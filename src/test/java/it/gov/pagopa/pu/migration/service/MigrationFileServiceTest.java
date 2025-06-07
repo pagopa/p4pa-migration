@@ -7,7 +7,9 @@ import it.gov.pagopa.pu.migration.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
 import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
+import it.gov.pagopa.pu.migration.model.UploadDetails;
 import it.gov.pagopa.pu.migration.model.Uploads;
+import it.gov.pagopa.pu.migration.repository.UploadDetailsRepository;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
 import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
@@ -25,6 +27,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class MigrationFileServiceTest {
@@ -38,6 +41,8 @@ class MigrationFileServiceTest {
   @Mock
   private UploadsRepository uploadsRepositoryMock;
   @Mock
+  private UploadDetailsRepository uploadDetailsRepositoryMock;
+  @Mock
   private MigrationFileWfInvokerService wfInvokerServiceMock;
 
   private MigrationFileService service;
@@ -49,6 +54,7 @@ class MigrationFileServiceTest {
       foldersPathsConfigMock,
       fileStorerServiceMock,
       uploadsRepositoryMock,
+      uploadDetailsRepositoryMock,
       wfInvokerServiceMock);
   }
 
@@ -59,9 +65,32 @@ class MigrationFileServiceTest {
       foldersPathsConfigMock,
       fileStorerServiceMock,
       uploadsRepositoryMock,
+      uploadDetailsRepositoryMock,
       wfInvokerServiceMock);
   }
 
+  private static UserInfo buildAuthorizedUser(long organizationId, String orgIpaCode) {
+    return buildLoggedUser(organizationId, orgIpaCode, "ORGFC");
+  }
+
+  private static UserInfo buildUnauthorizedUser(long organizationId, String orgIpaCode) {
+    return buildLoggedUser(organizationId, orgIpaCode, "ORGFC2");
+  }
+
+  private static UserInfo buildLoggedUser(long organizationId, String orgIpaCode, String orgFiscalCode) {
+    UserInfo loggedUser = new UserInfo();
+    loggedUser.setBrokerFiscalCode("ORGFC");
+    loggedUser.setOrganizations(List.of(UserOrganizationRoles.builder()
+      .operatorId("OPID")
+      .organizationId(organizationId)
+      .organizationIpaCode(orgIpaCode)
+      .organizationFiscalCode(orgFiscalCode)
+      .roles(List.of(AuthorizationService.ROLE_ADMIN))
+      .build()));
+    return loggedUser;
+  }
+
+//region test upload
   @Test
   void whenUploadThenInvokeServices() {
     // Given
@@ -80,15 +109,7 @@ class MigrationFileServiceTest {
     Mockito.when(file.getSize())
       .thenReturn(fileSize);
 
-    UserInfo loggedUser = new UserInfo();
-    loggedUser.setBrokerFiscalCode("ORGFC");
-    loggedUser.setOrganizations(List.of(UserOrganizationRoles.builder()
-      .operatorId("OPID")
-      .organizationId(1L)
-      .organizationIpaCode(orgIpaCode)
-      .organizationFiscalCode("ORGFC")
-      .roles(List.of(AuthorizationService.ROLE_ADMIN))
-      .build()));
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
 
     Uploads upload2Store = Uploads.builder()
       .organizationId(organizationId)
@@ -145,4 +166,183 @@ class MigrationFileServiceTest {
     // When
     Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.upload(orgIpaCode, migrationFileType, file, loggedUser));
   }
+//endregion
+
+//region test getUploads
+  @Test
+  void givenAuthorizedUserWhenGetUploadsThenReturnIt() {
+    // Given
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    MigrationFileTypeEnum fileType = MigrationFileTypeEnum.ORGANIZATIONS;
+    UploadsStatusEnum status = UploadsStatusEnum.COMPLETED;
+
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    List<Uploads> expectedResult = List.of();
+    Mockito.when(uploadsRepositoryMock.findByOrganizationIdAndFileTypeAndStatus(organizationId, fileType, status))
+      .thenReturn(expectedResult);
+
+    // Then
+    List<Uploads> result = service.getUploads(orgIpaCode, fileType, status, loggedUser);
+
+    // When
+    Assertions.assertSame(expectedResult, result);
+  }
+
+  @Test
+  void givenNotAuthorizedUserWhenGetUploadsThenThrowAuthorizationDeniedException() {
+    // Given
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    MigrationFileTypeEnum fileType = MigrationFileTypeEnum.ORGANIZATIONS;
+    UploadsStatusEnum status = UploadsStatusEnum.COMPLETED;
+
+    UserInfo loggedUser = buildUnauthorizedUser(organizationId, orgIpaCode);
+
+    // Then, When
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.getUploads(orgIpaCode, fileType, status, loggedUser));
+  }
+//endregion
+
+//region test getUpload
+  @Test
+  void givenAuthorizedUserWhenGetUploadThenReturnIt() {
+    // Given
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    Uploads expectedResult = new Uploads();
+    expectedResult.setOrganizationId(organizationId);
+
+    Mockito.when(uploadsRepositoryMock.findById(uploadId))
+      .thenReturn(Optional.of(expectedResult));
+
+    // Then
+    Uploads result = service.getUpload(orgIpaCode, uploadId, loggedUser);
+
+    // When
+    Assertions.assertSame(expectedResult, result);
+  }
+
+  @Test
+  void givenNotAuthorizedUserWhenGetUploadThenThrowAuthorizationDeniedException() {
+    // Given
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+
+    UserInfo loggedUser = buildUnauthorizedUser(organizationId, orgIpaCode);
+
+    // Then, When
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.getUpload(orgIpaCode, uploadId, loggedUser));
+  }
+
+  @Test
+  void givenOrganizationIdNoRelatedWhenGetUploadThenThrowAuthorizationDeniedException() {
+    // Given
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    Uploads expectedResult = new Uploads();
+    expectedResult.setOrganizationId(-1L);
+
+    Mockito.when(uploadsRepositoryMock.findById(uploadId))
+      .thenReturn(Optional.of(expectedResult));
+
+    // Then
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.getUpload(orgIpaCode, uploadId, loggedUser));
+  }
+//endregion getUpload
+
+//region test getUpload
+  @Test
+  void givenAuthorizedUserWhenGetUploadDetailsThenReturnIt() {
+    // Given
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    List<UploadDetails> expectedResult = List.of();
+
+    service = Mockito.spy(service);
+    Mockito.doReturn(null)
+        .when(service)
+          .getUpload(orgIpaCode, uploadId, loggedUser);
+
+    Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId))
+      .thenReturn(expectedResult);
+
+    // Then
+    List<UploadDetails> result = service.getUploadDetails(orgIpaCode, uploadId, loggedUser);
+
+    // When
+    Assertions.assertSame(expectedResult, result);
+    Mockito.verify(service).getUpload(orgIpaCode, uploadId, loggedUser);
+  }
+//endregion getUpload
+
+//region test getUpload
+  @Test
+  void givenAuthorizedUserWhenGetUploadDetailThenReturnIt() {
+    // Given
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+    long uploadDetailId = 3L;
+
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    UploadDetails expectedResult = new UploadDetails();
+    expectedResult.setUploadId(uploadId);
+
+    service = Mockito.spy(service);
+    Mockito.doReturn(null)
+      .when(service)
+      .getUpload(orgIpaCode, uploadId, loggedUser);
+
+    Mockito.when(uploadDetailsRepositoryMock.findById(uploadId))
+      .thenReturn(Optional.of(expectedResult));
+
+    // Then
+    UploadDetails result = service.getUploadDetail(orgIpaCode, uploadId, uploadDetailId, loggedUser);
+
+    // When
+    Assertions.assertSame(expectedResult, result);
+    Mockito.verify(service).getUpload(orgIpaCode, uploadId, loggedUser);
+  }
+
+  @Test
+  void givenUploadIdNoRelatedWhenGetUploadDetailThenThrowAuthorizationDeniedException() {
+    // Given
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+    long uploadDetailId = 3L;
+
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    UploadDetails expectedResult = new UploadDetails();
+    expectedResult.setUploadId(-1L);
+
+    service = Mockito.spy(service);
+    Mockito.doReturn(null)
+      .when(service)
+      .getUpload(orgIpaCode, uploadId, loggedUser);
+
+    Mockito.when(uploadDetailsRepositoryMock.findById(uploadId))
+      .thenReturn(Optional.of(expectedResult));
+
+    // Then
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.getUploadDetail(orgIpaCode, uploadId, uploadDetailId, loggedUser));
+  }
+//endregion getUpload
 }

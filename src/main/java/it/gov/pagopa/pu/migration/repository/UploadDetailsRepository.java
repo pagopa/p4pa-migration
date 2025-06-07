@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 public interface UploadDetailsRepository extends JpaRepository<UploadDetails, Long> {
 
   @Transactional
@@ -18,4 +20,6 @@ public interface UploadDetailsRepository extends JpaRepository<UploadDetails, Lo
     "  errorDescription=:#{#ingestionFlowFile.errorDescription}" +
     " where uploadDetailId=:uploadDetailId")
   int updateStatus(Long uploadDetailId, IngestionFlowFile ingestionFlowFile);
+
+  List<UploadDetails> findByUploadId(Long uploadId);
 }
