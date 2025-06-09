@@ -45,7 +45,7 @@ public class ControllerExceptionHandler {
     return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, ErrorDTO.CodeEnum.FILE_UPLOAD_ERROR);
   }
 
-  @ExceptionHandler({WorkflowNotFoundException.class})
+  @ExceptionHandler({WorkflowNotFoundException.class, EntityNotFoundException.class})
   public ResponseEntity<ErrorDTO> handleNotFoundException(Exception ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.NOT_FOUND, ErrorDTO.CodeEnum.NOT_FOUND);
   }
