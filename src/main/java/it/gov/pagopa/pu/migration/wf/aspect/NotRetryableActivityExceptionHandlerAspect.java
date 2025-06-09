@@ -55,7 +55,8 @@ public class NotRetryableActivityExceptionHandlerAspect {
     private String buildContextData(ProceedingJoinPoint jp) {
         try {
             ActivityInfo info = Activity.getExecutionContext().getInfo();
-            return info.getWorkflowId() + "][" + jp.getTarget().getClass().getSimpleName() + "][" + info.getActivityType() + "][" + info.getRunId() + "][" + info.getActivityTaskQueue();
+            String attempt = info.getAttempt() > 1? "][ATTEMPT=" + info.getAttempt() : "";
+            return info.getWorkflowId() + "][" + jp.getTarget().getClass().getSimpleName() + "][" + info.getActivityType() + "][" + info.getRunId() + "][" + info.getActivityTaskQueue() + attempt;
         } catch (Exception e){
             return "UNKNOWN][" + jp.getTarget().getClass().getSimpleName() + "][" + jp.getSignature().getName();
         }

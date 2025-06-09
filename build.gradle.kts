@@ -162,6 +162,11 @@ openApiGenerate {
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.pu.migration.controller.generated")
   modelPackage.set("it.gov.pagopa.pu.migration.dto.generated")
+  typeMappings.set(mapOf(
+    "UploadsStatusEnum" to "it.gov.pagopa.pu.migration.enums.UploadsStatusEnum",
+    "Uploads" to "it.gov.pagopa.pu.migration.model.Uploads",
+    "UploadDetails" to "it.gov.pagopa.pu.migration.model.UploadDetails",
+  ))
   configOptions.set(mapOf(
     "dateLibrary" to "java8",
     "requestMappingMode" to "api_interface",
