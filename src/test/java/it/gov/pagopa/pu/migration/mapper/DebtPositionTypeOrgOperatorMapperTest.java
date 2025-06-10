@@ -13,16 +13,17 @@ class DebtPositionTypeOrgOperatorMapperTest {
     // Given
     Long debtPositionTypeOrgId = 0L;
     Long organizationId = 1L;
-    DebtPositionTypeOrgOperatorMigrationFileDTO ingestionFlowFile = TestUtils.getPodamFactory().manufacturePojo(DebtPositionTypeOrgOperatorMigrationFileDTO.class);
+    byte[] cfOperatorHash = "cfOperatorHash".getBytes();
+    DebtPositionTypeOrgOperatorMigrationFileDTO migrationFileDTO = TestUtils.getPodamFactory().manufacturePojo(DebtPositionTypeOrgOperatorMigrationFileDTO.class);
 
     // When
-    DebtPositionTypeOrgOperators result = DebtPositionTypeOrgOperatorMapper.mapToOperators(ingestionFlowFile,debtPositionTypeOrgId,organizationId);
+    DebtPositionTypeOrgOperators result = DebtPositionTypeOrgOperatorMapper.mapToOperators(migrationFileDTO,debtPositionTypeOrgId,organizationId, cfOperatorHash);
 
     // Then
     TestUtils.checkNotNullFields(result, "operatorDebtPosTypeOrgId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
-    Assertions.assertEquals(ingestionFlowFile.getCfOperatorHash(), result.getCfOperatorHash());
+    Assertions.assertEquals(cfOperatorHash, result.getCfOperatorHash());
     Assertions.assertEquals(organizationId, result.getOrganizationId());
-    Assertions.assertEquals(ingestionFlowFile.getDebtPositionTypeOrgCode(), result.getDebtPositionTypeOrgCode());
+    Assertions.assertEquals(migrationFileDTO.getDebtPositionTypeOrgCode(), result.getDebtPositionTypeOrgCode());
     Assertions.assertEquals(debtPositionTypeOrgId, result.getDebtPositionTypeOrgId());
   }
 }

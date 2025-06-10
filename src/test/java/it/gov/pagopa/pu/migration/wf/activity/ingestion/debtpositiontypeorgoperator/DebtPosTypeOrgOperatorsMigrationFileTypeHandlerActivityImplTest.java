@@ -43,8 +43,8 @@ class DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivityImplTest {
         DebtPositionTypeOrgOperatorMigrationFileResult result1 = mock(DebtPositionTypeOrgOperatorMigrationFileResult.class);
         DebtPositionTypeOrgOperatorMigrationFileResult result2 = mock(DebtPositionTypeOrgOperatorMigrationFileResult.class);
 
-        when(result1.getNumCorrectlyProcessedRows()).thenReturn(10);
-        when(result2.getNumCorrectlyProcessedRows()).thenReturn(0);
+        when(result1.getNumCorrectlyProcessedRows()).thenReturn(10L);
+        when(result2.getNumCorrectlyProcessedRows()).thenReturn(0L);
 
         when(processingService.processOperatorDebtPosTypeOrgFile(file1, upload)).thenReturn(result1);
         when(processingService.processOperatorDebtPosTypeOrgFile(file2, upload)).thenReturn(result2);

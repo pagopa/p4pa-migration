@@ -17,5 +17,6 @@ public class MigrationFileResult {
   private int numTotalFiles;
   private int numCorrectlyProcessedFiles;
   private String errorDescription;
+  private String discardedFileName;
   private List<IngestionFlowFile> ingestionFlowFiles;
 }

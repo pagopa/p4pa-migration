@@ -15,7 +15,9 @@ import it.gov.pagopa.pu.migration.repository.DebtPositionTypeOrgOperatorsReposit
 import it.gov.pagopa.pu.migration.service.file.CsvService;
 import it.gov.pagopa.pu.migration.service.file.ErrorArchiverService;
 import it.gov.pagopa.pu.migration.service.migration.MigrationProcessingService;
+import it.gov.pagopa.pu.migration.utils.AESUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +32,8 @@ import java.util.Optional;
 @Slf4j
 public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessingService<DebtPositionTypeOrgOperatorMigrationFileDTO, DebtPositionTypeOrgOperatorMigrationFileResult, DebtPositionTypeOrgOperatorErrorDTO> {
 
+  private final String dataCipherPsw;
+
   private final DebtPositionTypeOrgOperatorsRepository repository;
   private final OrganizationService organizationService;
   private final DebtPositionTypeOrgService debtPositionTypeOrgService;
@@ -38,9 +42,16 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
   private final CsvService csvService;
 
   public DebtPosTypeOrgOperatorProcessingService(
+    @Value("${encryption.file-encrypt-password}") String dataCipherPsw,
     DebtPosTypeOrgOperatorsErrorsArchiverService debtPosTypeOrgOperatorsErrorsArchiverService,
-    DebtPositionTypeOrgOperatorsRepository repository, OrganizationService organizationService, DebtPositionTypeOrgService debtPositionTypeOrgService, AuthnService authnService,
-    CsvService csvService) {
+    DebtPositionTypeOrgOperatorsRepository repository,
+    OrganizationService organizationService,
+    DebtPositionTypeOrgService debtPositionTypeOrgService,
+    AuthnService authnService,
+    CsvService csvService,
+    ErrorArchiverService<DebtPositionTypeOrgOperatorErrorDTO> errorArchiverService) {
+    super(errorArchiverService);
+    this.dataCipherPsw = dataCipherPsw;
     this.debtPosTypeOrgOperatorsErrorsArchiverService = debtPosTypeOrgOperatorsErrorsArchiverService;
     this.repository = repository;
     this.organizationService = organizationService;
@@ -60,10 +71,11 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
     if (!file.getFileName().toString().toLowerCase().endsWith(".csv")) {
       throw new IllegalArgumentException("File does not have .csv extension: " + file);
     }
+    Path workingDirectory = file.getParent();
     try {
       return csvService.readCsv(file,
         DebtPositionTypeOrgOperatorMigrationFileDTO.class,
-        (csvIterator, readerException) -> processOperatorDebtPosTypeOrg(csvIterator, readerException, uploads));
+        (csvIterator, readerException) -> processOperatorDebtPosTypeOrg(csvIterator, readerException, uploads, workingDirectory));
     } catch (Exception e) {
       log.error("Error processing file {}: {}", file, e.getMessage(), e);
       throw new MigrationFileProcessingException(String.format("Error processing file %s: %s", file, e.getMessage()));
@@ -73,7 +85,8 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
   public DebtPositionTypeOrgOperatorMigrationFileResult processOperatorDebtPosTypeOrg(
     Iterator<DebtPositionTypeOrgOperatorMigrationFileDTO> iterator,
     List<CsvException> readerException,
-    Uploads uploads) {
+    Uploads uploads,
+    Path workingDirectory) {
     List<DebtPositionTypeOrgOperatorErrorDTO> errorList = new ArrayList<>();
     DebtPositionTypeOrgOperatorMigrationFileResult migrationFileResult = new DebtPositionTypeOrgOperatorMigrationFileResult();
     migrationFileResult.setOrganizationId(uploads.getOrganizationId());
@@ -83,17 +96,15 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
       migrationFileResult,
       uploads,
       errorList,
-      this::buildErrorDto
+      this::buildErrorDto,
+      workingDirectory
     );
     return migrationFileResult;
   }
 
   @Override
-  protected boolean consumeRow(long lineNumber, DebtPositionTypeOrgOperatorMigrationFileDTO dto, DebtPositionTypeOrgOperatorMigrationFileResult migrationFileResult, List<DebtPositionTypeOrgOperatorErrorDTO> errorList, Object context) {
-    String fileName = null;
-    if (context instanceof Uploads uploads) {
-      fileName = uploads.getFileName();
-    }
+  protected boolean consumeRow(long lineNumber, DebtPositionTypeOrgOperatorMigrationFileDTO dto, DebtPositionTypeOrgOperatorMigrationFileResult migrationFileResult, List<DebtPositionTypeOrgOperatorErrorDTO> errorList, Uploads upload) {
+    String fileName = upload.getFileName();
     try {
       // Retrieve organizationId and debtPositionTypeOrgId
       Long organizationId = organizationService.getOrganizationByIpaCode(dto.getOrgIpaCode(), authnService.getAccessToken())
@@ -118,7 +129,9 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
       }
 
       // Mapping and saving
-      DebtPositionTypeOrgOperators entity = DebtPositionTypeOrgOperatorMapper.mapToOperators(dto, debtPositionTypeOrgId, organizationId);
+      byte [] cfOperatorHash = AESUtils.encrypt(dataCipherPsw, dto.getCfOperator());
+
+      DebtPositionTypeOrgOperators entity = DebtPositionTypeOrgOperatorMapper.mapToOperators(dto, debtPositionTypeOrgId, organizationId, cfOperatorHash);
       repository.save(entity);
       log.info("Saved OperatorsDebtPositionTypeOrg: orgIpaCode={}, debtPositionTypeOrgCode={}, organizationId={}, debtPositionTypeOrgId={}",
         dto.getOrgIpaCode(), dto.getDebtPositionTypeOrgCode(), organizationId, debtPositionTypeOrgId);
@@ -143,21 +156,23 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
   }
 
   @Override
-  protected void setNumTotalRows(DebtPositionTypeOrgOperatorMigrationFileResult result, int numTotalRows) {
+  protected void setNumTotalRows(DebtPositionTypeOrgOperatorMigrationFileResult result, long numTotalRows) {
     result.setNumTotalRows(numTotalRows);
   }
 
   @Override
-  protected void setNumCorrectlyProcessedRows(DebtPositionTypeOrgOperatorMigrationFileResult result, int numCorrectlyProcessedRows) {
+  protected void setNumCorrectlyProcessedRows(DebtPositionTypeOrgOperatorMigrationFileResult result, long numCorrectlyProcessedRows) {
     result.setNumCorrectlyProcessedRows(numCorrectlyProcessedRows);
   }
 
   @Override
-  protected String getFileNameFromContext(Object context) {
-    if (context instanceof Uploads uploads) {
-      return uploads.getFileName();
-    }
-    return null;
+  protected void setErrorDescription(DebtPositionTypeOrgOperatorMigrationFileResult result, String errorDescription) {
+    result.setErrorDescription(errorDescription);
+  }
+
+  @Override
+  protected void setDiscardedFileName(DebtPositionTypeOrgOperatorMigrationFileResult result, String discardedFileName) {
+    result.setDiscardedFileName(discardedFileName);
   }
 
   protected DebtPositionTypeOrgOperatorErrorDTO buildErrorDto(String fileName, long lineNumber, String errorCode, String message) {
@@ -169,4 +184,3 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
       .build();
   }
 }
-

@@ -14,7 +14,7 @@ import java.util.List;
 @ToString(callSuper = true)
 public class DebtPositionTypeOrgOperatorMigrationFileResult extends MigrationFileResult {
   private Long organizationId;
-  private int numTotalRows;
-  private int numCorrectlyProcessedRows;
+  private Long numTotalRows;
+  private Long numCorrectlyProcessedRows;
   private List<DebtPositionTypeOrgOperatorErrorDTO> errorList;
 }

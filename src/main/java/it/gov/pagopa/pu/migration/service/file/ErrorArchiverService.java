@@ -1,9 +1,9 @@
 package it.gov.pagopa.pu.migration.service.file;
 
 import it.gov.pagopa.pu.migration.dto.ErrorFileDTO;
+import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.utils.Utilities;
 import it.gov.pagopa.pu.migration.wf.exception.NotRetryableActivityException;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
@@ -49,10 +49,10 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
      * Writes error data into a CSV file.
      *
      * @param workingDirectory  The directory where the file should be created.
-     * @param ingestionFlowFile The metadata of the ingestion file.
+     * @param upload The metadata of the upload file.
      * @param errorList         The list of errors to write.
      */
-    public void writeErrors(Path workingDirectory, IngestionFlowFile ingestionFlowFile, List<T> errorList) {
+    public void writeErrors(Path workingDirectory, Uploads upload, List<T> errorList) {
 
         if(CollectionUtils.isEmpty(errorList)){
             return;
@@ -63,7 +63,7 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
                 .toList();
 
         try {
-            String errorFileName = ERRORFILE_PREFIX + Utilities.replaceFileExtension(ingestionFlowFile.getFileName(), ".csv");
+            String errorFileName = ERRORFILE_PREFIX + Utilities.replaceFileExtension(upload.getFileName(), ".csv");
             Path errorCsvFilePath = workingDirectory.resolve(errorFileName);
 
             csvService.createCsv(errorCsvFilePath, getHeaders(), data);
@@ -81,10 +81,10 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
      * to perform the archiving operation.
      *
      * @param workingDirectory     the working directory where to search for error files to be archived. This file is moved from its original location to the target directory.
-     * @param ingestionFlowFileDTO the ingestion flow file
+     * @param upload the upload file
      * @return the name of the archived error file (ZIP) if exists
      */
-    public String archiveErrorFiles(Path workingDirectory, IngestionFlowFile ingestionFlowFileDTO) {
+    public String archiveErrorFiles(Path workingDirectory, Uploads upload) {
         try {
             List<Path> errorFiles;
             try (Stream<Path> fileListStream = Files.list(workingDirectory)) {
@@ -96,11 +96,11 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
             if (!errorFiles.isEmpty()) {
 
                 Path targetDirectory = sharedDirectoryPath
-                        .resolve(String.valueOf(ingestionFlowFileDTO.getOrganizationId()))
-                        .resolve(ingestionFlowFileDTO.getFilePathName())
+                        .resolve(String.valueOf(upload.getOrganizationId()))
+                        .resolve(upload.getFilePathName())
                         .resolve(errorFolder);
 
-                String zipFileName = ERRORFILE_PREFIX + Utilities.replaceFileExtension(ingestionFlowFileDTO.getFileName(), ".zip");
+                String zipFileName = ERRORFILE_PREFIX + Utilities.replaceFileExtension(upload.getFileName(), ".zip");
                 Path zipFile = workingDirectory.resolve(zipFileName);
 
                 fileArchiverService.compressAndArchive(errorFiles, zipFile, targetDirectory);
