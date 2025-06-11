@@ -110,6 +110,10 @@ folders:
     errors: "\${PROCESS_TARGET_SUB_FOLDER_ERRORS:errors}"
   migration-file-type-paths:
     ORGANIZATIONS: "migration-data/organizations"
+    DEBT_POSITIONS_TYPE: "migration-data/debt-positions-type"
+    DEBT_POSITIONS_TYPE_ORG_OPERATORS: "migration-data/debt-positions-type-org-operators"
+    PAYMENTS_REPORTING: "migration-data/payments-reporting"
+
 
 encryption:
   file-encrypt-password: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"
