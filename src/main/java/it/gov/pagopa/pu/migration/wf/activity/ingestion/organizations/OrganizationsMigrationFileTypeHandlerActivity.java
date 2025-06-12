@@ -21,6 +21,6 @@ import org.springframework.core.io.Resource;
 @ActivityInterface
 public interface OrganizationsMigrationFileTypeHandlerActivity extends MigrationFileTypeHandlerActivity {
   @Override
-  @ActivityMethod
+  @ActivityMethod(name = "organizationProcessFile")
   MigrationFileResult processFile(Long uploadId);
 }
