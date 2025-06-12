@@ -523,6 +523,9 @@
           "ingestionFlowFileType" : {
             "$ref" : "#/components/schemas/IngestionFlowFileTypeEnum"
           },
+          "filePathName" : {
+            "type" : "string"
+          },
           "fileName" : {
             "type" : "string"
           },
@@ -536,6 +539,9 @@
           "errorDescription" : {
             "type" : "string"
           },
+          "discardFileName" : {
+            "type" : "string"
+          },
           "numTotalRows" : {
             "type" : "integer",
             "format" : "int64"
@@ -545,7 +551,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "fileName", "fileSize", "ingestionFlowFileId", "ingestionFlowFileType", "status", "uploadId" ]
+        "required" : [ "fileName", "fileSize", "ingestionFlowFileType", "status", "uploadId" ]
       }
     },
     "securitySchemes" : {

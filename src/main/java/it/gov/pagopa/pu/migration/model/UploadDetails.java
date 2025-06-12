@@ -23,11 +23,11 @@ public class UploadDetails extends BaseEntity {
   private Long uploadDetailId;
   @NotNull
   private Long uploadId;
-  @NotNull
   private Long ingestionFlowFileId;
   @NotNull
   @Enumerated(EnumType.STRING)
   private IngestionFlowFile.IngestionFlowFileTypeEnum ingestionFlowFileType;
+  private String filePathName;
   @NotNull
   private String fileName;
   @NotNull
@@ -36,6 +36,7 @@ public class UploadDetails extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private IngestionFlowFileStatus status;
   private String errorDescription;
+  private String discardFileName;
   private Long numTotalRows;
   private Long numCorrectlyImportedRows;
 }
