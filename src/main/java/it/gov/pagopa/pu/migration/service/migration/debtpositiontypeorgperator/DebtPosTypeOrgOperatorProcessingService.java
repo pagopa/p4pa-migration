@@ -151,11 +151,6 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
   }
 
   @Override
-  protected void setErrorList(DebtPositionTypeOrgOperatorMigrationFileResult result, List<DebtPositionTypeOrgOperatorErrorDTO> errorList) {
-    result.setErrorList(errorList);
-  }
-
-  @Override
   protected void setNumTotalRows(DebtPositionTypeOrgOperatorMigrationFileResult result, long numTotalRows) {
     result.setNumTotalRows(numTotalRows);
   }
