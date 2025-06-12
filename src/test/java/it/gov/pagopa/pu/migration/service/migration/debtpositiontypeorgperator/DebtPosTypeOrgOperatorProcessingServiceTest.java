@@ -191,4 +191,46 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     assertFalse(errorList.isEmpty());
     assertEquals("PROCESS_EXCEPTION", errorList.getFirst().getErrorCode());
   }
+
+  @Test
+  void buildErrorDtoShouldReturnCorrectDTO() {
+    String fileName = "file.csv";
+    long lineNumber = 42L;
+    String errorCode = "ERR_CODE";
+    String message = "Some error message";
+    DebtPositionTypeOrgOperatorErrorDTO dto = service.buildErrorDto(fileName, lineNumber, errorCode, message);
+    assertEquals(fileName, dto.getFileName());
+    assertEquals(lineNumber, dto.getRowNumber());
+    assertEquals(errorCode, dto.getErrorCode());
+    assertEquals(message, dto.getErrorMessage());
+  }
+
+  @Test
+  void processOperatorDebtPosTypeOrgShouldPopulateResultAndErrorList() {
+    DebtPositionTypeOrgOperatorMigrationFileDTO dto1 = mock(DebtPositionTypeOrgOperatorMigrationFileDTO.class);
+    DebtPositionTypeOrgOperatorMigrationFileDTO dto2 = mock(DebtPositionTypeOrgOperatorMigrationFileDTO.class);
+    when(dto1.getOrgIpaCode()).thenReturn("IPA1");
+    when(dto1.getDebtPositionTypeOrgCode()).thenReturn("CODE1");
+    when(dto1.getCfOperator()).thenReturn("CF1");
+    when(dto2.getOrgIpaCode()).thenReturn("IPA2");
+    when(dto2.getDebtPositionTypeOrgCode()).thenReturn("CODE2");
+    when(dto2.getCfOperator()).thenReturn("CF2");
+    when(organizationServiceMock.getOrganizationByIpaCode(anyString(), anyString())).thenReturn(Optional.of(new Organization().organizationId(1L)));
+    when(debtPositionTypeOrgOperatorsRepositoryMock.findByOrganizationIdAndDebtPositionTypeOrgCode(anyLong(), anyString())).thenReturn(Optional.empty());
+    when(authnServiceMock.getAccessToken()).thenReturn("token");
+    DebtPositionTypeOrg debtTypeOrgDTO = new DebtPositionTypeOrg();
+    debtTypeOrgDTO.organizationId(2L);
+    when(debtPositionTypeOrgServiceMock.getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any())).thenReturn(Optional.of(debtTypeOrgDTO));
+    byte[] encrypted = new byte[]{1,2,3};
+    try (MockedStatic<AESUtils> aesUtilsMockedStatic = mockStatic(AESUtils.class)) {
+      aesUtilsMockedStatic.when(() -> AESUtils.encrypt(anyString(), anyString())).thenReturn(encrypted);
+      List<DebtPositionTypeOrgOperatorMigrationFileDTO> dtos = List.of(dto1, dto2);
+      Uploads uploads = new Uploads();
+      uploads.setOrganizationId(1L);
+      DebtPositionTypeOrgOperatorMigrationFileResult result = service.processOperatorDebtPosTypeOrg(dtos.iterator(), List.of(), uploads, Path.of("/tmp"));
+      assertEquals(1L, result.getOrganizationId());
+      verify(debtPositionTypeOrgOperatorsRepositoryMock, times(2)).findByOrganizationIdAndDebtPositionTypeOrgCode(eq(1L), anyString());
+      verify(debtPositionTypeOrgOperatorsRepositoryMock, times(2)).save(any(DebtPositionTypeOrgOperators.class));
+    }
+  }
 }
