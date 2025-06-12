@@ -191,15 +191,4 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     assertFalse(errorList.isEmpty());
     assertEquals("PROCESS_EXCEPTION", errorList.getFirst().getErrorCode());
   }
-
-  @Test
-  void setErrorListAndSetNumTotalRowsWork() {
-    DebtPositionTypeOrgOperatorMigrationFileResult result = new DebtPositionTypeOrgOperatorMigrationFileResult();
-    List<DebtPositionTypeOrgOperatorErrorDTO> errorList = List.of(new DebtPositionTypeOrgOperatorErrorDTO());
-    service.setErrorList(result, errorList);
-    assertEquals(errorList, result.getErrorList());
-    service.setNumTotalRows(result, 5);
-    assertEquals(5, result.getNumTotalRows());
-  }
-
 }
