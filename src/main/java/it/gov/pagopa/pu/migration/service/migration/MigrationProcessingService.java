@@ -76,8 +76,6 @@ public abstract class MigrationProcessingService<T, R, E extends ErrorFileDTO> {
 
     protected abstract void setDiscardedFileName(R migrationFileResult, String discardedFileName);
 
-    protected abstract void setErrorList(R migrationFileResult, List<E> errorList);
-
     protected abstract ErrorArchiverService<E> getErrorArchiverService();
 
     public interface ErrorDtoBuilder<E> {
