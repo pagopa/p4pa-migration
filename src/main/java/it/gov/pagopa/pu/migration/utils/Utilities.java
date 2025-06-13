@@ -34,3 +34,4 @@ public class Utilities {
     return fileName.substring(0, fileName.lastIndexOf(".")) + newExtension;
   }
 }
+

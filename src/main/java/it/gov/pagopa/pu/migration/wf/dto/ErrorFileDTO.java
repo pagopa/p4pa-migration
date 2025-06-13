@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.dto;
+package it.gov.pagopa.pu.migration.wf.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

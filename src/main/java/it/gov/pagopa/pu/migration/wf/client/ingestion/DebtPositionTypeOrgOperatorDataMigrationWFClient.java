@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.migration.wf.service.temporal.WorkflowClientService;
 import it.gov.pagopa.pu.migration.wf.service.temporal.WorkflowService;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
 import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
-import it.gov.pagopa.pu.migration.wf.wf.ingestion.operatordebtpostypeorg.DebtPosTypeOrgOperatorDataMigrationWF;
+import it.gov.pagopa.pu.migration.wf.wf.ingestion.debtpositiontypeorgoperator.DebtPosTypeOrgOperatorDataMigrationWF;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

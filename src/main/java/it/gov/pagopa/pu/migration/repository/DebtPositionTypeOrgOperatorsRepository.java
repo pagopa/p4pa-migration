@@ -7,12 +7,12 @@ import java.util.Optional;
 public interface DebtPositionTypeOrgOperatorsRepository extends JpaRepository<DebtPositionTypeOrgOperators, Long> {
 
     /**
-     * Finds an operator by its IPA code and debt position type organization code.
+     * Finds the first operator by its IPA code and debt position type organization code.
      *
      * @param organizationId the organization id
      * @param debtPositionTypeOrgCode the code of the debt position type organization
      * @return an Optional containing the operator if found, or empty if not found
      */
-    Optional<DebtPositionTypeOrgOperators> findByOrganizationIdAndDebtPositionTypeOrgCode(Long organizationId, String debtPositionTypeOrgCode);
+    Optional<DebtPositionTypeOrgOperators> findFirstByOrganizationIdAndDebtPositionTypeOrgCode(Long organizationId, String debtPositionTypeOrgCode);
 
 }

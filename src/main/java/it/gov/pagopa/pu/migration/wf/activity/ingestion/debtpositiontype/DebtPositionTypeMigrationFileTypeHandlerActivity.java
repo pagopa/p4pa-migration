@@ -13,6 +13,6 @@ import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 @ActivityInterface
 public interface DebtPositionTypeMigrationFileTypeHandlerActivity extends MigrationFileTypeHandlerActivity {
   @Override
-  @ActivityMethod
+  @ActivityMethod(name = "ProcessDebtPositionTypeFile")
   MigrationFileResult processFile(Long uploadId);
 }

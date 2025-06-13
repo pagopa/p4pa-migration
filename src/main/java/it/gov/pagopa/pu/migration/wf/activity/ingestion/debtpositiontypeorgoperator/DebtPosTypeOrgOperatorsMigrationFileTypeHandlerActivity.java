@@ -20,7 +20,7 @@ import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 @ActivityInterface
 public interface DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity extends MigrationFileTypeHandlerActivity {
   @Override
-  @ActivityMethod
+  @ActivityMethod(name = "ProcessDebtPosTypeOrgOperatorsFile")
   MigrationFileResult processFile(Long uploadId);
 }
 

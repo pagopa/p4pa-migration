@@ -33,7 +33,7 @@ public class DataMigrationWfConfig extends BaseWfConfig {
     return Workflow.newActivityStub(DebtPositionTypeMigrationFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
   }
 
-  public DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity buildOperatorMigrationFileTypeHandlerActivityStub() {
+  public DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity buildDebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivityStub() {
     return Workflow.newActivityStub(DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
   }
 
