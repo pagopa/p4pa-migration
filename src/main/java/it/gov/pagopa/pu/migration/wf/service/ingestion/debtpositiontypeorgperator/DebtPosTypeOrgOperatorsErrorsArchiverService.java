@@ -1,9 +1,9 @@
-package it.gov.pagopa.pu.migration.service.migration.debtpositiontypeorgperator;
+package it.gov.pagopa.pu.migration.wf.service.ingestion.debtpositiontypeorgperator;
 
 import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
-import it.gov.pagopa.pu.migration.service.file.ErrorArchiverService;
+import it.gov.pagopa.pu.migration.wf.service.ingestion.ErrorArchiverService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;

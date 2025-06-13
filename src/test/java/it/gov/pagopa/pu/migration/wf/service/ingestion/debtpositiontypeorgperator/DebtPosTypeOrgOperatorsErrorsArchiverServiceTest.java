@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.service.migration.debtpositiontypeorgperator;
+package it.gov.pagopa.pu.migration.wf.service.ingestion.debtpositiontypeorgperator;
 
 import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;

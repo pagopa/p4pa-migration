@@ -1,9 +1,8 @@
-package it.gov.pagopa.pu.migration.service.migration;
+package it.gov.pagopa.pu.migration.wf.service.ingestion;
 
 import com.opencsv.exceptions.CsvException;
 import it.gov.pagopa.pu.migration.dto.ErrorFileDTO;
 import it.gov.pagopa.pu.migration.model.Uploads;
-import it.gov.pagopa.pu.migration.service.file.ErrorArchiverService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;

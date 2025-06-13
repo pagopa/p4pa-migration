@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.migration.wf.activity.ingestion.debtpositiontypeorgoper
 import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
-import it.gov.pagopa.pu.migration.service.migration.debtpositiontypeorgperator.DebtPosTypeOrgOperatorProcessingService;
+import it.gov.pagopa.pu.migration.wf.service.ingestion.debtpositiontypeorgperator.DebtPosTypeOrgOperatorProcessingService;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

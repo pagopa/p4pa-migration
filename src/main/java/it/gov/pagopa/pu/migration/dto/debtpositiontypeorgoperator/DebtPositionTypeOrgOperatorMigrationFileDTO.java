@@ -13,13 +13,13 @@ import com.opencsv.bean.CsvBindByName;
 @SuperBuilder
 public class DebtPositionTypeOrgOperatorMigrationFileDTO {
 
-  @CsvBindByName(column = "org_ipa_code", required = true)
+  @CsvBindByName(column = "enteIpaCode", required = true)
   private String orgIpaCode;
 
-  @CsvBindByName(column = "cf_operator", required = true)
+  @CsvBindByName(column = "cfOperatore", required = true)
   private String cfOperator;
 
-  @CsvBindByName(column = "debt_position_type_org_code", required = true)
+  @CsvBindByName(column = "codiceTipoDovuto", required = true)
   private String debtPositionTypeOrgCode;
 }
 

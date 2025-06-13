@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.service.migration.debtpositiontypeorgperator;
+package it.gov.pagopa.pu.migration.wf.service.ingestion.debtpositiontypeorgperator;
 
 import it.gov.pagopa.pu.debtposition.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
@@ -7,14 +7,13 @@ import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
 import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
 import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
-import it.gov.pagopa.pu.migration.exception.MigrationFileProcessingException;
 import it.gov.pagopa.pu.migration.mapper.DebtPositionTypeOrgOperatorMapper;
 import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.DebtPositionTypeOrgOperatorsRepository;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
-import it.gov.pagopa.pu.migration.service.file.ErrorArchiverService;
-import it.gov.pagopa.pu.migration.utils.AESUtils;
+import it.gov.pagopa.pu.migration.wf.exception.MigrationFileProcessingException;
+import it.gov.pagopa.pu.migration.wf.service.ingestion.ErrorArchiverService;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +22,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.MockedStatic;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -40,8 +38,6 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
   @Mock
   private Path workingDirectory;
   @Mock
-  private DebtPositionTypeOrgOperatorMapper mapperMock;
-  @Mock
   private OrganizationService organizationServiceMock;
   @Mock
   private DebtPositionTypeOrgOperatorsRepository debtPositionTypeOrgOperatorsRepositoryMock;
@@ -54,20 +50,22 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
   @Mock
   private ErrorArchiverService<DebtPositionTypeOrgOperatorErrorDTO> errorArchiverServiceMock;
 
+  @Mock
+  private DebtPositionTypeOrgOperatorMapper mapperMock;
+
   private DebtPosTypeOrgOperatorProcessingService service;
 
   @BeforeEach
   void setUp() {
-    String dataCipherPsw = "PSW";
     service = new DebtPosTypeOrgOperatorProcessingService(
-      dataCipherPsw,
       errorsArchiverServiceMock,
       debtPositionTypeOrgOperatorsRepositoryMock,
       organizationServiceMock,
       debtPositionTypeOrgServiceMock,
       authnServiceMock,
       csvServiceMock,
-      errorArchiverServiceMock
+      errorArchiverServiceMock,
+      mapperMock
       );
   }
 
@@ -123,7 +121,7 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     when(dto.getDebtPositionTypeOrgCode()).thenReturn("CODE");
     when(authnServiceMock.getAccessToken()).thenReturn("token");
     when(organizationServiceMock.getOrganizationByIpaCode(any(), any())).thenReturn(Optional.of(new Organization().organizationId(0L)));
-    when(debtPositionTypeOrgOperatorsRepositoryMock.findByOrganizationIdAndDebtPositionTypeOrgCode(0L, "CODE"))
+    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCode(0L, "CODE"))
         .thenReturn(Optional.of(existingDebtPosTypeOrgOperator));
     when(debtPositionTypeOrgServiceMock.getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any()))
         .thenReturn(Optional.of(new DebtPositionTypeOrg()));
@@ -140,26 +138,21 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     DebtPositionTypeOrgOperatorMigrationFileDTO dto = mock(DebtPositionTypeOrgOperatorMigrationFileDTO.class);
     when(dto.getOrgIpaCode()).thenReturn("IPA");
     when(dto.getDebtPositionTypeOrgCode()).thenReturn("CODE");
-    when(dto.getCfOperator()).thenReturn("CF123");
     when(organizationServiceMock.getOrganizationByIpaCode(anyString(), anyString())).thenReturn(Optional.of(new Organization().organizationId(1L)));
-    when(debtPositionTypeOrgOperatorsRepositoryMock.findByOrganizationIdAndDebtPositionTypeOrgCode(1L, "CODE")).thenReturn(Optional.empty());
+    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCode(1L, "CODE")).thenReturn(Optional.empty());
     when(authnServiceMock.getAccessToken()).thenReturn("token");
     DebtPositionTypeOrg debtTypeOrgDTO = new DebtPositionTypeOrg();
     debtTypeOrgDTO.organizationId(2L);
     when(debtPositionTypeOrgServiceMock.getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any())).thenReturn(Optional.of(debtTypeOrgDTO));
+    when(mapperMock.mapToOperators(any(), anyLong(), anyLong())).thenReturn(new DebtPositionTypeOrgOperators());
     DebtPositionTypeOrgOperatorMigrationFileResult result = new DebtPositionTypeOrgOperatorMigrationFileResult();
     List<DebtPositionTypeOrgOperatorErrorDTO> errorList = new java.util.ArrayList<>();
-    byte[] encrypted = new byte[]{1,2,3};
-    try (MockedStatic<AESUtils> aesUtilsMockedStatic = mockStatic(AESUtils.class)) {
-      aesUtilsMockedStatic.when(() -> AESUtils.encrypt(anyString(), anyString())).thenReturn(encrypted);
-      boolean consumed = service.consumeRow(1, dto, result, errorList, new Uploads());
-      assertTrue(consumed);
-      verify(debtPositionTypeOrgOperatorsRepositoryMock).findByOrganizationIdAndDebtPositionTypeOrgCode(1L, "CODE");
-      verify(organizationServiceMock).getOrganizationByIpaCode(anyString(), anyString());
-      verify(debtPositionTypeOrgServiceMock).getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any());
-      verify(debtPositionTypeOrgOperatorsRepositoryMock).save(any(DebtPositionTypeOrgOperators.class));
-      aesUtilsMockedStatic.verify(() -> AESUtils.encrypt(anyString(), eq("CF123")));
-    }
+    boolean consumed = service.consumeRow(1, dto, result, errorList, new Uploads());
+    assertTrue(consumed);
+    verify(debtPositionTypeOrgOperatorsRepositoryMock).findFirstByOrganizationIdAndDebtPositionTypeOrgCode(1L, "CODE");
+    verify(organizationServiceMock).getOrganizationByIpaCode(anyString(), anyString());
+    verify(debtPositionTypeOrgServiceMock).getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any());
+    verify(debtPositionTypeOrgOperatorsRepositoryMock).save(any(DebtPositionTypeOrgOperators.class));
   }
 
   @Test
@@ -211,26 +204,19 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     DebtPositionTypeOrgOperatorMigrationFileDTO dto2 = mock(DebtPositionTypeOrgOperatorMigrationFileDTO.class);
     when(dto1.getOrgIpaCode()).thenReturn("IPA1");
     when(dto1.getDebtPositionTypeOrgCode()).thenReturn("CODE1");
-    when(dto1.getCfOperator()).thenReturn("CF1");
     when(dto2.getOrgIpaCode()).thenReturn("IPA2");
     when(dto2.getDebtPositionTypeOrgCode()).thenReturn("CODE2");
-    when(dto2.getCfOperator()).thenReturn("CF2");
-    when(organizationServiceMock.getOrganizationByIpaCode(anyString(), anyString())).thenReturn(Optional.of(new Organization().organizationId(1L)));
-    when(debtPositionTypeOrgOperatorsRepositoryMock.findByOrganizationIdAndDebtPositionTypeOrgCode(anyLong(), anyString())).thenReturn(Optional.empty());
+    when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA1"), anyString())).thenReturn(Optional.of(new Organization().organizationId(1L)));
+    when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA2"), anyString())).thenReturn(Optional.of(new Organization().organizationId(2L)));
+    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCode(anyLong(), anyString())).thenReturn(Optional.empty());
     when(authnServiceMock.getAccessToken()).thenReturn("token");
     DebtPositionTypeOrg debtTypeOrgDTO = new DebtPositionTypeOrg();
     debtTypeOrgDTO.organizationId(2L);
     when(debtPositionTypeOrgServiceMock.getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any())).thenReturn(Optional.of(debtTypeOrgDTO));
-    byte[] encrypted = new byte[]{1,2,3};
-    try (MockedStatic<AESUtils> aesUtilsMockedStatic = mockStatic(AESUtils.class)) {
-      aesUtilsMockedStatic.when(() -> AESUtils.encrypt(anyString(), anyString())).thenReturn(encrypted);
-      List<DebtPositionTypeOrgOperatorMigrationFileDTO> dtos = List.of(dto1, dto2);
-      Uploads uploads = new Uploads();
-      uploads.setOrganizationId(1L);
-      DebtPositionTypeOrgOperatorMigrationFileResult result = service.processOperatorDebtPosTypeOrg(dtos.iterator(), List.of(), uploads, Path.of("/tmp"));
-      assertEquals(1L, result.getOrganizationId());
-      verify(debtPositionTypeOrgOperatorsRepositoryMock, times(2)).findByOrganizationIdAndDebtPositionTypeOrgCode(eq(1L), anyString());
-      verify(debtPositionTypeOrgOperatorsRepositoryMock, times(2)).save(any(DebtPositionTypeOrgOperators.class));
+    List<DebtPositionTypeOrgOperatorMigrationFileDTO> dtos = List.of(dto1, dto2);
+    Uploads uploads = new Uploads();
+    uploads.setOrganizationId(1L);
+    DebtPositionTypeOrgOperatorMigrationFileResult result = service.processOperatorDebtPosTypeOrg(dtos.iterator(), List.of(), uploads, Path.of("/tmp"));
+    assertEquals(1L, result.getOrganizationId());
     }
-  }
 }

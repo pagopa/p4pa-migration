@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.service.migration.debtpositiontypeorgperator;
+package it.gov.pagopa.pu.migration.wf.service.ingestion.debtpositiontypeorgperator;
 
 import com.opencsv.exceptions.CsvException;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
@@ -7,17 +7,15 @@ import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
 import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
 import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
-import it.gov.pagopa.pu.migration.exception.MigrationFileProcessingException;
+import it.gov.pagopa.pu.migration.wf.exception.MigrationFileProcessingException;
 import it.gov.pagopa.pu.migration.mapper.DebtPositionTypeOrgOperatorMapper;
 import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.DebtPositionTypeOrgOperatorsRepository;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
-import it.gov.pagopa.pu.migration.service.file.ErrorArchiverService;
-import it.gov.pagopa.pu.migration.service.migration.MigrationProcessingService;
-import it.gov.pagopa.pu.migration.utils.AESUtils;
+import it.gov.pagopa.pu.migration.wf.service.ingestion.ErrorArchiverService;
+import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationProcessingService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -32,32 +30,30 @@ import java.util.Optional;
 @Slf4j
 public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessingService<DebtPositionTypeOrgOperatorMigrationFileDTO, DebtPositionTypeOrgOperatorMigrationFileResult, DebtPositionTypeOrgOperatorErrorDTO> {
 
-  private final String dataCipherPsw;
-
   private final DebtPositionTypeOrgOperatorsRepository repository;
   private final OrganizationService organizationService;
   private final DebtPositionTypeOrgService debtPositionTypeOrgService;
   private final AuthnService authnService;
   private final DebtPosTypeOrgOperatorsErrorsArchiverService debtPosTypeOrgOperatorsErrorsArchiverService;
   private final CsvService csvService;
+  private final DebtPositionTypeOrgOperatorMapper debtPositionTypeOrgOperatorMapper;
 
   public DebtPosTypeOrgOperatorProcessingService(
-    @Value("${encryption.file-encrypt-password}") String dataCipherPsw,
     DebtPosTypeOrgOperatorsErrorsArchiverService debtPosTypeOrgOperatorsErrorsArchiverService,
     DebtPositionTypeOrgOperatorsRepository repository,
     OrganizationService organizationService,
     DebtPositionTypeOrgService debtPositionTypeOrgService,
     AuthnService authnService,
     CsvService csvService,
-    ErrorArchiverService<DebtPositionTypeOrgOperatorErrorDTO> errorArchiverService) {
+    ErrorArchiverService<DebtPositionTypeOrgOperatorErrorDTO> errorArchiverService, DebtPositionTypeOrgOperatorMapper debtPositionTypeOrgOperatorMapper) {
     super(errorArchiverService);
-    this.dataCipherPsw = dataCipherPsw;
     this.debtPosTypeOrgOperatorsErrorsArchiverService = debtPosTypeOrgOperatorsErrorsArchiverService;
     this.repository = repository;
     this.organizationService = organizationService;
     this.debtPositionTypeOrgService = debtPositionTypeOrgService;
     this.authnService = authnService;
     this.csvService = csvService;
+    this.debtPositionTypeOrgOperatorMapper = debtPositionTypeOrgOperatorMapper;
   }
 
   @Override
@@ -116,7 +112,7 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
         .getOrganizationId();
 
       // Check for duplicates
-      Optional<DebtPositionTypeOrgOperators> existingOrg = repository.findByOrganizationIdAndDebtPositionTypeOrgCode(
+      Optional<DebtPositionTypeOrgOperators> existingOrg = repository.findFirstByOrganizationIdAndDebtPositionTypeOrgCode(
         organizationId, dto.getDebtPositionTypeOrgCode());
       if (existingOrg.isPresent()) {
         errorList.add(buildErrorDto(
@@ -129,9 +125,16 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
       }
 
       // Mapping and saving
-      byte [] cfOperatorHash = AESUtils.encrypt(dataCipherPsw, dto.getCfOperator());
-
-      DebtPositionTypeOrgOperators entity = DebtPositionTypeOrgOperatorMapper.mapToOperators(dto, debtPositionTypeOrgId, organizationId, cfOperatorHash);
+      DebtPositionTypeOrgOperators entity = debtPositionTypeOrgOperatorMapper.mapToOperators(dto, debtPositionTypeOrgId, organizationId);
+      if (entity == null) {
+        errorList.add(buildErrorDto(
+          fileName,
+          lineNumber,
+          "MAPPING_ERROR",
+          "Mapping to DebtPositionTypeOrgOperators returned null"
+        ));
+        return false;
+      }
       repository.save(entity);
       log.info("Saved OperatorsDebtPositionTypeOrg: orgIpaCode={}, debtPositionTypeOrgCode={}, organizationId={}, debtPositionTypeOrgId={}",
         dto.getOrgIpaCode(), dto.getDebtPositionTypeOrgCode(), organizationId, debtPositionTypeOrgId);
