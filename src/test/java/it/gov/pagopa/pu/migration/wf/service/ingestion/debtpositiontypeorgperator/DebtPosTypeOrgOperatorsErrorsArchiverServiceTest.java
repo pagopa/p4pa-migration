@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion.debtpositiontypeorgperator;
 
-import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
@@ -60,7 +60,7 @@ class DebtPosTypeOrgOperatorsErrorsArchiverServiceTest {
     Path expectedErrorFilePath = workingDirectory.resolve("ERROR-fileName.csv");
 
     // When
-    service.writeErrors(workingDirectory, upload, errorDTOList);
+    service.writeErrors(workingDirectory, upload, errorDTOList, "fileName.cdv");
 
     // Then
     Mockito.verify(csvServiceMock)
@@ -74,7 +74,7 @@ class DebtPosTypeOrgOperatorsErrorsArchiverServiceTest {
     Path expectedErrorFilePath = workingDirectory.resolve("ERROR-fileName.csv");
 
     // When
-    service.writeErrors(workingDirectory, upload, List.of());
+    service.writeErrors(workingDirectory, upload, List.of(), "fileName.csv");
 
     // Then
     Mockito.verify(csvServiceMock, Mockito.times(0))
@@ -96,7 +96,7 @@ class DebtPosTypeOrgOperatorsErrorsArchiverServiceTest {
 
     // When & Then
     NotRetryableActivityException exception = assertThrows(NotRetryableActivityException.class, () ->
-      service.writeErrors(workingDirectory, upload, errorDTOList));
+      service.writeErrors(workingDirectory, upload, errorDTOList, "fileName.csv"));
     assertEquals("Error creating CSV", exception.getMessage());
   }
 

@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion;
 
 import com.opencsv.exceptions.CsvException;
-import it.gov.pagopa.pu.migration.dto.ErrorFileDTO;
+import it.gov.pagopa.pu.migration.wf.dto.ErrorFileDTO;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,7 +29,8 @@ public abstract class MigrationProcessingService<T, R, E extends ErrorFileDTO> {
             Uploads uploads,
             List<E> errorList,
             ErrorDtoBuilder<E> errorDtoBuilder,
-            Path workingDirectory
+            Path workingDirectory,
+            String fileName
     ) {
       long processedRows = 0;
       long totalRows = 0;
@@ -54,7 +55,7 @@ public abstract class MigrationProcessingService<T, R, E extends ErrorFileDTO> {
       }
       totalRows = processReaderExceptions(readerException, uploads, previousReaderExceptionSize, errorList, totalRows, errorDtoBuilder);
 
-      errorArchiverService.writeErrors(workingDirectory, uploads, errorList);
+      errorArchiverService.writeErrors(workingDirectory, uploads, errorList, fileName);
 
       setNumTotalRows(migrationFileResult, totalRows);
       setNumCorrectlyProcessedRows(migrationFileResult, processedRows);
@@ -99,3 +100,4 @@ public abstract class MigrationProcessingService<T, R, E extends ErrorFileDTO> {
     return totalRows;
   }
 }
+

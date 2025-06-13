@@ -4,11 +4,11 @@ import com.opencsv.exceptions.CsvException;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.debtposition.DebtPositionTypeOrgService;
 import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
-import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
-import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
-import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.MigrationFileProcessingException;
-import it.gov.pagopa.pu.migration.mapper.DebtPositionTypeOrgOperatorMapper;
+import it.gov.pagopa.pu.migration.wf.mapper.DebtPositionTypeOrgOperatorMapper;
 import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.DebtPositionTypeOrgOperatorsRepository;
@@ -71,7 +71,7 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
     try {
       return csvService.readCsv(file,
         DebtPositionTypeOrgOperatorMigrationFileDTO.class,
-        (csvIterator, readerException) -> processOperatorDebtPosTypeOrg(csvIterator, readerException, uploads, workingDirectory));
+        (csvIterator, readerException) -> processOperatorDebtPosTypeOrg(csvIterator, readerException, uploads, workingDirectory, file.getFileName().toString()));
     } catch (Exception e) {
       log.error("Error processing file {}: {}", file, e.getMessage(), e);
       throw new MigrationFileProcessingException(String.format("Error processing file %s: %s", file, e.getMessage()));
@@ -82,7 +82,8 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
     Iterator<DebtPositionTypeOrgOperatorMigrationFileDTO> iterator,
     List<CsvException> readerException,
     Uploads uploads,
-    Path workingDirectory) {
+    Path workingDirectory,
+    String fileName) {
     List<DebtPositionTypeOrgOperatorErrorDTO> errorList = new ArrayList<>();
     DebtPositionTypeOrgOperatorMigrationFileResult migrationFileResult = new DebtPositionTypeOrgOperatorMigrationFileResult();
     migrationFileResult.setOrganizationId(uploads.getOrganizationId());
@@ -93,7 +94,8 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
       uploads,
       errorList,
       this::buildErrorDto,
-      workingDirectory
+      workingDirectory,
+      fileName
     );
     return migrationFileResult;
   }

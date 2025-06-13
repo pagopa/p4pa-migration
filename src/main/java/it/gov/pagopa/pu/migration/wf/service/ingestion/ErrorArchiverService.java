@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion;
 
-import it.gov.pagopa.pu.migration.dto.ErrorFileDTO;
+import it.gov.pagopa.pu.migration.wf.dto.ErrorFileDTO;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
@@ -54,7 +54,7 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
      * @param upload The metadata of the upload file.
      * @param errorList         The list of errors to write.
      */
-    public void writeErrors(Path workingDirectory, Uploads upload, List<T> errorList) {
+    public void writeErrors(Path workingDirectory, Uploads upload, List<T> errorList, String fileName) {
 
         if(CollectionUtils.isEmpty(errorList)){
             return;
@@ -65,7 +65,7 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
                 .toList();
 
         try {
-            String errorFileName = ERRORFILE_PREFIX + Utilities.replaceFileExtension(upload.getFileName(), ".csv");
+            String errorFileName = ERRORFILE_PREFIX + Utilities.replaceFileExtension(fileName, ".csv");
             Path errorCsvFilePath = workingDirectory.resolve(errorFileName);
 
             csvService.createCsv(errorCsvFilePath, getHeaders(), data);

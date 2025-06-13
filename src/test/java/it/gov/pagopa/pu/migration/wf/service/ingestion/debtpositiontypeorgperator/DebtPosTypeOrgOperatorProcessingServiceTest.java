@@ -4,10 +4,10 @@ import it.gov.pagopa.pu.debtposition.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.debtposition.DebtPositionTypeOrgService;
 import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
-import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
-import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
-import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
-import it.gov.pagopa.pu.migration.mapper.DebtPositionTypeOrgOperatorMapper;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
+import it.gov.pagopa.pu.migration.wf.mapper.DebtPositionTypeOrgOperatorMapper;
 import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.DebtPositionTypeOrgOperatorsRepository;
@@ -216,7 +216,7 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     List<DebtPositionTypeOrgOperatorMigrationFileDTO> dtos = List.of(dto1, dto2);
     Uploads uploads = new Uploads();
     uploads.setOrganizationId(1L);
-    DebtPositionTypeOrgOperatorMigrationFileResult result = service.processOperatorDebtPosTypeOrg(dtos.iterator(), List.of(), uploads, Path.of("/tmp"));
+    DebtPositionTypeOrgOperatorMigrationFileResult result = service.processOperatorDebtPosTypeOrg(dtos.iterator(), List.of(), uploads, Path.of("/tmp"),"filename.csv");
     assertEquals(1L, result.getOrganizationId());
     }
 }

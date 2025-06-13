@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator;
+package it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

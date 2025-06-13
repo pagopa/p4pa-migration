@@ -1,8 +1,9 @@
 package it.gov.pagopa.pu.migration.mapper;
 
-import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
 import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
 import it.gov.pagopa.pu.migration.utils.TestUtils;
+import it.gov.pagopa.pu.migration.wf.mapper.DebtPositionTypeOrgOperatorMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

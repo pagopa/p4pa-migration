@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion.debtpositiontypeorgperator;
 
-import it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.ErrorArchiverService;
