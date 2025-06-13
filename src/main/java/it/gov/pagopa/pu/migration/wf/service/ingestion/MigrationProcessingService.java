@@ -54,12 +54,10 @@ public abstract class MigrationProcessingService<T, R, E extends ErrorFileDTO> {
       }
       totalRows = processReaderExceptions(readerException, uploads, previousReaderExceptionSize, errorList, totalRows, errorDtoBuilder);
 
-      String errorsZipFileName = archiveErrorFiles(uploads, workingDirectory, errorList);
+      errorArchiverService.writeErrors(workingDirectory, uploads, errorList);
 
       setNumTotalRows(migrationFileResult, totalRows);
       setNumCorrectlyProcessedRows(migrationFileResult, processedRows);
-      setErrorDescription(migrationFileResult,errorsZipFileName != null ? "Some rows have failed" : null);
-      setDiscardedFileName(migrationFileResult,errorsZipFileName);
 
 
   }
@@ -100,19 +98,4 @@ public abstract class MigrationProcessingService<T, R, E extends ErrorFileDTO> {
     }
     return totalRows;
   }
-
-    private String archiveErrorFiles(Uploads uploads, Path workingDirectory, List<E> errorList) {
-      if (errorList.isEmpty()) {
-        log.info("No errors to archive for file: {}", uploads.getFileName());
-        return null;
-      }
-
-      errorArchiverService.writeErrors(workingDirectory, uploads, errorList);
-      String errorsZipFileName = errorArchiverService.archiveErrorFiles(workingDirectory, uploads);
-      log.info("Error file archived at: {}", errorsZipFileName);
-
-      return errorsZipFileName;
-    }
 }
-
-
