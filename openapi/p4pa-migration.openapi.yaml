@@ -236,6 +236,7 @@ components:
         - DEBT_POSITIONS_TYPE
         - DEBT_POSITIONS_TYPE_ORG_OPERATORS
         - PAYMENTS_REPORTING
+        - TREASURY_CSV_COMPLETE
     UploadMigrationFileResponseDTO:
       type: object
       required:

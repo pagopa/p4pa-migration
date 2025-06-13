@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.migration.wf.activity.ingestion.debtpositiontype.DebtPos
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.debtpositiontypeorgoperator.DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.organizations.OrganizationsMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.paymentsreporting.PaymentsReportingMigrationFileTypeHandlerActivity;
+import it.gov.pagopa.pu.migration.wf.activity.ingestion.treasury.csvcomplete.TreasuryCsvCompleteFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.config.BaseWfConfig;
 import it.gov.pagopa.pu.migration.wf.config.TemporalWFImplementationCustomizer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -35,6 +36,10 @@ public class DataMigrationWfConfig extends BaseWfConfig {
 
   public DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity buildOperatorMigrationFileTypeHandlerActivityStub() {
     return Workflow.newActivityStub(DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
+  }
+
+  public TreasuryCsvCompleteFileTypeHandlerActivity buildTreasuryCsvCompleteMigrationFileTypeHandlerActivityStub() {
+    return Workflow.newActivityStub(TreasuryCsvCompleteFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
   }
 
   public IngestionFlowFileRetrieverActivity buildIngestionFlowFileRetrieverActivityStub() {
