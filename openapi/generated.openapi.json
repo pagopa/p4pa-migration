@@ -516,6 +516,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "organizationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "ingestionFlowFileId" : {
             "type" : "integer",
             "format" : "int64"
