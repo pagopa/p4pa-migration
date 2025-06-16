@@ -108,35 +108,38 @@ class PaymentNotificationFileTypeHandlerActivityTest {
 
     when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
 
-    mockStatic(SecurityUtils.class).when(SecurityUtils::getLoggedUser).thenReturn(loggedUser);
-    mockStatic(AuthorizationService.class).when(() -> AuthorizationService.getOrganizationIdFromUserInfo(loggedUser, "IPA99999")).thenReturn(1L);
+    try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
+         MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
+      securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(loggedUser);
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(loggedUser, "IPA99999")).thenReturn(1L);
 
-    when(fileShareServiceMock.uploadIngestionFlowFile(
-      anyLong(),
-      any(),
-      any(FileSystemResource.class),
-      anyString()
-    )).thenReturn(1L);
+      when(fileShareServiceMock.uploadIngestionFlowFile(
+        anyLong(),
+        any(),
+        any(FileSystemResource.class),
+        anyString()
+      )).thenReturn(1L);
 
-    String fileName = file1.getFileName().toString();
-    int dotIndex = fileName.lastIndexOf('.');
-    String baseName = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
-    Path zipFilePathForMock = file1.getParent().resolve(baseName + ".zip");
+      String fileName = file1.getFileName().toString();
+      int dotIndex = fileName.lastIndexOf('.');
+      String baseName = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
+      Path zipFilePathForMock = file1.getParent().resolve(baseName + ".zip");
 
-    when(zipFileServiceMock.zipper(
-      zipFilePathForMock,
-      List.of(file1)
-    )).thenReturn(mockZippedFile);
+      when(zipFileServiceMock.zipper(
+        zipFilePathForMock,
+        List.of(file1)
+      )).thenReturn(mockZippedFile);
 
-    assertTrue(Files.exists(mockEncryptedFile));
-    when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any()))
-      .thenReturn(List.of(file1));
+      assertTrue(Files.exists(mockEncryptedFile));
+      when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any()))
+        .thenReturn(List.of(file1));
 
-    MigrationFileResult result = activity.processFile(1L);
-    assertNotNull(result);
-    assertNotNull(result.getIngestionFlowFiles());
-    assertNotNull(result.getIngestionFlowFiles().getFirst().getOrganizationId());
-    verify(fileArchiverServiceMock).archive(any(Uploads.class));
+      MigrationFileResult result = activity.processFile(1L);
+      assertNotNull(result);
+      assertNotNull(result.getIngestionFlowFiles());
+      assertNotNull(result.getIngestionFlowFiles().getFirst().getOrganizationId());
+      verify(fileArchiverServiceMock).archive(any(Uploads.class));
+    }
   }
 
   @Test

@@ -106,38 +106,40 @@ class PaymentsReportingMigrationFileTypeHandlerActivityTest {
             .build()
         ));
 
-      when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
+        when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
 
-      mockStatic(SecurityUtils.class).when(SecurityUtils::getLoggedUser).thenReturn(loggedUser);
-      mockStatic(AuthorizationService.class).when(() -> AuthorizationService.getOrganizationIdFromUserInfo(loggedUser, "IPA99999")).thenReturn(1L);
+        try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
+             MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
+            securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(loggedUser);
+            authorizationServiceMockedStatic.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(loggedUser, "IPA99999")).thenReturn(1L);
 
+            when(fileShareServiceMock.uploadIngestionFlowFile(
+                    anyLong(),
+                    any(),
+                    any(FileSystemResource.class),
+                    anyString()
+            )).thenReturn(1L);
 
-      when(fileShareServiceMock.uploadIngestionFlowFile(
-                anyLong(),
-                any(),
-                any(FileSystemResource.class),
-                anyString()
-        )).thenReturn(1L);
+            String fileName = file1.getFileName().toString();
+            int dotIndex = fileName.lastIndexOf('.');
+            String baseName = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
+            Path zipFilePathForMock = file1.getParent().resolve(baseName + ".zip");
 
-        String fileName = file1.getFileName().toString();
-        int dotIndex = fileName.lastIndexOf('.');
-        String baseName = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
-        Path zipFilePathForMock = file1.getParent().resolve(baseName + ".zip");
+            when(zipFileServiceMock.zipper(
+                    zipFilePathForMock,
+                    List.of(file1)
+            )).thenReturn(mockZippedFile);
 
-        when(zipFileServiceMock.zipper(
-              zipFilePathForMock,
-              List.of(file1)
-        )).thenReturn(mockZippedFile);
+            assertTrue(Files.exists(mockEncryptedFile));
+            when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any()))
+                    .thenReturn(List.of(file1));
 
-        assertTrue(Files.exists(mockEncryptedFile));
-        when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any()))
-          .thenReturn(List.of(file1));
-
-        MigrationFileResult result = activity.processFile(1L);
-        assertNotNull(result);
-        assertNotNull(result.getIngestionFlowFiles());
-        assertNotNull(result.getIngestionFlowFiles().getFirst().getOrganizationId());
-        verify(fileArchiverServiceMock).archive(any(Uploads.class));
+            MigrationFileResult result = activity.processFile(1L);
+            assertNotNull(result);
+            assertNotNull(result.getIngestionFlowFiles());
+            assertNotNull(result.getIngestionFlowFiles().getFirst().getOrganizationId());
+            verify(fileArchiverServiceMock).archive(any(Uploads.class));
+        }
     }
 
   @Test
@@ -183,27 +185,27 @@ class PaymentsReportingMigrationFileTypeHandlerActivityTest {
 
   @Test
   void testHandleRetrievedFiles_organizationNotManaged(@TempDir Path sourceDir) throws Exception {
-    Path file1 = Files.createFile(sourceDir.resolve("IPA99999-file1.txt"));
-    when(uploadsRepositoryMock.findById(5L)).thenReturn(Optional.of(
-      Uploads.builder()
-        .organizationId(1L)
-        .fileType(MigrationFileTypeEnum.PAYMENTS_REPORTING)
-        .fileName("IPA99999-file1.txt")
-        .filePathName(sourceDir.toString())
-        .fileSize(123L)
-        .updateOperatorExternalId("user")
-        .build()
-    ));
-    when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any())).thenReturn(List.of(file1));
-    try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
-         MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
-      securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(null);
-      authorizationServiceMockedStatic.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(null, "IPA99999")).thenReturn(null);
-      Exception ex = assertThrows(
-        InvalidMigrationFileException.class,
-        () -> activity.processFile(5L)
-      );
-      assertTrue(ex.getMessage().contains("is not associated to managed organizations"));
+        Path file1 = Files.createFile(sourceDir.resolve("IPA99999-file1.txt"));
+        when(uploadsRepositoryMock.findById(5L)).thenReturn(Optional.of(
+            Uploads.builder()
+                .organizationId(1L)
+                .fileType(MigrationFileTypeEnum.PAYMENTS_REPORTING)
+                .fileName("IPA99999-file1.txt")
+                .filePathName(sourceDir.toString())
+                .fileSize(123L)
+                .updateOperatorExternalId("user")
+                .build()
+        ));
+        when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any())).thenReturn(List.of(file1));
+        try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
+             MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
+            securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(null);
+            authorizationServiceMockedStatic.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(null, "IPA99999")).thenReturn(null);
+            Exception ex = assertThrows(
+                InvalidMigrationFileException.class,
+                () -> activity.processFile(5L)
+            );
+            assertTrue(ex.getMessage().contains("is not associated to managed organizations"));
+        }
     }
-  }
 }
