@@ -12,7 +12,7 @@ public interface WorkflowService {
 
   <T> T buildWorkflowStub(Class<T> workflowClass, String taskQueue, String workflowId);
 
-  WorkflowStub buildUntypedWorkflowStub(String taskQueue, String workflowId);
+  WorkflowStub buildUntypedWorkflowStub(Class<?> workflowClass, String taskQueue, String workflowId);
 
   WorkflowStatusDTO getWorkflowStatus(String workflowId);
 
