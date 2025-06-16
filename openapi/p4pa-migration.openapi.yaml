@@ -235,6 +235,7 @@ components:
         - ORGANIZATIONS
         - DEBT_POSITIONS_TYPE
         - DEBT_POSITIONS_TYPE_ORG_OPERATORS
+        - PAYMENT_NOTIFICATION
         - PAYMENTS_REPORTING
     UploadMigrationFileResponseDTO:
       type: object
