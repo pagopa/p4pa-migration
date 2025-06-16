@@ -2,11 +2,7 @@ package it.gov.pagopa.pu.migration.service.wf;
 
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
 import it.gov.pagopa.pu.migration.model.Uploads;
-import it.gov.pagopa.pu.migration.wf.client.ingestion.DataMigrationWfClient;
-import it.gov.pagopa.pu.migration.wf.client.ingestion.DebtPositionTypeDataMigrationWFClient;
-import it.gov.pagopa.pu.migration.wf.client.ingestion.DebtPositionTypeOrgOperatorDataMigrationWFClient;
-import it.gov.pagopa.pu.migration.wf.client.ingestion.OrganizationDataMigrationWFClient;
-import it.gov.pagopa.pu.migration.wf.client.ingestion.PaymentsReportingDataMigrationWFClient;
+import it.gov.pagopa.pu.migration.wf.client.ingestion.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +13,16 @@ public class MigrationFileWfInvokerServiceImpl implements MigrationFileWfInvoker
   private final OrganizationDataMigrationWFClient organizationDataMigrationWFClient;
   private final DebtPositionTypeDataMigrationWFClient debtPositionTypeDataMigrationWFClient;
   private final DebtPositionTypeOrgOperatorDataMigrationWFClient debtPositionTypeOrgOperatorDataMigrationWFClient;
+  private final PaymentNotificationDataMigrationWFClient paymentNotificationDataMigrationWFClient;
   private final PaymentsReportingDataMigrationWFClient paymentsReportingDataMigrationWFClient;
 
   @Override
   public WorkflowCreatedDTO invokeWf(Uploads uploads) {
-    DataMigrationWfClient wfClient = switch (uploads.getFileType()){
+    DataMigrationWfClient wfClient = switch (uploads.getFileType()) {
       case ORGANIZATIONS -> organizationDataMigrationWFClient;
-      case DEBT_POSITIONS_TYPE_ORG_OPERATORS -> debtPositionTypeOrgOperatorDataMigrationWFClient;
+      case DEBT_POSITIONS_TYPE_ORG_OPERATORS ->
+        debtPositionTypeOrgOperatorDataMigrationWFClient;
+      case PAYMENT_NOTIFICATION -> paymentNotificationDataMigrationWFClient;
       case PAYMENTS_REPORTING -> paymentsReportingDataMigrationWFClient;
       case DEBT_POSITIONS_TYPE -> debtPositionTypeDataMigrationWFClient;
     };
