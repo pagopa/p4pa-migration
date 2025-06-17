@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.migration.wf.activity.ingestion;
 
-import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
@@ -8,8 +7,6 @@ import it.gov.pagopa.pu.migration.connector.organization.client.OrganizationSear
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
-import it.gov.pagopa.pu.migration.security.SecurityUtils;
-import it.gov.pagopa.pu.migration.service.AuthorizationService;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.utils.Utilities;
@@ -18,6 +15,7 @@ import it.gov.pagopa.pu.migration.wf.exception.InvalidMigrationFileException;
 import it.gov.pagopa.pu.migration.wf.exception.MigrationFileTypeNotSupportedException;
 import it.gov.pagopa.pu.migration.wf.exception.UploadNotFoundException;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.RequiredArgsConstructor;
@@ -132,7 +130,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
   protected abstract T handleRetrievedFiles(List<Path> retrievedFiles, Uploads ingestionFlowFileDTO);
 
   /**
-   * Metodo protetto per gestire l'upload dei file estratti, parametrizzato per eliminare duplicazioni.
+   * Protected method to handle the upload of extracted files, parameterized to eliminate duplication.
    */
   protected MigrationFileResult handleFilesUpload(
     List<Path> retrievedFiles,
@@ -148,9 +146,10 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
     for (Path file : retrievedFiles) {
       String fileName = file.getFileName().toString();
       String ipaCodeFile = extractIpaCodeFromFileName(fileName);
-      UserInfo loggedUser = SecurityUtils.getLoggedUser();
-      Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(loggedUser, ipaCodeFile);
-      if (organizationId == null) {
+
+      Organization organization = organizationSearchClient.getByIpaCode(ipaCodeFile, authnService.getAccessToken());
+
+      if (!organization.getBrokerId().equals(upload.getOrganizationId())) {
         throw new InvalidMigrationFileException("Organization whit ipa code " + ipaCodeFile + " is not associated to managed organizations." );
       }
       String zipName = Utilities.replaceFileExtension(fileName, ".zip");
@@ -158,7 +157,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
       File zippedFile = zipFileService.zipper(zipFilePath, List.of(file));
       log.info("Processing unzipped file: {}", file);
       Long id = fileShareService.uploadIngestionFlowFile(
-        organizationId,
+        organization.getOrganizationId(),
         ingestionFlowFileType,
         new FileSystemResource(zippedFile),
         authnService.getAccessToken(ipaCodeFile)

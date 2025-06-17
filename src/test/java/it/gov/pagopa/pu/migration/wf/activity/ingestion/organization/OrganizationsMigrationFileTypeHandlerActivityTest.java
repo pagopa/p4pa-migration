@@ -16,6 +16,7 @@ import it.gov.pagopa.pu.migration.wf.activity.ingestion.organizations.Organizati
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.InvalidMigrationFileException;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,8 +107,13 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
             .updateOperatorExternalId("user")
             .build()
         ));
-
+        when(authnServiceMock.getAccessToken()).thenReturn("tokenOrg");
         when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
+        Organization org = new Organization();
+        org.setIpaCode("IPA12345");
+        org.setBrokerId(1L);
+        org.setOrganizationId(10L);
+        when(organizationSearchClientMock.getByIpaCode(eq("IPA12345"), anyString())).thenReturn(org);
 
         try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
              MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
@@ -115,7 +121,7 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
           authorizationServiceMockedStatic.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(loggedUser, "IPA99999")).thenReturn(1L);
 
         when(fileShareServiceMock.uploadIngestionFlowFile(
-          anyLong(),
+          eq(10L),
           any(),
           any(FileSystemResource.class),
           anyString()
@@ -198,6 +204,12 @@ class OrganizationsMigrationFileTypeHandlerActivityTest {
         .build()
     ));
     when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any())).thenReturn(List.of(file1));
+    Organization org = new Organization();
+    org.setIpaCode("IPA99999");
+    org.setBrokerId(998L);
+    org.setOrganizationId(999L);
+    when(authnServiceMock.getAccessToken()).thenReturn("tokenOrg");
+    when(organizationSearchClientMock.getByIpaCode("IPA99999", "tokenOrg")).thenReturn(org);
     try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
          MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
       securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(null);

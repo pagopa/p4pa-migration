@@ -15,6 +15,7 @@ import it.gov.pagopa.pu.migration.utils.AESUtils;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.InvalidMigrationFileException;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -89,7 +90,6 @@ class DebtPositionTypeMigrationFileTypeHandlerActivityTest {
     @Test
     void testHandleRetrievedFiles_success(@TempDir Path sourceDir) throws Exception {
         Path file1 = Files.createFile(sourceDir.resolve("IPA12345-file1.txt"));
-
         Path zipFilePath = Files.createFile(sourceDir.resolve("output.zip"));
         File mockZippedFile = zipFilePath.toFile();
         Path mockEncryptedFile = Files.copy(zipFilePath, sourceDir.resolve(zipFilePath.getFileName() + AESUtils.CIPHER_EXTENSION));
@@ -105,41 +105,46 @@ class DebtPositionTypeMigrationFileTypeHandlerActivityTest {
             .updateOperatorExternalId("user")
             .build()
         ));
+        when(authnServiceMock.getAccessToken()).thenReturn("tokenOrg");
+        when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
+        Organization org = new Organization();
+        org.setIpaCode("IPA12345");
+        org.setBrokerId(1L);
+        org.setOrganizationId(10L);
+        when(organizationSearchClientMock.getByIpaCode(eq("IPA12345"), anyString())).thenReturn(org);
 
-      when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
+        try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
+             MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
+            securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(loggedUser);
+            authorizationServiceMockedStatic.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(loggedUser, "IPA99999")).thenReturn(1L);
 
-      try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
-           MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
-        securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(loggedUser);
-        authorizationServiceMockedStatic.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(loggedUser, "IPA99999")).thenReturn(1L);
+            when(fileShareServiceMock.uploadIngestionFlowFile(
+              eq(10L),
+              any(),
+              any(FileSystemResource.class),
+              anyString()
+            )).thenReturn(1L);
 
-        when(fileShareServiceMock.uploadIngestionFlowFile(
-          anyLong(),
-          any(),
-          any(FileSystemResource.class),
-          anyString()
-        )).thenReturn(1L);
+            String fileName = file1.getFileName().toString();
+            int dotIndex = fileName.lastIndexOf('.');
+            String baseName = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
+            Path zipFilePathForMock = file1.getParent().resolve(baseName + ".zip");
 
-        String fileName = file1.getFileName().toString();
-        int dotIndex = fileName.lastIndexOf('.');
-        String baseName = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
-        Path zipFilePathForMock = file1.getParent().resolve(baseName + ".zip");
+            when(zipFileServiceMock.zipper(
+              zipFilePathForMock,
+              List.of(file1)
+            )).thenReturn(mockZippedFile);
 
-        when(zipFileServiceMock.zipper(
-          zipFilePathForMock,
-          List.of(file1)
-        )).thenReturn(mockZippedFile);
+            assertTrue(Files.exists(mockEncryptedFile));
+            when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any()))
+              .thenReturn(List.of(file1));
 
-        assertTrue(Files.exists(mockEncryptedFile));
-        when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any()))
-          .thenReturn(List.of(file1));
-
-        MigrationFileResult result = activity.processFile(1L);
-        assertNotNull(result);
-        assertNotNull(result.getIngestionFlowFiles());
-        assertNotNull(result.getIngestionFlowFiles().getFirst().getOrganizationId());
-        verify(fileArchiverServiceMock).archive(any(Uploads.class));
-      }
+            MigrationFileResult result = activity.processFile(1L);
+            assertNotNull(result);
+            assertNotNull(result.getIngestionFlowFiles());
+            assertNotNull(result.getIngestionFlowFiles().getFirst().getOrganizationId());
+            verify(fileArchiverServiceMock).archive(any(Uploads.class));
+        }
     }
 
     @Test
@@ -197,6 +202,12 @@ class DebtPositionTypeMigrationFileTypeHandlerActivityTest {
         .build()
     ));
     when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any())).thenReturn(List.of(file1));
+    Organization org = new Organization();
+    org.setIpaCode("IPA99999");
+    org.setBrokerId(998L);
+    org.setOrganizationId(999L);
+    when(authnServiceMock.getAccessToken()).thenReturn("tokenOrg");
+    when(organizationSearchClientMock.getByIpaCode("IPA99999", "tokenOrg")).thenReturn(org);
     try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
          MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
       securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(null);
