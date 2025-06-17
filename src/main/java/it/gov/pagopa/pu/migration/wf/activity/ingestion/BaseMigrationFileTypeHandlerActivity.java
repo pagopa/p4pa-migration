@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.migration.wf.activity.ingestion;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
-import it.gov.pagopa.pu.migration.connector.organization.client.OrganizationSearchClient;
+import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
@@ -38,7 +38,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
   private final FileArchiverService fileArchiverService;
   private final FileShareService fileShareService;
   private final AuthnService authnService;
-  private final OrganizationSearchClient organizationSearchClient;
+  private final OrganizationService organizationService;
   private final ZipFileService zipFileService;
 
   /**
@@ -130,7 +130,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
   protected abstract T handleRetrievedFiles(List<Path> retrievedFiles, Uploads ingestionFlowFileDTO);
 
   /**
-   * Metodo protetto per gestire l'upload dei file estratti, parametrizzato per eliminare duplicazioni.
+   * Protected method to handle the upload of extracted files, parameterized to eliminate duplication.
    */
   protected MigrationFileResult handleFilesUpload(
     List<Path> retrievedFiles,
@@ -141,22 +141,27 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
     if (retrievedFiles == null || retrievedFiles.isEmpty()) {
       throw new InvalidMigrationFileException("No file found in the uploaded archive");
     }
-    Organization organization = organizationSearchClient.getByOrganizationId(
-      upload.getOrganizationId(),
-      authnService.getAccessToken()
-    );
+
     List<IngestionFlowFile> filesUploaded = new ArrayList<>(retrievedFiles.size());
     for (Path file : retrievedFiles) {
       String fileName = file.getFileName().toString();
+      String ipaCodeFile = extractIpaCodeFromFileName(fileName);
+
+      Organization organization = organizationService.getOrganizationByIpaCode(ipaCodeFile, authnService.getAccessToken()).
+        orElseThrow(() -> new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " not found"));
+
+      if (!organization.getBrokerId().equals(upload.getOrganizationId())) {
+        throw new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " is not associated to managed organizations." );
+      }
       String zipName = Utilities.replaceFileExtension(fileName, ".zip");
       Path zipFilePath = file.getParent().resolve(zipName);
       File zippedFile = zipFileService.zipper(zipFilePath, List.of(file));
       log.info("Processing unzipped file: {}", file);
       Long id = fileShareService.uploadIngestionFlowFile(
-        upload.getOrganizationId(),
+        organization.getOrganizationId(),
         ingestionFlowFileType,
         new FileSystemResource(zippedFile),
-        authnService.getAccessToken(organization.getIpaCode())
+        authnService.getAccessToken(ipaCodeFile)
       );
       filesUploaded.add(IngestionFlowFile.builder()
         .ingestionFlowFileId(id)
@@ -177,4 +182,13 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
       .ingestionFlowFiles(filesUploaded)
       .build();
   }
+
+  private String extractIpaCodeFromFileName(String fileName) {
+    String[] parts = fileName.split("-");
+    if (parts.length < 2) {
+      throw new InvalidMigrationFileException("Invalid file name format: " + fileName);
+    }
+    return parts[0];
+  }
+
 }

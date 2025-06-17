@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.migration.wf.activity.ingestion.debtpositiontypeorgoper
 import io.temporal.spring.boot.ActivityImpl;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
+import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.migration.connector.organization.client.OrganizationSearchClient;
 import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
@@ -38,11 +39,11 @@ public class DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivityImpl extends
     FileArchiverService fileArchiverService,
     FileShareService fileShareService,
     AuthnService authnService,
-    OrganizationSearchClient organizationSearchClient,
+    OrganizationService organizationService,
     ZipFileService zipFileService,
     DebtPosTypeOrgOperatorProcessingService debtPosTypeOrgOperatorProcessingService,
     DebtPosTypeOrgOperatorsErrorsArchiverService errorsArchiverService) {
-    super(uploadsRepository, fileRetrieverService, fileArchiverService, fileShareService, authnService, organizationSearchClient, zipFileService);
+    super(uploadsRepository, fileRetrieverService, fileArchiverService, fileShareService, authnService, organizationService, zipFileService);
 
     this.debtPosTypeOrgOperatorProcessingService = debtPosTypeOrgOperatorProcessingService;
     this.errorsArchiverService = errorsArchiverService;

@@ -516,6 +516,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "organizationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "ingestionFlowFileId" : {
             "type" : "integer",
             "format" : "int64"
@@ -551,7 +555,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "fileName", "fileSize", "ingestionFlowFileType", "status", "uploadId" ]
+        "required" : [ "fileName", "fileSize", "ingestionFlowFileType", "organizationId", "status", "uploadId" ]
       }
     },
     "securitySchemes" : {
