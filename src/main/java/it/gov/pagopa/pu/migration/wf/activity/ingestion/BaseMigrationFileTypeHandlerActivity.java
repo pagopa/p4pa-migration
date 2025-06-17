@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.migration.wf.activity.ingestion;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
-import it.gov.pagopa.pu.migration.connector.organization.client.OrganizationSearchClient;
+import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
@@ -38,7 +38,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
   private final FileArchiverService fileArchiverService;
   private final FileShareService fileShareService;
   private final AuthnService authnService;
-  private final OrganizationSearchClient organizationSearchClient;
+  private final OrganizationService organizationService;
   private final ZipFileService zipFileService;
 
   /**
@@ -147,7 +147,8 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
       String fileName = file.getFileName().toString();
       String ipaCodeFile = extractIpaCodeFromFileName(fileName);
 
-      Organization organization = organizationSearchClient.getByIpaCode(ipaCodeFile, authnService.getAccessToken());
+      Organization organization = organizationService.getOrganizationByIpaCode(ipaCodeFile, authnService.getAccessToken()).
+        orElseThrow(() -> new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " not found"));
 
       if (!organization.getBrokerId().equals(upload.getOrganizationId())) {
         throw new InvalidMigrationFileException("Organization whit ipa code " + ipaCodeFile + " is not associated to managed organizations." );

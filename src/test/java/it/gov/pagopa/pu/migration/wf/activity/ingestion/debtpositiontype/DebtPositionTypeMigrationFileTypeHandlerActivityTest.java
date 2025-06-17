@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.migration.wf.activity.ingestion.debtpositiontype;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
-import it.gov.pagopa.pu.migration.connector.organization.client.OrganizationSearchClient;
+import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
@@ -53,7 +53,7 @@ class DebtPositionTypeMigrationFileTypeHandlerActivityTest {
     @Mock
     private AuthnService authnServiceMock;
     @Mock
-    private OrganizationSearchClient organizationSearchClientMock;
+    private OrganizationService organizationServiceMock;
     @Mock
     private ZipFileService zipFileServiceMock;
 
@@ -69,7 +69,7 @@ class DebtPositionTypeMigrationFileTypeHandlerActivityTest {
           fileArchiverServiceMock,
           fileShareServiceMock,
           authnServiceMock,
-          organizationSearchClientMock,
+          organizationServiceMock,
           zipFileServiceMock
         );
     }
@@ -82,7 +82,7 @@ class DebtPositionTypeMigrationFileTypeHandlerActivityTest {
           fileArchiverServiceMock,
           fileShareServiceMock,
           authnServiceMock,
-          organizationSearchClientMock
+          organizationServiceMock
         );
     }
 
@@ -111,7 +111,7 @@ class DebtPositionTypeMigrationFileTypeHandlerActivityTest {
         org.setIpaCode("IPA12345");
         org.setBrokerId(1L);
         org.setOrganizationId(10L);
-        when(organizationSearchClientMock.getByIpaCode(eq("IPA12345"), anyString())).thenReturn(org);
+        when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA12345"), anyString())).thenReturn(Optional.of(org));
 
         try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
              MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
@@ -207,7 +207,7 @@ class DebtPositionTypeMigrationFileTypeHandlerActivityTest {
     org.setBrokerId(998L);
     org.setOrganizationId(999L);
     when(authnServiceMock.getAccessToken()).thenReturn("tokenOrg");
-    when(organizationSearchClientMock.getByIpaCode("IPA99999", "tokenOrg")).thenReturn(org);
+    when(organizationServiceMock.getOrganizationByIpaCode("IPA99999", "tokenOrg")).thenReturn(Optional.of(org));
     try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
          MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
       securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(null);
