@@ -4,7 +4,7 @@ import io.temporal.spring.boot.ActivityImpl;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
-import it.gov.pagopa.pu.migration.connector.organization.client.OrganizationSearchClient;
+import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
@@ -32,9 +32,9 @@ public class OrganizationsMigrationFileTypeHandlerActivityImpl extends BaseMigra
     FileArchiverService fileArchiverService,
     FileShareService fileShareService,
     AuthnService authnService,
-    OrganizationSearchClient organizationSearchClient,
+    OrganizationService organizationService,
     ZipFileService zipFileService) {
-    super(uploadsRepository, fileRetrieverService, fileArchiverService, fileShareService, authnService, organizationSearchClient, zipFileService);
+    super(uploadsRepository, fileRetrieverService, fileArchiverService, fileShareService, authnService, organizationService, zipFileService);
   }
 
   @Override

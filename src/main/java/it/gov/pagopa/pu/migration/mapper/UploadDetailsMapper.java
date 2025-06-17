@@ -11,6 +11,7 @@ public class UploadDetailsMapper {
       .uploadId(uploadId)
       .ingestionFlowFileId(ingestionFlowFile.getIngestionFlowFileId())
       .ingestionFlowFileType(ingestionFlowFile.getIngestionFlowFileType())
+      .organizationId(ingestionFlowFile.getOrganizationId())
       .filePathName(ingestionFlowFile.getFilePathName())
       .fileName(ingestionFlowFile.getFileName())
       .fileSize(ingestionFlowFile.getFileSize())

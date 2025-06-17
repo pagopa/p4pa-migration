@@ -24,6 +24,7 @@ public class UploadDetails extends BaseEntity {
   @NotNull
   private Long uploadId;
   @NotNull
+  private Long organizationId;
   private Long ingestionFlowFileId;
   @NotNull
   @Enumerated(EnumType.STRING)
