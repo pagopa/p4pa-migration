@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.migration.service;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
+import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
 import it.gov.pagopa.pu.migration.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
@@ -13,16 +14,20 @@ import it.gov.pagopa.pu.migration.repository.UploadDetailsRepository;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
 import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
+import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeEach;ó
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,6 +49,10 @@ class MigrationFileServiceTest {
   private UploadDetailsRepository uploadDetailsRepositoryMock;
   @Mock
   private MigrationFileWfInvokerService wfInvokerServiceMock;
+  @Mock
+  private ZipFileService zipFileServiceMock;
+  @Mock
+  private FileShareService fileShareServiceMock;
 
   private MigrationFileService service;
 
@@ -55,7 +64,9 @@ class MigrationFileServiceTest {
       fileStorerServiceMock,
       uploadsRepositoryMock,
       uploadDetailsRepositoryMock,
-      wfInvokerServiceMock);
+      wfInvokerServiceMock,
+      zipFileServiceMock,
+      fileShareServiceMock);
   }
 
   @AfterEach
@@ -345,4 +356,43 @@ class MigrationFileServiceTest {
     Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.getUploadDetail(orgIpaCode, uploadId, uploadDetailId, loggedUser));
   }
 //endregion getUpload
+
+//region test getUploadsErrorsZip
+  @Test
+  void givenUploadDetailsWithErrorsWhenGetUploadsErrorsZipThenReturnResource() {
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+    String accessToken = "token";
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    UploadDetails errorDetail = new UploadDetails();
+    errorDetail.setIngestionFlowFileId(10L);
+    List<UploadDetails> uploadDetailsList = List.of(errorDetail);
+
+    Resource resourceMock = Mockito.mock(Resource.class);
+    Mockito.when(resourceMock.getFilename()).thenReturn("error.pdf");
+    ByteArrayResource zipResourceMock = Mockito.mock( ByteArrayResource.class);
+
+    Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
+    Mockito.when(fileShareServiceMock.downloadIngestionFlowErrorsFile(organizationId, 10L, accessToken)).thenReturn(resourceMock);
+    Mockito.when(zipFileServiceMock.zipper(Mockito.anyList())).thenReturn(zipResourceMock);
+
+    Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser, accessToken);
+    Assertions.assertSame(zipResourceMock, result);
+  }
+
+  @Test
+  void givenNoUploadDetailsWhenGetUploadsErrorsZipThenThrowEntityNotFoundException() {
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+    String accessToken = "token";
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(List.of());
+    Assertions.assertThrows(it.gov.pagopa.pu.migration.exception.EntityNotFoundException.class,
+      () -> service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser, accessToken));
+  }
+//endregion
 }

@@ -29,4 +29,9 @@ public class FileShareClient {
       .getIngestionFlowFileId();
   }
 
+  public Resource downloadIngestionFlowErrorsFile(Long organizationId, Long ingestionFlowFileId, String accessToken) {
+    return apisHolder.getIngestionFlowFileApi(accessToken)
+      .downloadIngestionFlowErrorsFile(organizationId,ingestionFlowFileId);
+  }
+
 }

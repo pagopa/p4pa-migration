@@ -18,4 +18,9 @@ public class FileShareServiceImpl implements FileShareService {
   public Long uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, Resource file, String accessToken) {
     return client.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken);
   }
+
+  @Override
+  public Resource downloadIngestionFlowErrorsFile(Long organizationId, Long ingestionFlowFileId, String accessToken) {
+    return client.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, accessToken);
+  }
 }

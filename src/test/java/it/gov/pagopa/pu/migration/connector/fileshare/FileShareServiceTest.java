@@ -49,4 +49,23 @@ class FileShareServiceTest {
     // Then
     Assertions.assertSame(expectedResult, result);
   }
+
+  @Test
+  void whenDownloadIngestionFlowErrorsFileThenInvokeClient() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    Long organizationId = 123L;
+    Long ingestionFlowFileId = 456L;
+    Resource expectedResource = Mockito.mock(Resource.class);
+
+    Mockito.when(clientMock.downloadIngestionFlowErrorsFile(Mockito.same(organizationId), Mockito.same(ingestionFlowFileId), Mockito.same(accessToken)))
+      .thenReturn(expectedResource);
+
+    // When
+    Resource result = service.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, accessToken);
+
+    // Then
+    Assertions.assertSame(expectedResource, result);
+  }
+
 }
