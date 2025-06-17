@@ -18,6 +18,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -155,6 +157,44 @@ class MigrationFileControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
       ).andExpect(status().isOk())
       .andExpect(content().json("{\"uploadDetailId\":1}"));
+  }
+
+
+  @Test
+  void whenGetMigrationErrorsThenInvokeService() throws Exception {
+    String orgIpaCode = "ORGIPA";
+    long uploadId = 0L;
+
+    UserInfo loggedUser = new UserInfo();
+    SecurityUtilsTest.configureSecurityContext(loggedUser);
+
+    byte[] fileContent = "result".getBytes();
+    Resource expectedResult = new ByteArrayResource(fileContent);
+
+    Mockito.when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser), Mockito.anyString()))
+      .thenReturn(expectedResult);
+
+    mockMvc.perform(get("/migration/organization/{orgIpaCode}/downloadErrors/{uploadId}",orgIpaCode, uploadId)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      ).andExpect(status().isOk())
+      .andExpect(content().bytes(fileContent));
+  }
+
+  @Test
+  void whenGetMigrationErrorsAndNoContentThenReturn204() throws Exception {
+    String orgIpaCode = "ORGIPA";
+    long uploadId = 0L;
+    String accessToken = "accessToken";
+
+    UserInfo loggedUser = new UserInfo();
+    SecurityUtilsTest.configureSecurityContext(loggedUser);
+
+    Mockito.when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser), Mockito.eq(accessToken)))
+      .thenReturn(null);
+
+    mockMvc.perform(get("/migration/organization/{orgIpaCode}/downloadErrors/{uploadId}",orgIpaCode, uploadId)
+        .contentType(MediaType.APPLICATION_JSON)
+      ).andExpect(status().isNoContent());
   }
 
 }
