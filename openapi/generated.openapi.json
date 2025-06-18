@@ -4,14 +4,7 @@
     "title" : "p4pa-migration",
     "description" : "Api and Models",
     "version" : "0.0.1"
-  },
-  "servers" : [ {
-    "url" : "http://localhost",
-    "description" : "Generated server url"
-  } ],
-  "security" : [ {
-    "BearerAuth" : [ ]
-  } ],
+
   "tags" : [ {
     "name" : "migration-file",
     "description" : "the migration-file API"
@@ -650,7 +643,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "fileName", "fileSize", "ingestionFlowFileType", "organizationId", "status", "uploadId" ]
+        "required" : [ "fileName", "filePathName", "fileSize", "ingestionFlowFileType", "organizationId", "status", "uploadId" ]
       }
     },
     "securitySchemes" : {
