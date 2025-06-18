@@ -11,7 +11,8 @@ import it.gov.pagopa.pu.migration.security.SecurityUtils;
 import it.gov.pagopa.pu.migration.service.MigrationFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,5 +63,30 @@ public class MigrationFileControllerImpl implements MigrationFileApi {
   public ResponseEntity<UploadDetails> getMigrationUploadDetail(String orgIpaCode, Long uploadId, Long uploadDetailsId) {
     log.info("Requesting upload detail {} of {} from org {}", uploadDetailsId, uploadId, orgIpaCode);
     return ResponseEntity.ok(service.getUploadDetail(orgIpaCode, uploadId, uploadDetailsId, SecurityUtils.getLoggedUser()));
+  }
+
+  @Override
+  public ResponseEntity<Resource> getMigrationErrors(String orgIpaCode, Long uploadId){
+    log.info("Requesting migration errors of upload {} from org {}", uploadId, orgIpaCode);
+
+    Resource uploadsErrorsZip = service.getUploadsErrorsZip(orgIpaCode, uploadId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
+    if (uploadsErrorsZip != null){
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentDisposition(ContentDisposition.attachment()
+        .filename(buildZipFileName(orgIpaCode, uploadId))
+        .build());
+
+      return ResponseEntity.ok()
+        .headers(headers)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+        .body(uploadsErrorsZip);
+    } else {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+  }
+
+  private String buildZipFileName(String orgIpaCode, Long uploadId) {
+    return orgIpaCode + "_" + uploadId + "_ERRORS.zip";
   }
 }

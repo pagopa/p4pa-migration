@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
 import it.gov.pagopa.pu.migration.model.UploadDetails;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface MigrationFileService {
   Uploads getUpload(String orgIpaCode, Long uploadId, UserInfo loggedUser);
   List<UploadDetails> getUploadDetails(String orgIpaCode, Long uploadId, UserInfo loggedUser);
   UploadDetails getUploadDetail(String orgIpaCode, Long uploadId, Long uploadDetailsId, UserInfo loggedUser);
+  Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser, String accessToken);
+
 }

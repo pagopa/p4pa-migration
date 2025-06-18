@@ -2,6 +2,8 @@ package it.gov.pagopa.pu.migration.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
+import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
+import it.gov.pagopa.pu.migration.dto.FileResourceDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
 import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
@@ -12,8 +14,10 @@ import it.gov.pagopa.pu.migration.repository.UploadDetailsRepository;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
 import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
+import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.core.io.Resource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,14 +33,18 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   private final UploadsRepository uploadsRepository;
   private final UploadDetailsRepository uploadDetailsRepository;
   private final MigrationFileWfInvokerService wfInvokerService;
+  private final ZipFileService zipFileService;
+  private final FileShareService fileShareService;
 
-  public MigrationFileServiceImpl(FileValidatorService validatorService, FoldersPathsConfig foldersPathsConfig, FileStorerService fileStorerService, UploadsRepository uploadsRepository, UploadDetailsRepository uploadDetailsRepository, MigrationFileWfInvokerService wfInvokerService) {
+  public MigrationFileServiceImpl(FileValidatorService validatorService, FoldersPathsConfig foldersPathsConfig, FileStorerService fileStorerService, UploadsRepository uploadsRepository, UploadDetailsRepository uploadDetailsRepository, MigrationFileWfInvokerService wfInvokerService, ZipFileService zipFileService, FileShareService fileShareService) {
     this.validatorService = validatorService;
     this.foldersPathsConfig = foldersPathsConfig;
     this.fileStorerService = fileStorerService;
     this.uploadsRepository = uploadsRepository;
     this.uploadDetailsRepository = uploadDetailsRepository;
     this.wfInvokerService = wfInvokerService;
+    this.zipFileService = zipFileService;
+    this.fileShareService = fileShareService;
   }
 
   @Override
@@ -101,5 +109,30 @@ public class MigrationFileServiceImpl implements MigrationFileService {
       throw new AuthorizationDeniedException("UploadDetailsId not related to requested upload");
     }
     return uploadDetail;
+  }
+
+  @Override
+  public Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser, String accessToken) {
+    Long organizationId = AuthorizationService.validateAdminRoleOnBroker(orgIpaCode, loggedUser).getOrganizationId();
+
+    List<UploadDetails> uploadDetails = uploadDetailsRepository.findByUploadId(uploadId);
+    if (uploadDetails.isEmpty()) {
+      throw new EntityNotFoundException("Cannot find UploadDetails for uploadId " + uploadId);
+    }
+    List<FileResourceDTO> pdfResources = uploadDetails.stream()
+      .map(uploadDetail -> {
+        Resource errorFile = fileShareService.downloadIngestionFlowErrorsFile(
+          organizationId,
+          uploadDetail.getIngestionFlowFileId(),
+          accessToken);
+        return new FileResourceDTO(errorFile, errorFile.getFilename());
+      })
+      .toList();
+
+    if (pdfResources.isEmpty()) {
+      return null;
+    }
+
+    return zipFileService.zipper(pdfResources);
   }
 }

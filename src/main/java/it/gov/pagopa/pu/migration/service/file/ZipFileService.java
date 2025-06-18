@@ -1,8 +1,11 @@
 package it.gov.pagopa.pu.migration.service.file;
 
+import it.gov.pagopa.pu.migration.dto.FileResourceDTO;
 import it.gov.pagopa.pu.migration.exception.InvalidFileException;
+import it.gov.pagopa.pu.migration.exception.ZipFileException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -268,4 +271,32 @@ public class ZipFileService {
 			throw new InvalidFileException("Error while zipping: " + zipFilePath);
 		}
 	}
+
+  public ByteArrayResource zipper(List<FileResourceDTO> filesToZip) {
+
+    if (filesToZip == null || filesToZip.isEmpty()){
+      return null;
+    }
+
+    try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         ZipOutputStream zos = new ZipOutputStream(baos)) {
+
+      for (FileResourceDTO dto : filesToZip) {
+
+        try (InputStream is = dto.getResource().getInputStream()) {
+          ZipEntry entry = new ZipEntry(dto.getFileName());
+          zos.putNextEntry(entry);
+          is.transferTo(zos);
+          zos.closeEntry();
+        }
+      }
+
+      zos.finish();
+      return new ByteArrayResource(baos.toByteArray());
+
+    } catch (IOException e) {
+      throw new ZipFileException("Error while zipping");
+    }
+  }
+
 }

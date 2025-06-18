@@ -189,6 +189,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
+  /organization/{orgIpaCode}/migrations/{uploadId}/errors:
+    get:
+      tags:
+        - migration-file
+      summary: getMigrationErrors
+      description: Service to retrieve errors on an upload request
+      operationId: getMigrationErrors
+      parameters:
+        - name: orgIpaCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: uploadId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: ZIP file containing error files
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '204':
+          description: No Content - No Errors Found
+        '401':
+          description: Unauthorized - Missing or invalid token
+        '403':
+          description: Forbidden - No upload in error state
+        '404':
+          description: Not Found - Upload not found
+        '500':
+          description: Internal Server Error - Error during errors processing
   /workflows/{workflowId}/status:
     get:
       tags:
