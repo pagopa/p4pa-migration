@@ -29,6 +29,7 @@ public class UploadDetails extends BaseEntity {
   @NotNull
   @Enumerated(EnumType.STRING)
   private IngestionFlowFile.IngestionFlowFileTypeEnum ingestionFlowFileType;
+  @NotNull
   private String filePathName;
   @NotNull
   private String fileName;

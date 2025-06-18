@@ -189,7 +189,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /organization/{orgIpaCode}/downloadErrors/{uploadId}:
+  /organization/{orgIpaCode}/migrations/{uploadId}/errors:
     get:
       tags:
         - migration-file

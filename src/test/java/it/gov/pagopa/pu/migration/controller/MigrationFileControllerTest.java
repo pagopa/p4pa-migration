@@ -174,7 +174,7 @@ class MigrationFileControllerTest {
     Mockito.when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser), Mockito.anyString()))
       .thenReturn(expectedResult);
 
-    mockMvc.perform(get("/migration/organization/{orgIpaCode}/downloadErrors/{uploadId}",orgIpaCode, uploadId)
+    mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}/errors",orgIpaCode, uploadId)
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
       ).andExpect(status().isOk())
       .andExpect(content().bytes(fileContent));
@@ -192,7 +192,7 @@ class MigrationFileControllerTest {
     Mockito.when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser), Mockito.eq(accessToken)))
       .thenReturn(null);
 
-    mockMvc.perform(get("/migration/organization/{orgIpaCode}/downloadErrors/{uploadId}",orgIpaCode, uploadId)
+    mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}/errors",orgIpaCode, uploadId)
         .contentType(MediaType.APPLICATION_JSON)
       ).andExpect(status().isNoContent());
   }
