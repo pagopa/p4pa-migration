@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.migration.wf.service.temporal.WorkflowClientService;
 import it.gov.pagopa.pu.migration.wf.service.temporal.WorkflowService;
 import it.gov.pagopa.pu.migration.wf.utils.TemporalTestUtils;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
-import it.gov.pagopa.pu.migration.wf.wf.ingestion.debtpositiontypeorgoperator.DebtPosTypeOrgOperatorDataMigrationWF;
+import it.gov.pagopa.pu.migration.wf.wf.ingestion.paymentnotification.PaymentNotificationDataMigrationWF;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,20 +18,20 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class DebtPositionTypeOrgOperatorDataMigrationWFClientTest {
+class PaymentNotificationDataMigrationWFClientTest {
 
   @Mock
   private WorkflowService workflowServiceMock;
   @Mock
   private WorkflowClientService workflowClientServiceMock;
   @Mock
-  private DebtPosTypeOrgOperatorDataMigrationWF wfMock;
+  private PaymentNotificationDataMigrationWF wfMock;
 
-  private DebtPositionTypeOrgOperatorDataMigrationWFClient client;
+  private PaymentNotificationDataMigrationWFClient client;
 
   @BeforeEach
   void setUp() {
-    client = new DebtPositionTypeOrgOperatorDataMigrationWFClient(workflowServiceMock, workflowClientServiceMock);
+    client = new PaymentNotificationDataMigrationWFClient(workflowServiceMock, workflowClientServiceMock);
   }
 
   @AfterEach
@@ -43,10 +43,9 @@ class DebtPositionTypeOrgOperatorDataMigrationWFClientTest {
   void whenMigrateThenInvokeWfClient() {
     Long uploadId = 123L;
     String taskQueue = WfConstants.TASK_QUEUE_MIGRATION;
-    String workflowId = it.gov.pagopa.pu.migration.wf.utils.WfUtilities.generateWorkflowId(uploadId, DebtPosTypeOrgOperatorDataMigrationWF.class);
-    WorkflowCreatedDTO expectedResult = new WorkflowCreatedDTO(workflowId, "RUNID");
+    WorkflowCreatedDTO expectedResult = new WorkflowCreatedDTO("PaymentNotificationDataMigrationWF-123", "RUNID");
 
-    Mockito.when(workflowServiceMock.buildWorkflowStub(DebtPosTypeOrgOperatorDataMigrationWF.class, taskQueue, workflowId))
+    Mockito.when(workflowServiceMock.buildWorkflowStub(PaymentNotificationDataMigrationWF.class, taskQueue, expectedResult.getWorkflowId()))
       .thenReturn(wfMock);
 
     TemporalTestUtils.configureWorkflowClientServiceMock(workflowClientServiceMock, expectedResult, uploadId);
@@ -59,4 +58,3 @@ class DebtPositionTypeOrgOperatorDataMigrationWFClientTest {
     verify(wfMock).migrate(uploadId);
   }
 }
-

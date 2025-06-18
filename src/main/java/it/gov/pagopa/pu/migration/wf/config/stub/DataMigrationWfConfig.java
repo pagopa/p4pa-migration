@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.migration.wf.activity.UploadsStatusUpdateActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.debtpositiontype.DebtPositionTypeMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.debtpositiontypeorgoperator.DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.organizations.OrganizationsMigrationFileTypeHandlerActivity;
+import it.gov.pagopa.pu.migration.wf.activity.ingestion.paymentnotification.PaymentNotificationMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.paymentsreporting.PaymentsReportingMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.treasury.csvcomplete.TreasuryCsvCompleteFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.config.BaseWfConfig;
@@ -26,6 +27,10 @@ public class DataMigrationWfConfig extends BaseWfConfig {
     return Workflow.newActivityStub(OrganizationsMigrationFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
   }
 
+  public PaymentNotificationMigrationFileTypeHandlerActivity buildPaymentNotificationMigrationFileTypeHandlerActivityStub() {
+    return Workflow.newActivityStub(PaymentNotificationMigrationFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
+  }
+
   public PaymentsReportingMigrationFileTypeHandlerActivity buildPaymentsReportingMigrationFileTypeHandlerActivityStub() {
     return Workflow.newActivityStub(PaymentsReportingMigrationFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
   }
@@ -34,7 +39,7 @@ public class DataMigrationWfConfig extends BaseWfConfig {
     return Workflow.newActivityStub(DebtPositionTypeMigrationFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
   }
 
-  public DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity buildOperatorMigrationFileTypeHandlerActivityStub() {
+  public DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity buildDebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivityStub() {
     return Workflow.newActivityStub(DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
   }
 

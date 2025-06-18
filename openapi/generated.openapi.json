@@ -386,7 +386,7 @@
       },
       "MigrationFileTypeEnum" : {
         "type" : "string",
-        "enum" : [ "ORGANIZATIONS", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG_OPERATORS", "PAYMENTS_REPORTING", "TREASURY_CSV_COMPLETE"]
+        "enum" : [ "ORGANIZATIONS", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG_OPERATORS", "PAYMENT_NOTIFICATION", "PAYMENTS_REPORTING", "TREASURY_CSV_COMPLETE" ]
       },
       "WorkflowStatusDTO" : {
         "type" : "object",
@@ -489,7 +489,7 @@
       },
       "IngestionFlowFileTypeEnum" : {
         "type" : "string",
-        "enum" : [ "RECEIPT", "RECEIPT_PAGOPA", "PAYMENTS_REPORTING", "PAYMENTS_REPORTING_PAGOPA", "TREASURY_OPI", "TREASURY_CSV", "TREASURY_XLS", "TREASURY_POSTE", "TREASURY_CSV_COMPLETE", "DP_INSTALLMENTS", "PAYMENT_NOTIFICATION", "ORGANIZATIONS", "ORGANIZATIONS_SIL_SERVICE", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG", "DEBT_POSITIONS_TYPE_ORG_OPERATORS", "ASSESSMENTS" ]
+        "enum" : [ "RECEIPT", "RECEIPT_PAGOPA", "PAYMENTS_REPORTING", "PAYMENTS_REPORTING_PAGOPA", "TREASURY_OPI", "TREASURY_CSV", "TREASURY_XLS", "TREASURY_POSTE", "TREASURY_CSV_COMPLETE", "DP_INSTALLMENTS", "PAYMENT_NOTIFICATION", "ORGANIZATIONS", "ORGANIZATIONS_SIL_SERVICE", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG", "DEBT_POSITIONS_TYPE_ORG_OPERATORS", "ASSESSMENTS", "ASSESSMENTS_REGISTRY" ]
       },
       "UploadDetails" : {
         "type" : "object",
@@ -513,6 +513,10 @@
             "format" : "int64"
           },
           "uploadId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "organizationId" : {
             "type" : "integer",
             "format" : "int64"
           },
@@ -551,7 +555,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "fileName", "fileSize", "ingestionFlowFileType", "status", "uploadId" ]
+        "required" : [ "fileName", "fileSize", "ingestionFlowFileType", "organizationId", "status", "uploadId" ]
       }
     },
     "securitySchemes" : {

@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.wf.activity.ingestion.debtpositiontype;
+package it.gov.pagopa.pu.migration.wf.activity.ingestion.paymentnotification;
 
 import io.temporal.spring.boot.ActivityImpl;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
@@ -24,9 +24,9 @@ import java.util.List;
 @Service
 @ActivityImpl(taskQueues = WfConstants.TASK_QUEUE_MIGRATION)
 @Slf4j
-public class DebtPositionTypeMigrationFileTypeHandlerActivityImpl extends BaseMigrationFileTypeHandlerActivity<MigrationFileResult> implements DebtPositionTypeMigrationFileTypeHandlerActivity {
+public class PaymentNotificationMigrationFileTypeHandlerActivityImpl extends BaseMigrationFileTypeHandlerActivity<MigrationFileResult> implements PaymentNotificationMigrationFileTypeHandlerActivity {
 
-  public DebtPositionTypeMigrationFileTypeHandlerActivityImpl(
+  public PaymentNotificationMigrationFileTypeHandlerActivityImpl(
     UploadsRepository uploadsRepository,
     MigrationFileRetrieverService fileRetrieverService,
     FileArchiverService fileArchiverService,
@@ -39,7 +39,7 @@ public class DebtPositionTypeMigrationFileTypeHandlerActivityImpl extends BaseMi
 
   @Override
   protected MigrationFileTypeEnum getHandledMigrationFileType() {
-    return MigrationFileTypeEnum.DEBT_POSITIONS_TYPE;
+    return MigrationFileTypeEnum.PAYMENT_NOTIFICATION;
   }
 
   @Override
@@ -47,8 +47,8 @@ public class DebtPositionTypeMigrationFileTypeHandlerActivityImpl extends BaseMi
     return handleFilesUpload(
       retrievedFiles,
       upload,
-      IngestionFlowFileType.DEBT_POSITIONS_TYPE,
-      IngestionFlowFile.IngestionFlowFileTypeEnum.DEBT_POSITIONS_TYPE
+      IngestionFlowFileType.PAYMENT_NOTIFICATION,
+      IngestionFlowFile.IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION
     );
   }
 }

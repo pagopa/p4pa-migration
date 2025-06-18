@@ -5,29 +5,26 @@ import it.gov.pagopa.pu.migration.wf.service.temporal.WorkflowClientService;
 import it.gov.pagopa.pu.migration.wf.service.temporal.WorkflowService;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
 import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
-import it.gov.pagopa.pu.migration.wf.wf.ingestion.debtpositiontypeorgoperator.DebtPosTypeOrgOperatorDataMigrationWF;
+import it.gov.pagopa.pu.migration.wf.wf.ingestion.paymentnotification.PaymentNotificationDataMigrationWF;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class DebtPositionTypeOrgOperatorDataMigrationWFClient implements DataMigrationWfClient {
+@RequiredArgsConstructor
+public class PaymentNotificationDataMigrationWFClient implements DataMigrationWfClient {
 
   private final WorkflowService workflowService;
   private final WorkflowClientService workflowClientService;
 
-  public DebtPositionTypeOrgOperatorDataMigrationWFClient(WorkflowService workflowService, WorkflowClientService workflowClientService) {
-    this.workflowService = workflowService;
-    this.workflowClientService = workflowClientService;
-  }
-
   public WorkflowCreatedDTO migrate(Long uploadId) {
-    log.info("Starting operator data migration having id {}", uploadId);
+    log.info("Starting payment notification data migration having id {}", uploadId);
     String taskQueue = WfConstants.TASK_QUEUE_MIGRATION;
-    String workflowId = WfUtilities.generateWorkflowId(uploadId, DebtPosTypeOrgOperatorDataMigrationWF.class);
+    String workflowId = WfUtilities.generateWorkflowId(uploadId, PaymentNotificationDataMigrationWF.class);
 
-    DebtPosTypeOrgOperatorDataMigrationWF workflow = workflowService.buildWorkflowStub(
-      DebtPosTypeOrgOperatorDataMigrationWF.class,
+    PaymentNotificationDataMigrationWF workflow = workflowService.buildWorkflowStub(
+      PaymentNotificationDataMigrationWF.class,
       taskQueue,
       workflowId);
     return workflowClientService.start(workflow::migrate, uploadId);

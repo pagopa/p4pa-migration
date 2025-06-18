@@ -13,14 +13,17 @@ public class MigrationFileWfInvokerServiceImpl implements MigrationFileWfInvoker
   private final OrganizationDataMigrationWFClient organizationDataMigrationWFClient;
   private final DebtPositionTypeDataMigrationWFClient debtPositionTypeDataMigrationWFClient;
   private final DebtPositionTypeOrgOperatorDataMigrationWFClient debtPositionTypeOrgOperatorDataMigrationWFClient;
+  private final PaymentNotificationDataMigrationWFClient paymentNotificationDataMigrationWFClient;
   private final PaymentsReportingDataMigrationWFClient paymentsReportingDataMigrationWFClient;
   private final TreasuryCsvCompleteDataMigrationWFClient treasuryCsvCompleteDataMigrationWFClient;
 
   @Override
   public WorkflowCreatedDTO invokeWf(Uploads uploads) {
-    DataMigrationWfClient wfClient = switch (uploads.getFileType()){
+    DataMigrationWfClient wfClient = switch (uploads.getFileType()) {
       case ORGANIZATIONS -> organizationDataMigrationWFClient;
-      case DEBT_POSITIONS_TYPE_ORG_OPERATORS -> debtPositionTypeOrgOperatorDataMigrationWFClient;
+      case DEBT_POSITIONS_TYPE_ORG_OPERATORS ->
+        debtPositionTypeOrgOperatorDataMigrationWFClient;
+      case PAYMENT_NOTIFICATION -> paymentNotificationDataMigrationWFClient;
       case PAYMENTS_REPORTING -> paymentsReportingDataMigrationWFClient;
       case DEBT_POSITIONS_TYPE -> debtPositionTypeDataMigrationWFClient;
       case TREASURY_CSV_COMPLETE -> treasuryCsvCompleteDataMigrationWFClient;

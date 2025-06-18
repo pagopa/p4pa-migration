@@ -13,6 +13,6 @@ import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 @ActivityInterface
 public interface PaymentsReportingMigrationFileTypeHandlerActivity extends MigrationFileTypeHandlerActivity {
   @Override
-  @ActivityMethod
+  @ActivityMethod(name = "ProcessPaymentsReportingFile")
   MigrationFileResult processFile(Long uploadId);
 }

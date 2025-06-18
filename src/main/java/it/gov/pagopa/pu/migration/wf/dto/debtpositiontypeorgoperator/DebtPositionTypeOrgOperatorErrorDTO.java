@@ -1,6 +1,6 @@
-package it.gov.pagopa.pu.migration.dto.debtpositiontypeorgoperator;
+package it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator;
 
-import it.gov.pagopa.pu.migration.dto.ErrorFileDTO;
+import it.gov.pagopa.pu.migration.wf.dto.ErrorFileDTO;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 

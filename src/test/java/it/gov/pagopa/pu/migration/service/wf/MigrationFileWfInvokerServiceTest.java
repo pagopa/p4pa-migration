@@ -26,7 +26,8 @@ class MigrationFileWfInvokerServiceTest {
   private DebtPositionTypeDataMigrationWFClient debtPositionTypeDataMigrationWFClientMock;
   @Mock
   private DebtPositionTypeOrgOperatorDataMigrationWFClient debtPositionTypeOrgOperatorDataMigrationWFClientMock;
-
+  @Mock
+  private PaymentNotificationDataMigrationWFClient paymentNotificationDataMigrationWFClientMock;
   @Mock
   private PaymentsReportingDataMigrationWFClient paymentsReportingDataMigrationWFClientMock;
 
@@ -42,6 +43,7 @@ class MigrationFileWfInvokerServiceTest {
     service = new MigrationFileWfInvokerServiceImpl(organizationDataMigrationWFClientMock,
       debtPositionTypeDataMigrationWFClientMock,
       debtPositionTypeOrgOperatorDataMigrationWFClientMock,
+      paymentNotificationDataMigrationWFClientMock,
       paymentsReportingDataMigrationWFClientMock,
       treasuryCsvCompleteDataMigrationWFClientMock
     );
@@ -50,6 +52,7 @@ class MigrationFileWfInvokerServiceTest {
       MigrationFileTypeEnum.ORGANIZATIONS, organizationDataMigrationWFClientMock,
       MigrationFileTypeEnum.DEBT_POSITIONS_TYPE, debtPositionTypeDataMigrationWFClientMock,
       MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS, debtPositionTypeOrgOperatorDataMigrationWFClientMock,
+      MigrationFileTypeEnum.PAYMENT_NOTIFICATION, paymentNotificationDataMigrationWFClientMock,
       MigrationFileTypeEnum.PAYMENTS_REPORTING, paymentsReportingDataMigrationWFClientMock,
       MigrationFileTypeEnum.TREASURY_CSV_COMPLETE, treasuryCsvCompleteDataMigrationWFClientMock
     );
@@ -60,6 +63,7 @@ class MigrationFileWfInvokerServiceTest {
     Mockito.verifyNoMoreInteractions(organizationDataMigrationWFClientMock,
       debtPositionTypeDataMigrationWFClientMock,
       debtPositionTypeOrgOperatorDataMigrationWFClientMock,
+      paymentNotificationDataMigrationWFClientMock,
       paymentsReportingDataMigrationWFClientMock,
       treasuryCsvCompleteDataMigrationWFClientMock
     );
