@@ -275,6 +275,7 @@ components:
         - PAYMENT_NOTIFICATION
         - PAYMENTS_REPORTING
         - TREASURY_CSV_COMPLETE
+        - ASSESSMENTS_REGISTRY
     UploadMigrationFileResponseDTO:
       type: object
       required:
