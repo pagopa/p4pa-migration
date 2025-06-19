@@ -4,6 +4,7 @@ import io.temporal.workflow.Workflow;
 import it.gov.pagopa.pu.migration.wf.activity.IngestionFlowFileRetrieverActivity;
 import it.gov.pagopa.pu.migration.wf.activity.UploadDetailsUpdateActivity;
 import it.gov.pagopa.pu.migration.wf.activity.UploadsStatusUpdateActivity;
+import it.gov.pagopa.pu.migration.wf.activity.ingestion.assessmentsregistry.AssessmentsRegistryMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.debtpositiontype.DebtPositionTypeMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.debtpositiontypeorgoperator.DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.organizations.OrganizationsMigrationFileTypeHandlerActivity;
@@ -25,6 +26,10 @@ public class DataMigrationWfConfig extends BaseWfConfig {
 
   public OrganizationsMigrationFileTypeHandlerActivity buildOrganizationMigrationFileTypeHandlerActivityStub() {
     return Workflow.newActivityStub(OrganizationsMigrationFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
+  }
+
+  public AssessmentsRegistryMigrationFileTypeHandlerActivity buildAssessmentsRegistryMigrationFileTypeHandlerActivityStub() {
+    return Workflow.newActivityStub(AssessmentsRegistryMigrationFileTypeHandlerActivity.class, TemporalWFImplementationCustomizer.baseWfConfig2ActivityOptions(this));
   }
 
   public PaymentNotificationMigrationFileTypeHandlerActivity buildPaymentNotificationMigrationFileTypeHandlerActivityStub() {
