@@ -111,8 +111,12 @@ folders:
   migration-file-type-paths:
     ORGANIZATIONS: "migration-data/organizations"
     DEBT_POSITIONS_TYPE: "migration-data/debt-positions-type"
+    DEBT_POSITIONS_TYPE_ORG: "migration-data/debt-positions-type-org"
     DEBT_POSITIONS_TYPE_ORG_OPERATORS: "migration-data/debt-positions-type-org-operators"
     PAYMENTS_REPORTING: "migration-data/payments-reporting"
+    PAYMENT_NOTIFICATION: "migration-data/payment-notification"
+    TREASURY_CSV_COMPLETE: "migration-data/treasury-csv-complete"
+    ASSESSMENTS_REGISTRY: "migration-data/assessments-registry"
 
 
 encryption:
