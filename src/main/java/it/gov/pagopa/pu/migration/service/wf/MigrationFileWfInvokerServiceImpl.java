@@ -17,6 +17,7 @@ public class MigrationFileWfInvokerServiceImpl implements MigrationFileWfInvoker
   private final PaymentsReportingDataMigrationWFClient paymentsReportingDataMigrationWFClient;
   private final TreasuryCsvCompleteDataMigrationWFClient treasuryCsvCompleteDataMigrationWFClient;
   private final AssessmentsRegistryDataMigrationWFClient assessmentsRegistryDataMigrationWFClient;
+  private final DebtPositionTypeOrgDataMigrationWFClient debtPositionTypeOrgDataMigrationWFClient;
 
   @Override
   public WorkflowCreatedDTO invokeWf(Uploads uploads) {
@@ -29,6 +30,7 @@ public class MigrationFileWfInvokerServiceImpl implements MigrationFileWfInvoker
       case DEBT_POSITIONS_TYPE -> debtPositionTypeDataMigrationWFClient;
       case TREASURY_CSV_COMPLETE -> treasuryCsvCompleteDataMigrationWFClient;
       case ASSESSMENTS_REGISTRY -> assessmentsRegistryDataMigrationWFClient;
+      case DEBT_POSITIONS_TYPE_ORG -> debtPositionTypeOrgDataMigrationWFClient;
     };
 
     return wfClient.migrate(uploads.getUploadId());

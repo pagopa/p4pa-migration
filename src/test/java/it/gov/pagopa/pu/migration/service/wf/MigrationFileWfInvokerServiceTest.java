@@ -30,8 +30,11 @@ class MigrationFileWfInvokerServiceTest {
   private PaymentNotificationDataMigrationWFClient paymentNotificationDataMigrationWFClientMock;
   @Mock
   private PaymentsReportingDataMigrationWFClient paymentsReportingDataMigrationWFClientMock;
+
   @Mock
   private TreasuryCsvCompleteDataMigrationWFClient treasuryCsvCompleteDataMigrationWFClientMock;
+  @Mock
+  private DebtPositionTypeOrgDataMigrationWFClient debtPositionTypeOrgDataMigrationWFClientMock;
   @Mock
   private AssessmentsRegistryDataMigrationWFClient assessmentsRegistryDataMigrationWFClientMock;
 
@@ -47,7 +50,8 @@ class MigrationFileWfInvokerServiceTest {
       paymentNotificationDataMigrationWFClientMock,
       paymentsReportingDataMigrationWFClientMock,
       treasuryCsvCompleteDataMigrationWFClientMock,
-      assessmentsRegistryDataMigrationWFClientMock
+      assessmentsRegistryDataMigrationWFClientMock,
+      debtPositionTypeOrgDataMigrationWFClientMock
     );
 
     fileType2ExpectedClientMock = Map.of(
@@ -57,7 +61,8 @@ class MigrationFileWfInvokerServiceTest {
       MigrationFileTypeEnum.PAYMENT_NOTIFICATION, paymentNotificationDataMigrationWFClientMock,
       MigrationFileTypeEnum.PAYMENTS_REPORTING, paymentsReportingDataMigrationWFClientMock,
       MigrationFileTypeEnum.TREASURY_CSV_COMPLETE, treasuryCsvCompleteDataMigrationWFClientMock,
-      MigrationFileTypeEnum.ASSESSMENTS_REGISTRY, assessmentsRegistryDataMigrationWFClientMock
+      MigrationFileTypeEnum.ASSESSMENTS_REGISTRY, assessmentsRegistryDataMigrationWFClientMock,
+      MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG, debtPositionTypeOrgDataMigrationWFClientMock
     );
   }
 
@@ -69,7 +74,8 @@ class MigrationFileWfInvokerServiceTest {
       paymentNotificationDataMigrationWFClientMock,
       paymentsReportingDataMigrationWFClientMock,
       treasuryCsvCompleteDataMigrationWFClientMock,
-      assessmentsRegistryDataMigrationWFClientMock
+      assessmentsRegistryDataMigrationWFClientMock,
+      debtPositionTypeOrgDataMigrationWFClientMock
     );
   }
 
