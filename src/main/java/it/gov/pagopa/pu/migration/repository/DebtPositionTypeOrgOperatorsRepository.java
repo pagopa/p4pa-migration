@@ -1,10 +1,10 @@
 package it.gov.pagopa.pu.migration.repository;
 
-import it.gov.pagopa.pu.migration.model.OperatorsDebtPosTypeOrg;
+import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
-public interface DebtPositionTypeOrgOperatorsRepository extends JpaRepository<OperatorsDebtPosTypeOrg, Long> {
+public interface DebtPositionTypeOrgOperatorsRepository extends JpaRepository<DebtPositionTypeOrgOperators, Long> {
 
     /**
      * Finds the first operator by its IPA code and debt position type organization code.
@@ -13,6 +13,6 @@ public interface DebtPositionTypeOrgOperatorsRepository extends JpaRepository<Op
      * @param debtPositionTypeOrgCode the code of the debt position type organization
      * @return an Optional containing the operator if found, or empty if not found
      */
-    Optional<OperatorsDebtPosTypeOrg> findFirstByOrganizationIdAndDebtPositionTypeOrgCode(Long organizationId, String debtPositionTypeOrgCode);
+    Optional<DebtPositionTypeOrgOperators> findFirstByOrganizationIdAndDebtPositionTypeOrgCode(Long organizationId, String debtPositionTypeOrgCode);
 
 }

@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.migration.wf.mapper;
 
 import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
-import it.gov.pagopa.pu.migration.model.OperatorsDebtPosTypeOrg;
+import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,14 +15,14 @@ public class DebtPositionTypeOrgOperatorMapper {
     this.dataCipherPsw = dataCipherPsw;
   }
 
-  public OperatorsDebtPosTypeOrg mapToOperators(DebtPositionTypeOrgOperatorMigrationFileDTO dto,
-                                                Long debtPositionTypeOrgId,
-                                                Long organizationId) {
+  public DebtPositionTypeOrgOperators mapToOperators(DebtPositionTypeOrgOperatorMigrationFileDTO dto,
+                                                     Long debtPositionTypeOrgId,
+                                                     Long organizationId) {
     if (dto == null) {
       return null;
     }
     byte [] cfOperatorHash = AESUtils.encrypt(this.dataCipherPsw, dto.getCfOperator());
-    return OperatorsDebtPosTypeOrg.builder()
+    return DebtPositionTypeOrgOperators.builder()
       .cfOperatorHash(cfOperatorHash)
       .organizationId(organizationId)
       .debtPositionTypeOrgCode(dto.getDebtPositionTypeOrgCode())

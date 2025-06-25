@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositio
 import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
 import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.mapper.DebtPositionTypeOrgOperatorMapper;
-import it.gov.pagopa.pu.migration.model.OperatorsDebtPosTypeOrg;
+import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.DebtPositionTypeOrgOperatorsRepository;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
@@ -111,7 +111,7 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
   @Test
   void consumeRowReturnsFalseAndAddsErrorIfDuplicate() {
 
-    OperatorsDebtPosTypeOrg existingDebtPosTypeOrgOperator = OperatorsDebtPosTypeOrg.builder()
+    DebtPositionTypeOrgOperators existingDebtPosTypeOrgOperator = DebtPositionTypeOrgOperators.builder()
       .organizationId(0L)
       .debtPositionTypeOrgCode("CODE")
       .build();
@@ -144,7 +144,7 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     DebtPositionTypeOrg debtTypeOrgDTO = new DebtPositionTypeOrg();
     debtTypeOrgDTO.organizationId(2L);
     when(debtPositionTypeOrgServiceMock.getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any())).thenReturn(Optional.of(debtTypeOrgDTO));
-    when(mapperMock.mapToOperators(any(), anyLong(), anyLong())).thenReturn(new OperatorsDebtPosTypeOrg());
+    when(mapperMock.mapToOperators(any(), anyLong(), anyLong())).thenReturn(new DebtPositionTypeOrgOperators());
     DebtPositionTypeOrgOperatorMigrationFileResult result = new DebtPositionTypeOrgOperatorMigrationFileResult();
     List<DebtPositionTypeOrgOperatorErrorDTO> errorList = new java.util.ArrayList<>();
     boolean consumed = service.consumeRow(1, dto, result, errorList, new Uploads());
@@ -152,7 +152,7 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     verify(debtPositionTypeOrgOperatorsRepositoryMock).findFirstByOrganizationIdAndDebtPositionTypeOrgCode(1L, "CODE");
     verify(organizationServiceMock).getOrganizationByIpaCode(anyString(), anyString());
     verify(debtPositionTypeOrgServiceMock).getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any());
-    verify(debtPositionTypeOrgOperatorsRepositoryMock).save(any(OperatorsDebtPosTypeOrg.class));
+    verify(debtPositionTypeOrgOperatorsRepositoryMock).save(any(DebtPositionTypeOrgOperators.class));
   }
 
   @Test
