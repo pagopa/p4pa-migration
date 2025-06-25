@@ -30,7 +30,7 @@ class DebtPositionTypeOrgOperatorMapperTest {
     DebtPositionTypeOrgOperators result = mapper.mapToOperators(migrationFileDTO,debtPositionTypeOrgId,organizationId);
 
     // Then
-    TestUtils.checkNotNullFields(result, "operatorDebtPosTypeOrgId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+    TestUtils.checkNotNullFields(result, "debtPositionTypeOrgOperatorId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
     Assertions.assertEquals(organizationId, result.getOrganizationId());
     Assertions.assertEquals(migrationFileDTO.getDebtPositionTypeOrgCode(), result.getDebtPositionTypeOrgCode());
     Assertions.assertEquals(debtPositionTypeOrgId, result.getDebtPositionTypeOrgId());
