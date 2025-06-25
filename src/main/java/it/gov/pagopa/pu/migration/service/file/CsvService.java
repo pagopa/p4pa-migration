@@ -28,13 +28,19 @@ import static com.opencsv.enums.CSVReaderNullFieldIndicator.EMPTY_SEPARATORS;
 @Slf4j
 public class CsvService {
 
+    private final char separator;
+    private final char quoteChar;
     private final int warnThreshold;
     private final int errorThreshold;
 
 
     public CsvService(
+            @Value("${csv.separator}") char separator,
+            @Value("${csv.quote-char}") char quoteChar,
             @Value("${migration-files.page-request-thresholds.warn}")int warnThreshold,
             @Value("${migration-files.page-request-thresholds.error}")int errorThreshold) {
+        this.separator = separator;
+        this.quoteChar = quoteChar;
         this.warnThreshold = warnThreshold;
         this.errorThreshold = errorThreshold;
     }
@@ -104,6 +110,8 @@ public class CsvService {
 
             StatefulBeanToCsv<C> beanToCsv = new StatefulBeanToCsvBuilder<C>(writer)
                     .withProfile(csvProfile)
+                    .withSeparator(separator)
+                    .withQuotechar(quoteChar)
                     .withMappingStrategy(mappingStrategy)
                     .withThrowExceptions(true)
                     .build();
@@ -128,6 +136,8 @@ public class CsvService {
 
     private ICSVWriter buildCsvWriter(File file) throws IOException {
         return new CSVWriterBuilder(new FileWriter(file))
+                .withSeparator(separator)
+                .withQuoteChar(quoteChar)
                 .build();
     }
 
@@ -158,6 +168,8 @@ public class CsvService {
             CsvToBean<T> csvToBean = new CsvToBeanBuilder<T>(fileReader)
                     .withType(typeClass)
                     .withMappingStrategy(strategy)
+                    .withSeparator(separator)
+                    .withQuoteChar(quoteChar)
                     .withIgnoreLeadingWhiteSpace(true)
                     .withFieldAsNull(EMPTY_SEPARATORS)
                     .withThrowExceptions(false)

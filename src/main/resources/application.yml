@@ -122,6 +122,10 @@ folders:
 encryption:
   file-encrypt-password: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"
 
+csv:
+  separator: "\${CSV_SEPARATOR_CHAR:;}"
+  quote-char: "\${CSV_QUOTE_CHAR:\\\"}"
+
 zip-file:
   max-entries: "\${ZIP_MAX_ENTRIES:1000}"
   max-uncompressed-size: "\${ZIP_MAX_UNCOMPRESSED_SIZE:52428800}" # 50MB
