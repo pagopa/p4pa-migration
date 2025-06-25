@@ -16,8 +16,8 @@ public class DebtPositionTypeOrgOperatorMapper {
   }
 
   public DebtPositionTypeOrgOperators mapToOperators(DebtPositionTypeOrgOperatorMigrationFileDTO dto,
-                                                    Long debtPositionTypeOrgId,
-                                                    Long organizationId) {
+                                                     Long debtPositionTypeOrgId,
+                                                     Long organizationId) {
     if (dto == null) {
       return null;
     }
