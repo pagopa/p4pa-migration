@@ -15,7 +15,7 @@ public class DebtPositionTypeOrgOperators extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "debt_position_type_org_operator_generator")
     @SequenceGenerator(name = "debt_position_type_org_operator_generator", sequenceName = "debt_position_type_org_operator_id_seq", allocationSize = 1)
-    private Long operatorDebtPosTypeOrgId;
+    private Long debtPositionTypeOrgOperatorId;
     @NotNull
     private Long organizationId;
     @NotNull
