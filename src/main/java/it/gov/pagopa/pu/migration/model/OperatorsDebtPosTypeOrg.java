@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = false)
-public class DebtPositionTypeOrgOperators extends BaseEntity {
+public class OperatorsDebtPosTypeOrg extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "operators_debt_pos_type_org_generator")
     @SequenceGenerator(name = "operators_debt_pos_type_org_generator", sequenceName = "operator_debt_pos_type_org_id_seq", allocationSize = 1)

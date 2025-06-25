@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.migration.mapper;
 
 import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
-import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
+import it.gov.pagopa.pu.migration.model.OperatorsDebtPosTypeOrg;
 import it.gov.pagopa.pu.migration.utils.TestUtils;
 import it.gov.pagopa.pu.migration.wf.mapper.DebtPositionTypeOrgOperatorMapper;
 import org.junit.jupiter.api.Assertions;
@@ -27,7 +27,7 @@ class DebtPositionTypeOrgOperatorMapperTest {
     DebtPositionTypeOrgOperatorMigrationFileDTO migrationFileDTO = TestUtils.getPodamFactory().manufacturePojo(DebtPositionTypeOrgOperatorMigrationFileDTO.class);
 
     // When
-    DebtPositionTypeOrgOperators result = mapper.mapToOperators(migrationFileDTO,debtPositionTypeOrgId,organizationId);
+    OperatorsDebtPosTypeOrg result = mapper.mapToOperators(migrationFileDTO,debtPositionTypeOrgId,organizationId);
 
     // Then
     TestUtils.checkNotNullFields(result, "operatorDebtPosTypeOrgId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");

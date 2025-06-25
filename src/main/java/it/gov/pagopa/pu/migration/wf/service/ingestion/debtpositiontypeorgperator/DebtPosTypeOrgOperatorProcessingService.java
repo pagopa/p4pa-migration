@@ -9,7 +9,7 @@ import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositio
 import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.MigrationFileProcessingException;
 import it.gov.pagopa.pu.migration.wf.mapper.DebtPositionTypeOrgOperatorMapper;
-import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
+import it.gov.pagopa.pu.migration.model.OperatorsDebtPosTypeOrg;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.DebtPositionTypeOrgOperatorsRepository;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
@@ -114,7 +114,7 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
         .getOrganizationId();
 
       // Check for duplicates
-      Optional<DebtPositionTypeOrgOperators> existingOrg = repository.findFirstByOrganizationIdAndDebtPositionTypeOrgCode(
+      Optional<OperatorsDebtPosTypeOrg> existingOrg = repository.findFirstByOrganizationIdAndDebtPositionTypeOrgCode(
         organizationId, dto.getDebtPositionTypeOrgCode());
       if (existingOrg.isPresent()) {
         errorList.add(buildErrorDto(
@@ -127,7 +127,7 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
       }
 
       // Mapping and saving
-      DebtPositionTypeOrgOperators entity = debtPositionTypeOrgOperatorMapper.mapToOperators(dto, debtPositionTypeOrgId, organizationId);
+      OperatorsDebtPosTypeOrg entity = debtPositionTypeOrgOperatorMapper.mapToOperators(dto, debtPositionTypeOrgId, organizationId);
       if (entity == null) {
         errorList.add(buildErrorDto(
           fileName,
