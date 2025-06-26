@@ -4,8 +4,6 @@ import io.temporal.spring.boot.ActivityImpl;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
 import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
-import it.gov.pagopa.pu.migration.connector.organization.client.OrganizationSearchClient;
-import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadsRepository;
@@ -13,6 +11,7 @@ import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.BaseMigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.InvalidMigrationFileException;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.debtpositiontypeorgperator.DebtPosTypeOrgOperatorProcessingService;
@@ -23,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -95,6 +95,7 @@ public class DebtPosTypeOrgOperatorsMigrationFileTypeHandlerActivityImpl extends
       .errorDescription(errorDescription)
       .numTotalRowsArchive(numTotalrows)
       .numCorrectlyProcessedTotalRowsArchive(numCorrectlyProcessedRows)
+      .ingestionFlowFiles(Collections.emptyList())
       .build();
   }
 

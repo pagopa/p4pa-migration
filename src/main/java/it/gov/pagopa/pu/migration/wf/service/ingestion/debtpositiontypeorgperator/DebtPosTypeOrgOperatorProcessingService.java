@@ -125,7 +125,7 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
         return false;
       }
 
-      Optional<DebtPositionTypeOrgOperators> existingOrg = repository.findFirstByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(
+      Optional<DebtPositionTypeOrgOperators> existingOrg = repository.findByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(
         organizationId, dto.getDebtPositionTypeOrgCode(), entity.getCfOperatorHash());
       if (existingOrg.isPresent()) {
         errorList.add(buildErrorDto(
