@@ -15,6 +15,6 @@ public interface DebtPositionTypeOrgOperatorsRepository extends JpaRepository<De
      * @param cfOperatorHash the hash of the operator's fiscal code
      * @return an Optional containing the operator if found, or empty if not found
      */
-    Optional<DebtPositionTypeOrgOperators> findFirstByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(Long organizationId, String debtPositionTypeOrgCode, byte[] cfOperatorHash);
+    Optional<DebtPositionTypeOrgOperators> findByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(Long organizationId, String debtPositionTypeOrgCode, byte[] cfOperatorHash);
 
 }

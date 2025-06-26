@@ -121,7 +121,7 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     when(dto.getDebtPositionTypeOrgCode()).thenReturn("CODE");
     when(authnServiceMock.getAccessToken()).thenReturn("token");
     when(organizationServiceMock.getOrganizationByIpaCode(any(), any())).thenReturn(Optional.of(new Organization().organizationId(0L)));
-    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(eq(0L), eq("CODE"), any()))
+    when(debtPositionTypeOrgOperatorsRepositoryMock.findByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(eq(0L), eq("CODE"), any()))
       .thenReturn(Optional.of(existingDebtPosTypeOrgOperator));
     when(debtPositionTypeOrgServiceMock.getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any()))
         .thenReturn(Optional.of(new DebtPositionTypeOrg()));
@@ -140,7 +140,7 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     when(dto.getOrgIpaCode()).thenReturn("IPA");
     when(dto.getDebtPositionTypeOrgCode()).thenReturn("CODE");
     when(organizationServiceMock.getOrganizationByIpaCode(anyString(), anyString())).thenReturn(Optional.of(new Organization().organizationId(1L)));
-    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(eq(1L), eq("CODE"), any())).thenReturn(Optional.empty());
+    when(debtPositionTypeOrgOperatorsRepositoryMock.findByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(eq(1L), eq("CODE"), any())).thenReturn(Optional.empty());
     when(authnServiceMock.getAccessToken()).thenReturn("token");
     DebtPositionTypeOrg debtTypeOrgDTO = new DebtPositionTypeOrg();
     debtTypeOrgDTO.organizationId(2L);
