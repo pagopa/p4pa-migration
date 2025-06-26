@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface DebtPositionTypeOrgOperatorsRepository extends JpaRepository<DebtPositionTypeOrgOperators, Long> {
 
     /**
-     * Finds the first operator by organizationId, debt position type organization code, and operator's fiscal code hash.
+     * Finds the operator by organizationId, debt position type organization code, and operator's fiscal code hash.
      *
      * @param organizationId the organization id
      * @param debtPositionTypeOrgCode the code of the debt position type organization
