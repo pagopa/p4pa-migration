@@ -211,7 +211,6 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     when(dto2.getDebtPositionTypeOrgCode()).thenReturn("CODE2");
     when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA1"), anyString())).thenReturn(Optional.of(new Organization().organizationId(1L)));
     when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA2"), anyString())).thenReturn(Optional.of(new Organization().organizationId(2L)));
-//    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(anyLong(), anyString(), any())).thenReturn(Optional.empty());
     when(authnServiceMock.getAccessToken()).thenReturn("token");
     DebtPositionTypeOrg debtTypeOrgDTO = new DebtPositionTypeOrg();
     debtTypeOrgDTO.organizationId(2L);
