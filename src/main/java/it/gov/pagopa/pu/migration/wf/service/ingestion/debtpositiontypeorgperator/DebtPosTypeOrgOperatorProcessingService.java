@@ -4,15 +4,15 @@ import com.opencsv.exceptions.CsvException;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.debtposition.DebtPositionTypeOrgService;
 import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
+import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
+import it.gov.pagopa.pu.migration.model.Uploads;
+import it.gov.pagopa.pu.migration.repository.DebtPositionTypeOrgOperatorsRepository;
+import it.gov.pagopa.pu.migration.service.file.CsvService;
 import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
 import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
 import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.MigrationFileProcessingException;
 import it.gov.pagopa.pu.migration.wf.mapper.DebtPositionTypeOrgOperatorMapper;
-import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
-import it.gov.pagopa.pu.migration.model.Uploads;
-import it.gov.pagopa.pu.migration.repository.DebtPositionTypeOrgOperatorsRepository;
-import it.gov.pagopa.pu.migration.service.file.CsvService;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.ErrorArchiverService;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationProcessingService;
 import lombok.extern.slf4j.Slf4j;
@@ -111,22 +111,9 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
       Long debtPositionTypeOrgId = debtPositionTypeOrgService.getDebtPositionTypeOrgByCodeAndOrgId(
           dto.getDebtPositionTypeOrgCode(), organizationId, authnService.getAccessToken())
         .orElseThrow(() -> new IllegalArgumentException("DebtPositionTypeOrg with code " + dto.getDebtPositionTypeOrgCode() + " not found for orgId " + organizationId))
-        .getOrganizationId();
+        .getDebtPositionTypeOrgId();
 
       // Check for duplicates
-      Optional<DebtPositionTypeOrgOperators> existingOrg = repository.findFirstByOrganizationIdAndDebtPositionTypeOrgCode(
-        organizationId, dto.getDebtPositionTypeOrgCode());
-      if (existingOrg.isPresent()) {
-        errorList.add(buildErrorDto(
-          fileName,
-          lineNumber,
-          "OPERATOR_DEBT_POS_TYPE_ORG_ALREADY_EXISTS",
-          "Operator debt position type org already exists"
-        ));
-        return false;
-      }
-
-      // Mapping and saving
       DebtPositionTypeOrgOperators entity = debtPositionTypeOrgOperatorMapper.mapToOperators(dto, debtPositionTypeOrgId, organizationId);
       if (entity == null) {
         errorList.add(buildErrorDto(
@@ -137,9 +124,22 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
         ));
         return false;
       }
-      repository.save(entity);
+
+      Optional<DebtPositionTypeOrgOperators> existingOrg = repository.findFirstByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(
+        organizationId, dto.getDebtPositionTypeOrgCode(), entity.getCfOperatorHash());
+      if (existingOrg.isPresent()) {
+        errorList.add(buildErrorDto(
+          fileName,
+          lineNumber,
+          "OPERATOR_DEBT_POS_TYPE_ORG_ALREADY_EXISTS",
+          "Operator debt position type org already exists"
+        ));
+        return false;
+      }
+
+      DebtPositionTypeOrgOperators savedEntity = repository.save(entity);
       log.info("Saved OperatorsDebtPositionTypeOrg: orgIpaCode={}, debtPositionTypeOrgCode={}, organizationId={}, debtPositionTypeOrgId={}",
-        dto.getOrgIpaCode(), dto.getDebtPositionTypeOrgCode(), organizationId, debtPositionTypeOrgId);
+        dto.getOrgIpaCode(), dto.getDebtPositionTypeOrgCode(), savedEntity.getOrganizationId(), savedEntity.getDebtPositionTypeOrgId());
       return true;
 
     } catch (Exception e) {

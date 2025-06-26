@@ -4,15 +4,15 @@ import it.gov.pagopa.pu.debtposition.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.debtposition.DebtPositionTypeOrgService;
 import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
-import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
-import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
-import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
-import it.gov.pagopa.pu.migration.wf.mapper.DebtPositionTypeOrgOperatorMapper;
 import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.DebtPositionTypeOrgOperatorsRepository;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorErrorDTO;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.MigrationFileProcessingException;
+import it.gov.pagopa.pu.migration.wf.mapper.DebtPositionTypeOrgOperatorMapper;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.ErrorArchiverService;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import org.junit.jupiter.api.AfterEach;
@@ -121,10 +121,11 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     when(dto.getDebtPositionTypeOrgCode()).thenReturn("CODE");
     when(authnServiceMock.getAccessToken()).thenReturn("token");
     when(organizationServiceMock.getOrganizationByIpaCode(any(), any())).thenReturn(Optional.of(new Organization().organizationId(0L)));
-    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCode(0L, "CODE"))
-        .thenReturn(Optional.of(existingDebtPosTypeOrgOperator));
+    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(eq(0L), eq("CODE"), any()))
+      .thenReturn(Optional.of(existingDebtPosTypeOrgOperator));
     when(debtPositionTypeOrgServiceMock.getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any()))
         .thenReturn(Optional.of(new DebtPositionTypeOrg()));
+    when(mapperMock.mapToOperators(any(), any(), anyLong())).thenReturn(existingDebtPosTypeOrgOperator);
     DebtPositionTypeOrgOperatorMigrationFileResult result = new DebtPositionTypeOrgOperatorMigrationFileResult();
     List<DebtPositionTypeOrgOperatorErrorDTO> errorList = new java.util.ArrayList<>();
     boolean consumed = service.consumeRow(1, dto, result, errorList, new Uploads());
@@ -139,17 +140,19 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     when(dto.getOrgIpaCode()).thenReturn("IPA");
     when(dto.getDebtPositionTypeOrgCode()).thenReturn("CODE");
     when(organizationServiceMock.getOrganizationByIpaCode(anyString(), anyString())).thenReturn(Optional.of(new Organization().organizationId(1L)));
-    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCode(1L, "CODE")).thenReturn(Optional.empty());
+    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(eq(1L), eq("CODE"), any())).thenReturn(Optional.empty());
     when(authnServiceMock.getAccessToken()).thenReturn("token");
     DebtPositionTypeOrg debtTypeOrgDTO = new DebtPositionTypeOrg();
     debtTypeOrgDTO.organizationId(2L);
     when(debtPositionTypeOrgServiceMock.getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any())).thenReturn(Optional.of(debtTypeOrgDTO));
-    when(mapperMock.mapToOperators(any(), anyLong(), anyLong())).thenReturn(new DebtPositionTypeOrgOperators());
+    when(mapperMock.mapToOperators(any(), any(), anyLong())).thenReturn(new DebtPositionTypeOrgOperators());
     DebtPositionTypeOrgOperatorMigrationFileResult result = new DebtPositionTypeOrgOperatorMigrationFileResult();
     List<DebtPositionTypeOrgOperatorErrorDTO> errorList = new java.util.ArrayList<>();
+    DebtPositionTypeOrgOperators savedEntity = new DebtPositionTypeOrgOperators();
+    savedEntity.setOrganizationId(1L);
+    when(debtPositionTypeOrgOperatorsRepositoryMock.save(any(DebtPositionTypeOrgOperators.class))).thenReturn(savedEntity);
     boolean consumed = service.consumeRow(1, dto, result, errorList, new Uploads());
     assertTrue(consumed);
-    verify(debtPositionTypeOrgOperatorsRepositoryMock).findFirstByOrganizationIdAndDebtPositionTypeOrgCode(1L, "CODE");
     verify(organizationServiceMock).getOrganizationByIpaCode(anyString(), anyString());
     verify(debtPositionTypeOrgServiceMock).getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any());
     verify(debtPositionTypeOrgOperatorsRepositoryMock).save(any(DebtPositionTypeOrgOperators.class));
@@ -208,7 +211,7 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     when(dto2.getDebtPositionTypeOrgCode()).thenReturn("CODE2");
     when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA1"), anyString())).thenReturn(Optional.of(new Organization().organizationId(1L)));
     when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA2"), anyString())).thenReturn(Optional.of(new Organization().organizationId(2L)));
-    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCode(anyLong(), anyString())).thenReturn(Optional.empty());
+//    when(debtPositionTypeOrgOperatorsRepositoryMock.findFirstByOrganizationIdAndDebtPositionTypeOrgCodeAndCfOperatorHash(anyLong(), anyString(), any())).thenReturn(Optional.empty());
     when(authnServiceMock.getAccessToken()).thenReturn("token");
     DebtPositionTypeOrg debtTypeOrgDTO = new DebtPositionTypeOrg();
     debtTypeOrgDTO.organizationId(2L);
