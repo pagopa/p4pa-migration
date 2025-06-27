@@ -91,8 +91,9 @@ class MigrationFileControllerTest {
     Mockito.when(serviceMock.getUploads(Mockito.eq(orgIpaCode), Mockito.eq(fileType), Mockito.eq(status), Mockito.same(loggedUser)))
       .thenReturn(expectedResult);
 
-    mockMvc.perform(get("/migration/organization/{orgIpaCode}/{migrationFileType}",orgIpaCode, fileType)
+    mockMvc.perform(get("/migration/organization/{orgIpaCode}",orgIpaCode)
         .queryParam("status", status.toString())
+        .queryParam("migrationFileType", fileType.toString())
         .contentType(MediaType.APPLICATION_JSON)
       ).andExpect(status().isOk())
       .andExpect(content().json("[{\"uploadId\":1}]"));

@@ -26,7 +26,9 @@ public interface UploadsRepository extends JpaRepository<Uploads, Long> {
 
   @Query("SELECT u " +
     " FROM Uploads u " +
-    " WHERE u.organizationId=:organizationId AND fileType=:fileType" +
-    "   AND (:status IS NULL OR u.status=:status)")
+    " WHERE u.organizationId=:organizationId " +
+    "   AND (:fileType IS NULL OR fileType=:fileType)" +
+    "   AND (:status IS NULL OR u.status=:status)" +
+    " ORDER BY u.updateDate DESC")
   List<Uploads> findByOrganizationIdAndFileTypeAndStatus(Long organizationId, MigrationFileTypeEnum fileType, UploadsStatusEnum status);
 }

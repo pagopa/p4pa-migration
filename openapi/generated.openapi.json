@@ -21,62 +21,6 @@
   } ],
   "paths" : {
     "/migration/organization/{orgIpaCode}/{migrationFileType}" : {
-      "get" : {
-        "tags" : [ "migration-file" ],
-        "summary" : "getMigrationFlows",
-        "description" : "Service to retrieve upload request statuses",
-        "operationId" : "getMigrationUploads",
-        "parameters" : [ {
-          "name" : "orgIpaCode",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "migrationFileType",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/MigrationFileTypeEnum"
-          }
-        }, {
-          "name" : "status",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "$ref" : "#/components/schemas/UploadsStatusEnum"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Created",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/Uploads"
-                  }
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Server Error",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorDTO"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "BearerAuth" : [ ]
-        } ]
-      },
       "post" : {
         "tags" : [ "migration-file" ],
         "summary" : "uploadMigrationFlowFile",
@@ -171,6 +115,64 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/migration/organization/{orgIpaCode}" : {
+      "get" : {
+        "tags" : [ "migration-file" ],
+        "summary" : "getMigrationFlows",
+        "description" : "Service to retrieve upload request statuses",
+        "operationId" : "getMigrationUploads",
+        "parameters" : [ {
+          "name" : "orgIpaCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "migrationFileType",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/MigrationFileTypeEnum"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/UploadsStatusEnum"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Uploads"
+                  }
                 }
               }
             }
