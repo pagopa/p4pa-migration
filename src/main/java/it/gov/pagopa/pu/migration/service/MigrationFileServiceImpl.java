@@ -104,7 +104,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   public UploadDetails getUploadDetail(String orgIpaCode, Long uploadId, Long uploadDetailsId, UserInfo loggedUser) {
     getUpload(orgIpaCode, uploadId, loggedUser);
 
-    UploadDetails uploadDetail = uploadDetailsRepository.findById(uploadId).orElseThrow(() -> new EntityNotFoundException("Cannot find Upload having id " + uploadId));
+    UploadDetails uploadDetail = uploadDetailsRepository.findById(uploadDetailsId).orElseThrow(() -> new EntityNotFoundException("Cannot find Upload Details having id " + uploadDetailsId));
     if(!uploadDetail.getUploadId().equals(uploadId)){
       throw new AuthorizationDeniedException("UploadDetailsId not related to requested upload");
     }

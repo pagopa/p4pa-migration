@@ -319,7 +319,7 @@ class MigrationFileServiceTest {
       .when(service)
       .getUpload(orgIpaCode, uploadId, loggedUser);
 
-    Mockito.when(uploadDetailsRepositoryMock.findById(uploadId))
+    Mockito.when(uploadDetailsRepositoryMock.findById(uploadDetailId))
       .thenReturn(Optional.of(expectedResult));
 
     // Then
@@ -348,8 +348,10 @@ class MigrationFileServiceTest {
       .when(service)
       .getUpload(orgIpaCode, uploadId, loggedUser);
 
-    Mockito.when(uploadDetailsRepositoryMock.findById(uploadId))
-      .thenReturn(Optional.of(expectedResult));
+    UploadDetails wrongDetail = new UploadDetails();
+    wrongDetail.setUploadId(-1L);
+    Mockito.when(uploadDetailsRepositoryMock.findById(Mockito.anyLong()))
+      .thenReturn(Optional.of(wrongDetail));
 
     // Then
     Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.getUploadDetail(orgIpaCode, uploadId, uploadDetailId, loggedUser));
