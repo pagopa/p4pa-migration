@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.migration.connector.fileshare.client;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.fileshare.config.FileShareApisHolder;
-import it.gov.pagopa.pu.migration.wf.exception.UploadIngestionFlowFileException;
+import it.gov.pagopa.pu.migration.wf.exception.IngestionFlowFileAlreadyProcessedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class FileShareClient {
       HttpClientErrorException.Conflict e) {
       String err = "Error uploading file " + file + " to FileShare: " + e.getMessage();
       log.error(err);
-      throw new UploadIngestionFlowFileException(err);
+      throw new IngestionFlowFileAlreadyProcessedException(err);
     }
   }
 
