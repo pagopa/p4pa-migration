@@ -33,7 +33,6 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
     IngestionFlowFileStatus.COMPLETED,
     IngestionFlowFileStatus.ERROR
   );
-  private static final Duration SLEEP_BETWEEN_INGESTION_FLOW_STATUS_CHECK = Duration.ofMinutes(5);
 
   private UploadsStatusUpdateActivity uploadsStatusUpdateActivity;
   private UploadDetailsUpdateActivity uploadDetailsUpdateActivity;
@@ -121,6 +120,10 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
 
   private IngestionFlowFile waitIngestionFlowFileProcessing(long uploadId, UploadDetails detail, int[] attemptCounter) {
     IngestionFlowFile ingestionFlowFile;
+
+    int baseDelayMinutes = 1;
+    int maxDelayMinutes = 10;
+
     while ((ingestionFlowFile = ingestionFlowFileRetrieverActivity.getIngestionFlowFile(detail.getIngestionFlowFileId())) != null &&
       !INGESTION_FLOW_FILE_TERMINAL_STATUSES.contains(ingestionFlowFile.getStatus())) {
       attemptCounter[0]++;
@@ -132,7 +135,13 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
 
       log.info("IngestionFlowFile status not terminated ({}), retrying for ingestionFlowFileId {}",
         ingestionFlowFile.getStatus(), ingestionFlowFile.getIngestionFlowFileId());
-      Workflow.sleep(SLEEP_BETWEEN_INGESTION_FLOW_STATUS_CHECK);
+
+      int delayMinutes = Math.min(
+        baseDelayMinutes * (1 << (attemptCounter[0] - 1)), // 1, 2, 4, 8, 10, ...
+        maxDelayMinutes
+      );
+
+      Workflow.sleep(Duration.ofMinutes(delayMinutes));
     }
 
     return ingestionFlowFile;
