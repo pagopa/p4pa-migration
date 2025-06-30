@@ -151,7 +151,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
         orElseThrow(() -> new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " not found"));
 
       if (!organization.getBrokerId().equals(upload.getOrganizationId())) {
-        throw new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " is not associated to managed organizations." );
+        throw new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " is not associated to managed organizations.");
       }
       String zipName = Utilities.replaceFileExtension(fileName, ".zip");
       Path zipFilePath = file.getParent().resolve(zipName);
