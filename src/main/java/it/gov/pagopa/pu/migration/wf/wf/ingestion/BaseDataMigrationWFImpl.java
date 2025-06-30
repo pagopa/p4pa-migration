@@ -29,11 +29,14 @@ import java.util.Set;
 @Slf4j
 public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware {
 
+  private static final int INITIAL_DELAY_MINUTES = 1;
+  private static final int MAX_DELAY_MINUTES = 10;
+  private static final int DELAY_BACKOFF_COEFFICIENT = 2;
+
   private static final Set<IngestionFlowFileStatus> INGESTION_FLOW_FILE_TERMINAL_STATUSES = Set.of(
     IngestionFlowFileStatus.COMPLETED,
     IngestionFlowFileStatus.ERROR
   );
-  private static final Duration SLEEP_BETWEEN_INGESTION_FLOW_STATUS_CHECK = Duration.ofMinutes(5);
 
   private UploadsStatusUpdateActivity uploadsStatusUpdateActivity;
   private UploadDetailsUpdateActivity uploadDetailsUpdateActivity;
@@ -74,26 +77,26 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
     try {
       log.info("Processing files related to uploadId {}", uploadId);
       result = getMigrationFileTypeHandlerActivity().processFile(uploadId);
-    } catch (Exception e){
+    } catch (Exception e) {
       log.error("Something gone wrong while processing uploadId {}", uploadId, e);
       result = MigrationFileResult.builder()
         .errorDescription(WfUtilities.getWorkflowExceptionMessage(e))
         .build();
     }
 
-    if(result.getErrorDescription() == null) {
+    if (result.getErrorDescription() == null) {
       log.info("Files related to uploadId {} handled successfully", uploadId);
       List<UploadDetails> details = result.getIngestionFlowFiles().stream()
         .map(i -> uploadDetailsUpdateActivity.saveDetail(UploadDetailsMapper.map(uploadId, i)))
         .toList();
 
       List<String> errors = waitProcessingAndUpdateDetails(uploadId, details);
-      if(!CollectionUtils.isEmpty(errors)){
+      if (!CollectionUtils.isEmpty(errors)) {
         result.setErrorDescription("Something went wrong while waiting upload details processing:\n" + String.join("\n", errors));
       }
     }
 
-    UploadsStatusEnum newStatus = result.getErrorDescription()!=null
+    UploadsStatusEnum newStatus = result.getErrorDescription() != null
       ? UploadsStatusEnum.ERROR
       : UploadsStatusEnum.COMPLETED;
     uploadsStatusUpdateActivity.updateUploadStatus(uploadId, UploadsStatusEnum.PROCESSING, newStatus, result);
@@ -109,7 +112,7 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
         ingestionFlowFile.getIngestionFlowFileType(),
         ingestionFlowFile.getStatus());
       uploadDetailsUpdateActivity.updateDetailStatus(detail.getUploadDetailId(), ingestionFlowFile);
-      if(ingestionFlowFile.getErrorDescription()!=null){
+      if (ingestionFlowFile.getErrorDescription() != null) {
         errors.add("An error occurred while importing ingestionFlowFileId %d having type %s: %s".formatted(
           ingestionFlowFile.getIngestionFlowFileId(),
           ingestionFlowFile.getIngestionFlowFileType(),
@@ -121,6 +124,9 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
 
   private IngestionFlowFile waitIngestionFlowFileProcessing(long uploadId, UploadDetails detail, int[] attemptCounter) {
     IngestionFlowFile ingestionFlowFile;
+
+    int delayMinutes = INITIAL_DELAY_MINUTES;
+
     while ((ingestionFlowFile = ingestionFlowFileRetrieverActivity.getIngestionFlowFile(detail.getIngestionFlowFileId())) != null &&
       !INGESTION_FLOW_FILE_TERMINAL_STATUSES.contains(ingestionFlowFile.getStatus())) {
       attemptCounter[0]++;
@@ -132,7 +138,13 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
 
       log.info("IngestionFlowFile status not terminated ({}), retrying for ingestionFlowFileId {}",
         ingestionFlowFile.getStatus(), ingestionFlowFile.getIngestionFlowFileId());
-      Workflow.sleep(SLEEP_BETWEEN_INGESTION_FLOW_STATUS_CHECK);
+
+      Workflow.sleep(Duration.ofMinutes(delayMinutes));
+
+      if (delayMinutes < MAX_DELAY_MINUTES) {
+        delayMinutes *= DELAY_BACKOFF_COEFFICIENT;
+        delayMinutes = Math.min(delayMinutes, MAX_DELAY_MINUTES);
+      }
     }
 
     return ingestionFlowFile;
