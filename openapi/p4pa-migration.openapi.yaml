@@ -48,6 +48,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
+  /organization/{orgIpaCode}:
     get:
       tags:
         - migration-file
@@ -61,8 +62,8 @@ paths:
           schema:
             type: string
         - name: migrationFileType
-          in: path
-          required: true
+          in: query
+#          required: true
           schema:
             $ref: '#/components/schemas/MigrationFileTypeEnum'
         - name: status
