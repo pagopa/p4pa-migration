@@ -13,6 +13,7 @@ import it.gov.pagopa.pu.migration.utils.Utilities;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.exception.InvalidMigrationFileException;
 import it.gov.pagopa.pu.migration.wf.exception.MigrationFileTypeNotSupportedException;
+import it.gov.pagopa.pu.migration.wf.exception.UploadIngestionFlowFileException;
 import it.gov.pagopa.pu.migration.wf.exception.UploadNotFoundException;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
@@ -151,18 +152,25 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
         orElseThrow(() -> new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " not found"));
 
       if (!organization.getBrokerId().equals(upload.getOrganizationId())) {
-        throw new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " is not associated to managed organizations." );
+        throw new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " is not associated to managed organizations.");
       }
       String zipName = Utilities.replaceFileExtension(fileName, ".zip");
       Path zipFilePath = file.getParent().resolve(zipName);
       File zippedFile = zipFileService.zipper(zipFilePath, List.of(file));
       log.info("Processing unzipped file: {}", file);
-      Long id = fileShareService.uploadIngestionFlowFile(
-        organization.getOrganizationId(),
-        ingestionFlowFileType,
-        new FileSystemResource(zippedFile),
-        authnService.getAccessToken(ipaCodeFile)
-      );
+      Long id;
+      try {
+        id = fileShareService.uploadIngestionFlowFile(
+          organization.getOrganizationId(),
+          ingestionFlowFileType,
+          new FileSystemResource(zippedFile),
+          authnService.getAccessToken(ipaCodeFile)
+        );
+      } catch (Exception e) {
+        String err = "Error uploading file " + file + " to FileShare: " + e.getMessage();
+        log.error(err);
+        throw new UploadIngestionFlowFileException(err);
+      }
       filesUploaded.add(IngestionFlowFile.builder()
         .ingestionFlowFileId(id)
         .fileName(file.getFileName().toString())
