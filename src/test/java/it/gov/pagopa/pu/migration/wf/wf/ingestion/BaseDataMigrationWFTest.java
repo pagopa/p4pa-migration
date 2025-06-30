@@ -201,7 +201,8 @@ public abstract class BaseDataMigrationWFTest<A extends MigrationFileTypeHandler
       Mockito.verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
       Mockito.verify(uploadDetailsUpdateActivityMock).updateDetailStatus(uploadDetailId, ingestionFlowFileCompleted);
       Mockito.verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.PROCESSING, UploadsStatusEnum.COMPLETED, expectedResult);
-      workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofMinutes(5)), times(2));
+      workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofMinutes(1)), times(1));
+      workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofMinutes(2)), times(1));
     }
   }
 }
