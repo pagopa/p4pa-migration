@@ -36,6 +36,8 @@ class MigrationFileWfInvokerServiceTest {
   @Mock
   private DebtPositionTypeOrgDataMigrationWFClient debtPositionTypeOrgDataMigrationWFClientMock;
   @Mock
+  private AssessmentsDataMigrationWFClient assessmentsDataMigrationWFClientMock;
+  @Mock
   private AssessmentsRegistryDataMigrationWFClient assessmentsRegistryDataMigrationWFClientMock;
 
   private MigrationFileWfInvokerService service;
@@ -50,6 +52,7 @@ class MigrationFileWfInvokerServiceTest {
       paymentNotificationDataMigrationWFClientMock,
       paymentsReportingDataMigrationWFClientMock,
       treasuryCsvCompleteDataMigrationWFClientMock,
+      assessmentsDataMigrationWFClientMock,
       assessmentsRegistryDataMigrationWFClientMock,
       debtPositionTypeOrgDataMigrationWFClientMock
     );
@@ -61,6 +64,7 @@ class MigrationFileWfInvokerServiceTest {
       MigrationFileTypeEnum.PAYMENT_NOTIFICATION, paymentNotificationDataMigrationWFClientMock,
       MigrationFileTypeEnum.PAYMENTS_REPORTING, paymentsReportingDataMigrationWFClientMock,
       MigrationFileTypeEnum.TREASURY_CSV_COMPLETE, treasuryCsvCompleteDataMigrationWFClientMock,
+      MigrationFileTypeEnum.ASSESSMENTS, assessmentsDataMigrationWFClientMock,
       MigrationFileTypeEnum.ASSESSMENTS_REGISTRY, assessmentsRegistryDataMigrationWFClientMock,
       MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG, debtPositionTypeOrgDataMigrationWFClientMock
     );
@@ -74,6 +78,7 @@ class MigrationFileWfInvokerServiceTest {
       paymentNotificationDataMigrationWFClientMock,
       paymentsReportingDataMigrationWFClientMock,
       treasuryCsvCompleteDataMigrationWFClientMock,
+      assessmentsDataMigrationWFClientMock,
       assessmentsRegistryDataMigrationWFClientMock,
       debtPositionTypeOrgDataMigrationWFClientMock
     );
