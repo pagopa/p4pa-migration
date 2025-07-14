@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 public class MigrationFileWfInvokerServiceImpl implements MigrationFileWfInvokerService {
 
   private final OrganizationDataMigrationWFClient organizationDataMigrationWFClient;
+  private final OrgSilServiceDataMigrationWFClient orgSilServiceDataMigrationWFClient;
   private final DebtPositionTypeDataMigrationWFClient debtPositionTypeDataMigrationWFClient;
   private final DebtPositionTypeOrgOperatorDataMigrationWFClient debtPositionTypeOrgOperatorDataMigrationWFClient;
   private final PaymentNotificationDataMigrationWFClient paymentNotificationDataMigrationWFClient;
@@ -24,6 +25,7 @@ public class MigrationFileWfInvokerServiceImpl implements MigrationFileWfInvoker
   public WorkflowCreatedDTO invokeWf(Uploads uploads) {
     DataMigrationWfClient wfClient = switch (uploads.getFileType()) {
       case ORGANIZATIONS -> organizationDataMigrationWFClient;
+      case ORG_SIL_SERVICES -> orgSilServiceDataMigrationWFClient;
       case DEBT_POSITIONS_TYPE_ORG_OPERATORS ->
         debtPositionTypeOrgOperatorDataMigrationWFClient;
       case PAYMENT_NOTIFICATION -> paymentNotificationDataMigrationWFClient;
