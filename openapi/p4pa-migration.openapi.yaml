@@ -271,6 +271,7 @@ components:
       type: string
       enum:
         - ORGANIZATIONS
+        - ORG_SIL_SERVICES
         - DEBT_POSITIONS_TYPE
         - DEBT_POSITIONS_TYPE_ORG
         - DEBT_POSITIONS_TYPE_ORG_OPERATORS
