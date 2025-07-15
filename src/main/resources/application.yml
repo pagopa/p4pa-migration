@@ -119,6 +119,7 @@ folders:
     TREASURY_CSV_COMPLETE: "migration-data/treasury-csv-complete"
     ASSESSMENTS: "migration-data/assessments"
     ASSESSMENTS_REGISTRY: "migration-data/assessments-registry"
+    DEBT_POSITIONS: "migration-data/debt-positions"
 
 
 encryption:

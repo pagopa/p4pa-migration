@@ -40,6 +40,8 @@ class MigrationFileWfInvokerServiceTest {
   private AssessmentsDataMigrationWFClient assessmentsDataMigrationWFClientMock;
   @Mock
   private AssessmentsRegistryDataMigrationWFClient assessmentsRegistryDataMigrationWFClientMock;
+  @Mock
+  private DebtPositionsDataMigrationWFClient debtPositionsDataMigrationWFClientMock;
 
   private MigrationFileWfInvokerService service;
 
@@ -56,20 +58,22 @@ class MigrationFileWfInvokerServiceTest {
       treasuryCsvCompleteDataMigrationWFClientMock,
       assessmentsDataMigrationWFClientMock,
       assessmentsRegistryDataMigrationWFClientMock,
-      debtPositionTypeOrgDataMigrationWFClientMock
+      debtPositionTypeOrgDataMigrationWFClientMock,
+      debtPositionsDataMigrationWFClientMock
     );
 
-    fileType2ExpectedClientMock = Map.of(
-      MigrationFileTypeEnum.ORGANIZATIONS, organizationDataMigrationWFClientMock,
-      MigrationFileTypeEnum.ORG_SIL_SERVICES, orgSilServiceDataMigrationWFClientMock,
-      MigrationFileTypeEnum.DEBT_POSITIONS_TYPE, debtPositionTypeDataMigrationWFClientMock,
-      MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS, debtPositionTypeOrgOperatorDataMigrationWFClientMock,
-      MigrationFileTypeEnum.PAYMENT_NOTIFICATION, paymentNotificationDataMigrationWFClientMock,
-      MigrationFileTypeEnum.PAYMENTS_REPORTING, paymentsReportingDataMigrationWFClientMock,
-      MigrationFileTypeEnum.TREASURY_CSV_COMPLETE, treasuryCsvCompleteDataMigrationWFClientMock,
-      MigrationFileTypeEnum.ASSESSMENTS, assessmentsDataMigrationWFClientMock,
-      MigrationFileTypeEnum.ASSESSMENTS_REGISTRY, assessmentsRegistryDataMigrationWFClientMock,
-      MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG, debtPositionTypeOrgDataMigrationWFClientMock
+    fileType2ExpectedClientMock = Map.ofEntries(
+      Map.entry(MigrationFileTypeEnum.ORGANIZATIONS, organizationDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.ORG_SIL_SERVICES, orgSilServiceDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE, debtPositionTypeDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS, debtPositionTypeOrgOperatorDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.PAYMENT_NOTIFICATION, paymentNotificationDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.PAYMENTS_REPORTING, paymentsReportingDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.TREASURY_CSV_COMPLETE, treasuryCsvCompleteDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.ASSESSMENTS, assessmentsDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.ASSESSMENTS_REGISTRY, assessmentsRegistryDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG, debtPositionTypeOrgDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS, debtPositionsDataMigrationWFClientMock)
     );
   }
 
@@ -84,7 +88,8 @@ class MigrationFileWfInvokerServiceTest {
       treasuryCsvCompleteDataMigrationWFClientMock,
       assessmentsDataMigrationWFClientMock,
       assessmentsRegistryDataMigrationWFClientMock,
-      debtPositionTypeOrgDataMigrationWFClientMock
+      debtPositionTypeOrgDataMigrationWFClientMock,
+      debtPositionsDataMigrationWFClientMock
     );
   }
 
