@@ -14,7 +14,6 @@ import it.gov.pagopa.pu.migration.wf.activity.ingestion.BaseMigrationFileTypeHan
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -47,8 +46,7 @@ public class TreasuryCsvCompleteFileTypeHandlerActivityImpl extends BaseMigratio
     return handleFilesUpload(
       retrievedFiles,
       upload,
-      IngestionFlowFileType.TREASURY_CSV_COMPLETE,
-      IngestionFlowFile.IngestionFlowFileTypeEnum.TREASURY_CSV_COMPLETE
+      IngestionFlowFileType.TREASURY_CSV_COMPLETE
     );
   }
 }
