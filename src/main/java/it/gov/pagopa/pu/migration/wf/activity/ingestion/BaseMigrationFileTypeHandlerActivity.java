@@ -135,8 +135,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
   protected MigrationFileResult handleFilesUpload(
     List<Path> retrievedFiles,
     Uploads upload,
-    IngestionFlowFileType ingestionFlowFileType,
-    IngestionFlowFile.IngestionFlowFileTypeEnum ingestionFlowFileTypeEnum
+    IngestionFlowFileType ingestionFlowFileType
   ) {
     if (retrievedFiles == null || retrievedFiles.isEmpty()) {
       throw new InvalidMigrationFileException("No file found in the uploaded archive");
@@ -167,7 +166,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
         .ingestionFlowFileId(id)
         .fileName(file.getFileName().toString())
         .fileSize(file.toFile().length())
-        .ingestionFlowFileType(ingestionFlowFileTypeEnum)
+        .ingestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.fromValue(ingestionFlowFileType.getValue()))
         .organizationId(upload.getOrganizationId())
         .operatorExternalId(upload.getUpdateOperatorExternalId())
         .filePathName(file.getFileName().toString())

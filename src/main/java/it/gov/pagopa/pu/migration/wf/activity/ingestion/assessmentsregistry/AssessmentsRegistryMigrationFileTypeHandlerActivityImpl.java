@@ -14,7 +14,6 @@ import it.gov.pagopa.pu.migration.wf.activity.ingestion.BaseMigrationFileTypeHan
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -47,8 +46,7 @@ public class AssessmentsRegistryMigrationFileTypeHandlerActivityImpl extends Bas
     return handleFilesUpload(
       retrievedFiles,
       upload,
-      IngestionFlowFileType.ASSESSMENTS_REGISTRY,
-      IngestionFlowFile.IngestionFlowFileTypeEnum.ASSESSMENTS_REGISTRY
+      IngestionFlowFileType.ASSESSMENTS_REGISTRY
     );
   }
 }
