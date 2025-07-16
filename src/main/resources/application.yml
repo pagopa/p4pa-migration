@@ -120,6 +120,7 @@ folders:
     ASSESSMENTS: "migration-data/assessments"
     ASSESSMENTS_REGISTRY: "migration-data/assessments-registry"
     DEBT_POSITIONS: "migration-data/debt-positions"
+    DEBT_POSITIONS_PAID: "migration-data/debt-positions-paid"
 
 
 encryption:

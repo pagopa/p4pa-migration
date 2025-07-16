@@ -281,6 +281,7 @@ components:
         - ASSESSMENTS
         - ASSESSMENTS_REGISTRY
         - DEBT_POSITIONS
+        - DEBT_POSITIONS_PAID
     UploadMigrationFileResponseDTO:
       type: object
       required:
