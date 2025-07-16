@@ -280,6 +280,7 @@ components:
         - TREASURY_CSV_COMPLETE
         - ASSESSMENTS
         - ASSESSMENTS_REGISTRY
+        - DEBT_POSITIONS_PAID
     UploadMigrationFileResponseDTO:
       type: object
       required:
