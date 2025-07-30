@@ -1,4 +1,4 @@
-import java.util.Objects
+import java.util.*
 
 plugins {
   java
@@ -30,6 +30,14 @@ configurations {
 
 repositories {
   mavenCentral()
+  maven {
+    name = "GitHubPackages"
+    url = uri("https://maven.pkg.github.com/pagopa/p4pa-payhub-activities")
+    credentials {
+      username = "public"
+      password = System.getenv("GITHUB_TOKEN")
+    }
+  }
 }
 
 val springDocOpenApiVersion = "2.8.9"
@@ -45,6 +53,8 @@ val guavaVersion = "33.4.8-jre"
 val otelVersion = "1.43.0"
 val openCsvVersion = "5.11"
 val commonsBeanUtilsVersion = "1.11.0"
+
+val p4paActivitiesVersion = "1.140.5 "
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -62,6 +72,11 @@ dependencies {
   implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
   implementation ("org.postgresql:postgresql:${postgresJdbcVersion}")
   implementation("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}")
+  implementation("it.gov.pagopa.payhub:p4pa-payhub-activities:$p4paActivitiesVersion") {
+    exclude(group = "org.glassfish.jaxb", module = "jaxb-core")
+    exclude(group = "com.google.protobuf", module = "protobuf-java")
+    exclude(group = "com.google.guava", module = "guava")
+  }
   //temporal
   implementation("io.temporal:temporal-spring-boot-starter:$temporalVersion") {
     exclude(group = "com.google.protobuf", module = "protobuf-java")
