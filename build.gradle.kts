@@ -54,7 +54,7 @@ val otelVersion = "1.43.0"
 val openCsvVersion = "5.11"
 val commonsBeanUtilsVersion = "1.11.0"
 
-val p4paActivitiesVersion = "1.140.5 "
+val p4paActivitiesVersion = "1.140.5"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
