@@ -10,7 +10,9 @@ import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
+import it.gov.pagopa.pu.migration.wf.dto.debtposition.DebtPositionMigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
+import it.gov.pagopa.pu.migration.wf.service.ingestion.debtposition.DebtPositionProcessingService;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,6 +53,9 @@ class DebtPositionsMigrationFileTypeHandlerActivityTest {
   private OrganizationService organizationServiceMock;
   @Mock
   private ZipFileService zipFileServiceMock;
+  @Mock
+  private DebtPositionProcessingService debtPositionProcessingServiceMock;
+
 
   private DebtPositionsMigrationFileTypeHandlerActivityImpl activity;
 
@@ -63,7 +68,8 @@ class DebtPositionsMigrationFileTypeHandlerActivityTest {
       fileShareServiceMock,
       authnServiceMock,
       organizationServiceMock,
-      zipFileServiceMock
+      zipFileServiceMock,
+      debtPositionProcessingServiceMock
     );
   }
 
@@ -75,7 +81,9 @@ class DebtPositionsMigrationFileTypeHandlerActivityTest {
       fileArchiverServiceMock,
       fileShareServiceMock,
       authnServiceMock,
-      organizationServiceMock
+      organizationServiceMock,
+      zipFileServiceMock,
+      debtPositionProcessingServiceMock
     );
   }
 
@@ -126,6 +134,16 @@ class DebtPositionsMigrationFileTypeHandlerActivityTest {
     assertTrue(Files.exists(mockEncryptedFile));
     when(fileRetrieverServiceMock.retrieveAndUnzipFile(anyLong(), any(), any()))
       .thenReturn(List.of(file1));
+
+
+    List<Path> parsedFiles = List.of(file1);
+    DebtPositionMigrationFileResult migrationFileResult = DebtPositionMigrationFileResult.builder()
+      .parsedFiles(parsedFiles)
+      .numCorrectlyProcessedFiles(1)
+      .numTotalFiles(1)
+      .errorDescription(null)
+      .build();
+    when(debtPositionProcessingServiceMock.readAndParseRows(anyList(), anyList())).thenReturn(migrationFileResult);
 
     MigrationFileResult result = activity.processFile(1L);
     assertNotNull(result);

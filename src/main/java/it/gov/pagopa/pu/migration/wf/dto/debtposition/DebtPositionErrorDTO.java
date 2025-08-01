@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator;
+package it.gov.pagopa.pu.migration.wf.dto.debtposition;
 
 import it.gov.pagopa.pu.migration.wf.dto.ErrorFileDTO;
 import lombok.*;
@@ -10,23 +10,23 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(callSuper = true)
-public class DebtPositionTypeOrgOperatorErrorDTO extends ErrorFileDTO {
+public class DebtPositionErrorDTO extends ErrorFileDTO {
 
   private String ipaCode;
-  private String debtPositionTypeOrgCode;
+  private String iupd;
   private Long rowNumber;
 
-  public DebtPositionTypeOrgOperatorErrorDTO(String fileName, String ipaCode, String debtPositionTypeOrgCode, Long rowNumber, String errorCode, String errorMessage) {
+  public DebtPositionErrorDTO(String fileName, String ipaCode, String iupd, Long rowNumber, String errorCode, String errorMessage) {
     super(fileName, errorCode, errorMessage);
     this.ipaCode = ipaCode;
-    this.debtPositionTypeOrgCode = debtPositionTypeOrgCode;
+    this.iupd = iupd;
     this.rowNumber = rowNumber;
   }
 
   @Override
   public String[] toCsvRow() {
     return new String[]{
-      getFileName(), ipaCode, debtPositionTypeOrgCode, rowNumber.toString(),
+      getFileName(), ipaCode, rowNumber.toString(),
       getErrorCode(), getErrorMessage()
     };
   }
