@@ -96,7 +96,7 @@ public class DebtPositionProcessingService extends MigrationProcessingService<In
   private void processSingleFile(Path file, List<DebtPositionErrorDTO> errorList, List<Path> parsedFiles, List<String> unsuccessfulParsedFiles) {
     try {
       List<InstallmentIngestionFlowFileDTO> dtos = parseCsvFile(file, errorList, unsuccessfulParsedFiles);
-      Path tempFile = Files.createTempFile("", "parsed.csv");
+      Path tempFile = Files.createTempFile("parsed", ".csv");
       csvService.createCsv(tempFile, InstallmentIngestionFlowFileDTO.class, () -> dtos, "V2_0");
       log.info("Processed {} rows from file {} into {}", dtos.size(), file.getFileName(), tempFile.getFileName());
       parsedFiles.add(tempFile);
