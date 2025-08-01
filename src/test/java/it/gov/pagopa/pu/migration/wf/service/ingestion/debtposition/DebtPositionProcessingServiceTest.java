@@ -17,6 +17,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -61,7 +62,8 @@ class DebtPositionProcessingServiceTest {
   void processDebtPositionFileReturnsResultFromCsvService() throws Exception {
     Path file = Path.of("file.csv");
     when(csvServiceMock.readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any())).thenReturn(null);
-    DebtPositionMigrationFileResult result = service.readAndParseRows(List.of(file), List.of());
+    List<DebtPositionErrorDTO> errorList = new ArrayList<>();
+    DebtPositionMigrationFileResult result = service.readAndParseRows(List.of(file), errorList);
     assertNotNull(result);
     assertThat(result.getParsedFiles()).isNotEmpty();
     assertThat(result.getNumCorrectlyProcessedFiles()).isEqualTo(1);
@@ -105,31 +107,38 @@ class DebtPositionProcessingServiceTest {
 
   @Test
   void readAndParseRows_populatesErrorListOnCsvException() throws IOException {
-    Path file = Path.of("file.csv");
-    List<DebtPositionErrorDTO> errorList = new ArrayList<>();
-    List<CsvException> csvExceptions = List.of(new CsvException("csv error 1"), new CsvException("csv error 2"));
+    Path file = Files.createTempFile("debtposition-test-", ".csv");
+    try {
+      List<DebtPositionErrorDTO> errorList = new ArrayList<>();
+      List<CsvException> csvExceptions = List.of(new CsvException("csv error 1"), new CsvException("csv error 2"));
 
-    Iterator<?> mockIterator = mock(Iterator.class);
-    when(mockIterator.hasNext()).thenReturn(false);
+      Iterator<?> mockIterator = mock(Iterator.class);
+      when(mockIterator.hasNext()).thenReturn(false);
 
-    when(csvServiceMock.readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any())).then(invocation -> {
-      BiFunction callback = invocation.getArgument(2);
-      callback.apply(mockIterator, csvExceptions);
-      return null;
-    });
+      when(csvServiceMock.readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any())).then(invocation -> {
+        BiFunction callback = invocation.getArgument(2);
+        callback.apply(mockIterator, csvExceptions);
+        return null;
+      });
 
-    DebtPositionMigrationFileResult result = service.readAndParseRows(List.of(file), errorList);
+      DebtPositionMigrationFileResult result = service.readAndParseRows(List.of(file), errorList);
 
-    assertEquals(1, result.getNumTotalFiles());
-    assertEquals(1, result.getNumCorrectlyProcessedFiles());
-    assertEquals(2, errorList.size());
-    assertEquals("file.csv", errorList.get(0).getFileName());
-    assertTrue(errorList.get(0).getErrorMessage().contains("csv error 1"));
-    assertEquals("file.csv", errorList.get(1).getFileName());
-    assertTrue(errorList.get(1).getErrorMessage().contains("csv error 2"));
-    assertTrue(result.getErrorDescription().contains("csv error 1"));
-    verify(csvServiceMock).readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any());
-    verify(csvServiceMock).createCsv(any(), eq(InstallmentIngestionFlowFileDTO.class), any(), eq("V2_0"));
+      assertEquals(1, result.getNumTotalFiles());
+      assertEquals(1, result.getNumCorrectlyProcessedFiles());
+      assertEquals(2, errorList.size());
+      assertEquals(file.getFileName().toString(), errorList.get(0).getFileName());
+      assertTrue(errorList.get(0).getErrorMessage().contains("csv error 1"));
+      assertEquals(file.getFileName().toString(), errorList.get(1).getFileName());
+      assertTrue(errorList.get(1).getErrorMessage().contains("csv error 2"));
+      assertTrue(result.getErrorDescription().contains("csv error 1"));
+      verify(csvServiceMock).readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any());
+      verify(csvServiceMock).createCsv(any(), eq(InstallmentIngestionFlowFileDTO.class), any(), eq("V2_0"));
+    } finally {
+      Files.deleteIfExists(file);
+      // Elimina anche il file -parsed.csv se creato
+      Path parsed = file.getParent().resolve(file.getFileName().toString().replaceFirst("\\.[^.]+$", "") + "-parsed.csv");
+      Files.deleteIfExists(parsed);
+    }
   }
 
 

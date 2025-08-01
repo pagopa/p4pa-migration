@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,11 +95,17 @@ public class DebtPositionProcessingService extends MigrationProcessingService<In
   private void processSingleFile(Path file, List<DebtPositionErrorDTO> errorList, List<Path> parsedFiles, List<String> unsuccessfulParsedFiles) {
     try {
       List<InstallmentIngestionFlowFileDTO> dtos = parseCsvFile(file, errorList, unsuccessfulParsedFiles);
-      Path tempFile = Files.createTempFile("parsed", ".csv");
+      // Usa la stessa logica di handleFilesUpload per il nome del file zip temporaneo
+      String originalFileName = file.getFileName().toString();
+      String tempFileName = originalFileName.replaceFirst("\\.[^.]+$", "") + "-parsed.csv";
+      Path tempFile = file.getParent() != null ? file.getParent().resolve(tempFileName) : Path.of(System.getProperty("java.io.tmpdir")).resolve(tempFileName);
       csvService.createCsv(tempFile, InstallmentIngestionFlowFileDTO.class, () -> dtos, "V2_0");
       log.info("Processed {} rows from file {} into {}", dtos.size(), file.getFileName(), tempFile.getFileName());
       parsedFiles.add(tempFile);
     } catch (Exception e) {
+      if (errorList == null) {
+        errorList = new ArrayList<>();
+      }
       DebtPositionErrorDTO error = new DebtPositionErrorDTO();
       error.setFileName(file.getFileName().toString());
       error.setErrorMessage(e.getMessage());
