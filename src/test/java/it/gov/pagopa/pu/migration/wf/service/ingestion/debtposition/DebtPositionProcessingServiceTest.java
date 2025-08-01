@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion.debtposition;
 
+import com.opencsv.exceptions.CsvException;
 import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
 import it.gov.pagopa.pu.migration.wf.dto.debtposition.DebtPositionErrorDTO;
@@ -18,7 +19,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -96,6 +99,35 @@ class DebtPositionProcessingServiceTest {
     assertThat(result.getParsedFiles()).isNotEmpty();
     assertThat(result.getNumCorrectlyProcessedFiles()).isEqualTo(1);
     assertThat(result.getNumTotalFiles()).isEqualTo(1);
+    verify(csvServiceMock).readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any());
+    verify(csvServiceMock).createCsv(any(), eq(InstallmentIngestionFlowFileDTO.class), any(), eq("V2_0"));
+  }
+
+  @Test
+  void readAndParseRows_populatesErrorListOnCsvException() throws IOException {
+    Path file = Path.of("file.csv");
+    List<DebtPositionErrorDTO> errorList = new ArrayList<>();
+    List<CsvException> csvExceptions = List.of(new CsvException("csv error 1"), new CsvException("csv error 2"));
+
+    Iterator<?> mockIterator = mock(Iterator.class);
+    when(mockIterator.hasNext()).thenReturn(false);
+
+    when(csvServiceMock.readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any())).then(invocation -> {
+      BiFunction callback = invocation.getArgument(2);
+      callback.apply(mockIterator, csvExceptions);
+      return null;
+    });
+
+    DebtPositionMigrationFileResult result = service.readAndParseRows(List.of(file), errorList);
+
+    assertEquals(1, result.getNumTotalFiles());
+    assertEquals(1, result.getNumCorrectlyProcessedFiles());
+    assertEquals(2, errorList.size());
+    assertEquals("file.csv", errorList.get(0).getFileName());
+    assertTrue(errorList.get(0).getErrorMessage().contains("csv error 1"));
+    assertEquals("file.csv", errorList.get(1).getFileName());
+    assertTrue(errorList.get(1).getErrorMessage().contains("csv error 2"));
+    assertTrue(result.getErrorDescription().contains("csv error 1"));
     verify(csvServiceMock).readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any());
     verify(csvServiceMock).createCsv(any(), eq(InstallmentIngestionFlowFileDTO.class), any(), eq("V2_0"));
   }
