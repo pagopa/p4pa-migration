@@ -55,7 +55,7 @@ public class DebtPositionsMigrationFileTypeHandlerActivityImpl extends BaseMigra
       throw new InvalidMigrationFileException("No file found in the uploaded archive");
     }
     final List<DebtPositionErrorDTO> errorList = new ArrayList<>();
-    DebtPositionMigrationFileResult result = debtPositionProcessingService.readAndParseRows(retrievedFiles, errorList);
+    DebtPositionMigrationFileResult result = debtPositionProcessingService.processMultipleDebtPositionFiles(retrievedFiles, upload, errorList);
     return handleFilesUpload(
       result.getParsedFiles(),
       upload,

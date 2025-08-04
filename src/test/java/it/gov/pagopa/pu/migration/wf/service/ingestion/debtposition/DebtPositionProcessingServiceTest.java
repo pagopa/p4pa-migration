@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion.debtposition;
 
 import com.opencsv.exceptions.CsvException;
-import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
+import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
 import it.gov.pagopa.pu.migration.wf.dto.debtposition.DebtPositionErrorDTO;
 import it.gov.pagopa.pu.migration.wf.dto.debtposition.DebtPositionMigrationFileResult;
@@ -34,10 +34,6 @@ class DebtPositionProcessingServiceTest {
   @Mock
   private DebtPositionErrorsArchiverService errorsArchiverServiceMock;
   @Mock
-  private Path workingDirectory;
-  @Mock
-  private OrganizationService organizationServiceMock;
-  @Mock
   private CsvService csvServiceMock;
   @Mock
   private ErrorArchiverService<DebtPositionErrorDTO> errorArchiverServiceMock;
@@ -60,30 +56,53 @@ class DebtPositionProcessingServiceTest {
 
   @Test
   void processDebtPositionFileReturnsResultFromCsvService() throws Exception {
-    Path file = Path.of("file.csv");
-    when(csvServiceMock.readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any())).thenReturn(null);
-    List<DebtPositionErrorDTO> errorList = new ArrayList<>();
-    DebtPositionMigrationFileResult result = service.readAndParseRows(List.of(file), errorList);
-    assertNotNull(result);
-    assertThat(result.getParsedFiles()).isNotEmpty();
-    assertThat(result.getNumCorrectlyProcessedFiles()).isEqualTo(1);
-    assertThat(result.getNumTotalFiles()).isEqualTo(1);
-    verify(csvServiceMock).readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any());
-    verify(csvServiceMock).createCsv(any(), eq(InstallmentIngestionFlowFileDTO.class), any(), eq("V2_0"));
+    Path tempDir = Files.createTempDirectory("debtposition-test-dir-");
+    Path file = Files.createTempFile(tempDir, "debtposition-test-", ".csv");
+    try {
+      List<InstallmentIngestionFlowFileDTO> dtos = new ArrayList<>();
+      InstallmentIngestionFlowFileDTO validDto = new InstallmentIngestionFlowFileDTO();
+      validDto.setIuv("IUV123");
+      dtos.add(validDto);
+      when(csvServiceMock.readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any())).then(invocationOnMock -> {
+        BiFunction<Iterator<InstallmentIngestionFlowFileDTO>, List<CsvException>, ?> consumer = invocationOnMock.getArgument(2);
+        consumer.apply(dtos.iterator(), new ArrayList<>());
+        return null;
+      });
+      Path parsedFile = tempDir.resolve("parsed-" + file.getFileName().toString().replaceFirst("\\.[^.]+$", "") + ".csv");
+      try (var filesMocked = mockStatic(Files.class)) {
+        filesMocked.when(() -> Files.exists(any())).then(invocation -> {
+          Path arg = invocation.getArgument(0);
+          return arg.equals(parsedFile);
+        });
+        List<DebtPositionErrorDTO> errorList = new ArrayList<>();
+        DebtPositionMigrationFileResult result = service.processMultipleDebtPositionFiles(List.of(file), mock(Uploads.class), errorList);
+        assertNotNull(result);
+        assertThat(result.getParsedFiles()).isNotEmpty();
+        assertThat(result.getNumCorrectlyProcessedFiles()).isEqualTo(1);
+        assertThat(result.getNumTotalFiles()).isEqualTo(1);
+        assertThat(result.getNumTotalRows()).isEqualTo(1);
+        assertThat(result.getNumCorrectlyProcessedRows()).isEqualTo(1);
+        assertThat(errorList).isEmpty();
+      }
+      verify(csvServiceMock).readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any());
+    } finally {
+      Files.deleteIfExists(file);
+      Files.deleteIfExists(tempDir);
+    }
   }
 
   @Test
   void processDebtPositionFileThrowsMigrationFileProcessingExceptionOnError() throws Exception {
     Path file = Path.of("file.csv");
     when(csvServiceMock.readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any())).thenThrow(new UnsupportedOperationException("fail"));
-    Exception ex = assertThrows(Exception.class, () -> service.readAndParseRows(List.of(file), List.of()));
+    Exception ex = assertThrows(Exception.class, () -> service.processMultipleDebtPositionFiles(List.of(file), mock(Uploads.class), new ArrayList<>()));
     assertTrue(ex instanceof UnsupportedOperationException || ex instanceof MigrationFileProcessingException);
   }
 
   @Test
   void readAndParseRows_handlesEmptyFileList() {
     List<DebtPositionErrorDTO> errorList = new ArrayList<>();
-    DebtPositionMigrationFileResult result = service.readAndParseRows(List.of(), errorList);
+    DebtPositionMigrationFileResult result = service.processMultipleDebtPositionFiles(new ArrayList<>(), mock(Uploads.class), errorList);
     assertNotNull(result);
     assertThat(result.getParsedFiles()).isEmpty();
     assertThat(result.getNumCorrectlyProcessedFiles()).isZero();
@@ -94,15 +113,31 @@ class DebtPositionProcessingServiceTest {
 
   @Test
   void readAndParseRows_handlesNullErrorList() throws IOException {
-    Path file = Path.of("file.csv");
-    when(csvServiceMock.readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any())).thenReturn(null);
-    DebtPositionMigrationFileResult result = service.readAndParseRows(List.of(file), null);
-    assertNotNull(result);
-    assertThat(result.getParsedFiles()).isNotEmpty();
-    assertThat(result.getNumCorrectlyProcessedFiles()).isEqualTo(1);
-    assertThat(result.getNumTotalFiles()).isEqualTo(1);
-    verify(csvServiceMock).readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any());
-    verify(csvServiceMock).createCsv(any(), eq(InstallmentIngestionFlowFileDTO.class), any(), eq("V2_0"));
+    Path file = Files.createTempFile("debtposition-test-", ".csv");
+    try {
+      List<InstallmentIngestionFlowFileDTO> dtos = new ArrayList<>();
+      InstallmentIngestionFlowFileDTO validDto = new InstallmentIngestionFlowFileDTO();
+      validDto.setIuv("IUV123");
+      dtos.add(validDto);
+      when(csvServiceMock.readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any())).then(invocationOnMock -> {
+        BiFunction<Iterator<InstallmentIngestionFlowFileDTO>, List<CsvException>, ?> consumer = invocationOnMock.getArgument(2);
+        consumer.apply(dtos.iterator(), new ArrayList<>());
+        return null;
+      });
+      try (var filesMocked = mockStatic(Files.class)) {
+        filesMocked.when(() -> Files.exists(any())).thenReturn(true);
+        DebtPositionMigrationFileResult result = service.processMultipleDebtPositionFiles(List.of(file), mock(Uploads.class), null);
+        assertNotNull(result);
+        assertThat(result.getParsedFiles()).isNotEmpty();
+        assertThat(result.getNumCorrectlyProcessedFiles()).isEqualTo(1);
+        assertThat(result.getNumTotalFiles()).isEqualTo(1);
+        assertThat(result.getNumTotalRows()).isEqualTo(1);
+        assertThat(result.getNumCorrectlyProcessedRows()).isEqualTo(1);
+      }
+      verify(csvServiceMock).readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any());
+    } finally {
+      Files.deleteIfExists(file);
+    }
   }
 
   @Test
@@ -121,10 +156,11 @@ class DebtPositionProcessingServiceTest {
         return null;
       });
 
-      DebtPositionMigrationFileResult result = service.readAndParseRows(List.of(file), errorList);
+      DebtPositionMigrationFileResult result = service.processMultipleDebtPositionFiles(List.of(file), mock(Uploads.class), errorList);
 
       assertEquals(1, result.getNumTotalFiles());
-      assertEquals(1, result.getNumCorrectlyProcessedFiles());
+      assertThat(result.getParsedFiles()).isEmpty();
+      assertEquals(0, result.getNumCorrectlyProcessedFiles());
       assertEquals(2, errorList.size());
       assertEquals(file.getFileName().toString(), errorList.get(0).getFileName());
       assertTrue(errorList.get(0).getErrorMessage().contains("csv error 1"));
@@ -132,10 +168,8 @@ class DebtPositionProcessingServiceTest {
       assertTrue(errorList.get(1).getErrorMessage().contains("csv error 2"));
       assertTrue(result.getErrorDescription().contains("csv error 1"));
       verify(csvServiceMock).readCsv(eq(file), eq(InstallmentIngestionFlowFileDTO.class), any());
-      verify(csvServiceMock).createCsv(any(), eq(InstallmentIngestionFlowFileDTO.class), any(), eq("V2_0"));
     } finally {
       Files.deleteIfExists(file);
-      // Elimina anche il file -parsed.csv se creato
       Path parsed = file.getParent().resolve(file.getFileName().toString().replaceFirst("\\.[^.]+$", "") + "-parsed.csv");
       Files.deleteIfExists(parsed);
     }
