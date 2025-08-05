@@ -83,16 +83,9 @@ public class DebtPositionProcessingService extends MigrationProcessingService<In
   }
 
   /**
-   * Processes a debt position CSV file by reading its contents, mapping each row to a DTO,
+   * Processes a debt position CSV file by streaming its rows, mapping each row to a DTO,
    * and writing the processed data to a new CSV file using a StatefulBeanToCsv writer.
-   * <p>
-   * This method performs the following steps:
-   * <ul>
-   *   <li>Reads the input CSV file and maps each row to an {@link InstallmentIngestionFlowFileDTO}.</li>
-   *   <li>Creates a new CSV file for the processed output using the provided profile.</li>
-   *   <li>Processes each DTO, writing valid rows to the output CSV and collecting errors.</li>
-   *   <li>Returns a {@link DebtPositionMigrationFileResult} containing the processing outcome.</li>
-   * </ul>
+   * This avoids loading the entire file into memory.
    *
    * @param file      the path to the input CSV file to process
    * @param uploads   the upload metadata associated with the file
@@ -102,21 +95,6 @@ public class DebtPositionProcessingService extends MigrationProcessingService<In
   public DebtPositionMigrationFileResult processDebtPositionFile(Path file,
                                                                 Uploads uploads,
                                                                 List<DebtPositionErrorDTO> errorList) {
-    List<InstallmentIngestionFlowFileDTO> dtos;
-    try {
-      dtos = csvService.readCsv(
-        file,
-        InstallmentIngestionFlowFileDTO.class,
-        (iterator, exceptions) -> {
-          List<InstallmentIngestionFlowFileDTO> list = new ArrayList<>();
-          iterator.forEachRemaining(list::add);
-          return list;
-        }
-      );
-    } catch (Exception e) {
-      log.error("Error reading file {}: {}", file, e.getMessage(), e);
-      return DebtPositionMigrationFileResult.builder().build();
-    }
     Path workingDirectory = file.getParent();
     String fileName = file.getFileName().toString();
     Path csvFilePath = workingDirectory.resolve("parsed-" + fileName.replaceFirst("\\.[^.]+$", "") + ".csv");
@@ -130,17 +108,29 @@ public class DebtPositionProcessingService extends MigrationProcessingService<In
       DebtPositionMigrationFileResult migrationFileResult = DebtPositionMigrationFileResult.builder()
         .lastCsvWriter(csvWriter)
         .build();
-      process(dtos.iterator(),
-        readerException,
-        migrationFileResult,
-        uploads,
-        errorList,
-        this::buildErrorDto,
-        workingDirectory,
-        fileName);
+      csvService.readCsv(
+        file,
+        InstallmentIngestionFlowFileDTO.class,
+        (iterator, exceptions) -> {
+          process(
+            iterator,
+            readerException,
+            migrationFileResult,
+            uploads,
+            errorList,
+            this::buildErrorDto,
+            workingDirectory,
+            fileName
+          );
+          return null;
+        }
+      );
+      List<Path> parsedFiles = new ArrayList<>();
+      parsedFiles.add(csvFilePath);
+      migrationFileResult.setParsedFiles(parsedFiles);
       return migrationFileResult;
     } catch (Exception e) {
-      log.error("Error creating CSV writer for file {}: {}", csvFilePath, e.getMessage(), e);
+      log.error("Error processing file {}: {}", file, e.getMessage(), e);
       return DebtPositionMigrationFileResult.builder().build();
     }
   }
