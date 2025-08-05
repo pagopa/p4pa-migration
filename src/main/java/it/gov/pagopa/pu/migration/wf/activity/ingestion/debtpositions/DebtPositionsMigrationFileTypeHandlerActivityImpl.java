@@ -55,11 +55,30 @@ public class DebtPositionsMigrationFileTypeHandlerActivityImpl extends BaseMigra
       throw new InvalidMigrationFileException("No file found in the uploaded archive");
     }
     final List<DebtPositionErrorDTO> errorList = new ArrayList<>();
-    DebtPositionMigrationFileResult result = debtPositionProcessingService.processMultipleDebtPositionFiles(retrievedFiles, upload, errorList);
+    final List<Path> parsedFiles = new ArrayList<>();
+    final List<Path> failedFiles = new ArrayList<>();
+
+    retrievedFiles.forEach(file -> {
+      DebtPositionMigrationFileResult result = debtPositionProcessingService.processDebtPositionFile(file, upload, errorList);
+      List<Path> resultFiles = result.getParsedFiles();
+      if (resultFiles != null && !resultFiles.isEmpty()) {
+        parsedFiles.addAll(resultFiles);
+      } else {
+        failedFiles.add(file);
+        log.warn("File {} was not processed and will be skipped in the output.", file);
+      }
+    });
+
+    if (!failedFiles.isEmpty()) {
+      log.error("The following files could not be processed: {}", failedFiles);
+    }
+    if (!errorList.isEmpty()) {
+      log.error("Errors found during processing: {}", errorList);
+    }
+
     return handleFilesUpload(
-      result.getParsedFiles(),
+      parsedFiles,
       upload,
-      IngestionFlowFileType.DP_INSTALLMENTS
-    );
+      IngestionFlowFileType.DP_INSTALLMENTS);
   }
 }

@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion.debtposition;
 
+import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.exceptions.CsvException;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
@@ -12,11 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 @Service
@@ -41,6 +41,24 @@ public class DebtPositionProcessingService extends MigrationProcessingService<In
 
   @Override
   protected boolean consumeRow(long lineNumber, InstallmentIngestionFlowFileDTO dto, DebtPositionMigrationFileResult migrationFileResult, List<DebtPositionErrorDTO> errorList, Uploads uploads) {
+    String fileName = uploads.getFileName();
+    InstallmentIngestionFlowFileRequiredFieldsValidator.setDefaultValues(dto);
+    if (migrationFileResult.getLastCsvWriter() == null) {
+      DebtPositionErrorDTO error = buildErrorDto(null, lineNumber, "CSV_WRITER_NULL", "CsvWriter not initialized");
+      errorList.add(error);
+      log.error("CsvWriter not initialized at row {}", lineNumber);
+      return false;
+    }
+    StatefulBeanToCsv<InstallmentIngestionFlowFileDTO> csvWriter = migrationFileResult.getLastCsvWriter();
+    try {
+      csvWriter.write(dto);
+      migrationFileResult.setNumCorrectlyProcessedRows(migrationFileResult.getNumCorrectlyProcessedRows() + 1);
+    } catch (Exception e) {
+      DebtPositionErrorDTO error = buildErrorDto(fileName, lineNumber, "CSV_WRITE_ERROR", e.getMessage());
+      errorList.add(error);
+      log.error("Error writing row {} in file {}: {}", lineNumber, fileName, e.getMessage(), e);
+      return false;
+    }
     return true;
   }
 
@@ -64,67 +82,67 @@ public class DebtPositionProcessingService extends MigrationProcessingService<In
     result.setDiscardedFileName(discardedFileName);
   }
 
-
-private DebtPositionMigrationFileResult processDebtPositionFile(Iterator<InstallmentIngestionFlowFileDTO> iterator,
-                                                                 List<CsvException> readerException,
-                                                                 Uploads uploads,
-                                                                 List<DebtPositionErrorDTO> errorList,
-                                                                 Path workingDirectory,
-                                                                 String fileName) {
-    DebtPositionMigrationFileResult migrationFileResult = DebtPositionMigrationFileResult.builder().build();
-    process(iterator,
-      readerException,
-      migrationFileResult,
-      uploads,
-      errorList,
-      this::buildErrorDto,
-      workingDirectory,
-      fileName);
-    return migrationFileResult;
-  }
-
-  private List<InstallmentIngestionFlowFileDTO> parseCsvFile(Path file, List<DebtPositionErrorDTO> errorList, List<String> unsuccessfulParsedFiles) {
-    List<InstallmentIngestionFlowFileDTO> dtos = new ArrayList<>();
+  /**
+   * Processes a debt position CSV file by reading its contents, mapping each row to a DTO,
+   * and writing the processed data to a new CSV file using a StatefulBeanToCsv writer.
+   * <p>
+   * This method performs the following steps:
+   * <ul>
+   *   <li>Reads the input CSV file and maps each row to an {@link InstallmentIngestionFlowFileDTO}.</li>
+   *   <li>Creates a new CSV file for the processed output using the provided profile.</li>
+   *   <li>Processes each DTO, writing valid rows to the output CSV and collecting errors.</li>
+   *   <li>Returns a {@link DebtPositionMigrationFileResult} containing the processing outcome.</li>
+   * </ul>
+   *
+   * @param file      the path to the input CSV file to process
+   * @param uploads   the upload metadata associated with the file
+   * @param errorList the list to which any processing errors will be added
+   * @return a {@link DebtPositionMigrationFileResult} with the results of the processing
+   */
+  public DebtPositionMigrationFileResult processDebtPositionFile(Path file,
+                                                                Uploads uploads,
+                                                                List<DebtPositionErrorDTO> errorList) {
+    List<InstallmentIngestionFlowFileDTO> dtos;
     try {
-      csvService.readCsv(
+      dtos = csvService.readCsv(
         file,
         InstallmentIngestionFlowFileDTO.class,
-        (csvIterator, readerException) -> {
-          handleReaderExceptions(file, readerException, errorList, unsuccessfulParsedFiles);
-          while (csvIterator.hasNext()) {
-            InstallmentIngestionFlowFileDTO dto = csvIterator.next();
-            InstallmentIngestionFlowFileRequiredFieldsValidator.setDefaultValues(dto);
-            dtos.add(dto);
-          }
-          return null;
+        (iterator, exceptions) -> {
+          List<InstallmentIngestionFlowFileDTO> list = new ArrayList<>();
+          iterator.forEachRemaining(list::add);
+          return list;
         }
       );
-    } catch (IOException e) {
-      log.error("IO error reading file {}: {}", file.getFileName(), e.getMessage(), e);
+    } catch (Exception e) {
+      log.error("Error reading file {}: {}", file, e.getMessage(), e);
+      return DebtPositionMigrationFileResult.builder().build();
     }
-    return dtos;
-  }
-
-  private void handleReaderExceptions(Path file, List<CsvException> readerException, List<DebtPositionErrorDTO> errorList, List<String> unsuccessfulParsedFiles) {
-    if (readerException != null && !readerException.isEmpty()) {
-      for (Exception ex : readerException) {
-        DebtPositionErrorDTO error = new DebtPositionErrorDTO();
-        error.setFileName(file.getFileName().toString());
-        error.setErrorMessage(ex.getMessage());
-        errorList.add(error);
-        unsuccessfulParsedFiles.add(file.getFileName() + ":" + ex.getMessage());
-      }
-      log.error("Error reading file {}: {}", file.getFileName(), readerException);
+    Path workingDirectory = file.getParent();
+    String fileName = file.getFileName().toString();
+    Path csvFilePath = workingDirectory.resolve("parsed-" + fileName.replaceFirst("\\.[^.]+$", "") + ".csv");
+    List<CsvException> readerException = new ArrayList<>();
+    try (Writer writer = Files.newBufferedWriter(csvFilePath)) {
+      StatefulBeanToCsv<InstallmentIngestionFlowFileDTO> csvWriter = csvService.createCsvWriter(
+        InstallmentIngestionFlowFileDTO.class,
+        "V2_0",
+        writer
+      );
+      DebtPositionMigrationFileResult migrationFileResult = DebtPositionMigrationFileResult.builder()
+        .lastCsvWriter(csvWriter)
+        .build();
+      process(dtos.iterator(),
+        readerException,
+        migrationFileResult,
+        uploads,
+        errorList,
+        this::buildErrorDto,
+        workingDirectory,
+        fileName);
+      return migrationFileResult;
+    } catch (Exception e) {
+      log.error("Error creating CSV writer for file {}: {}", csvFilePath, e.getMessage(), e);
+      return DebtPositionMigrationFileResult.builder().build();
     }
-  }
-
-  private static String buildErrorDescription(List<String> unsuccessfulParsedFiles) {
-    String errorDescription = null;
-    if (!unsuccessfulParsedFiles.isEmpty()) {
-      errorDescription = "There were some errors during Debt positions migration.";
-      errorDescription += "\n" + String.join("\n", unsuccessfulParsedFiles);
-    }
-    return errorDescription;
   }
 
   protected DebtPositionErrorDTO buildErrorDto(String fileName, long lineNumber, String errorCode, String message) {
@@ -136,59 +154,4 @@ private DebtPositionMigrationFileResult processDebtPositionFile(Iterator<Install
       .build();
   }
 
-
-    public DebtPositionMigrationFileResult processMultipleDebtPositionFiles(List<Path> retrievedFiles, Uploads upload, List<DebtPositionErrorDTO> errorList) {
-        if (retrievedFiles == null || retrievedFiles.isEmpty()) {
-            return DebtPositionMigrationFileResult.builder()
-                .parsedFiles(new ArrayList<>())
-                .numCorrectlyProcessedFiles(0)
-                .numTotalFiles(0)
-                .numTotalRows(0L)
-                .numCorrectlyProcessedRows(0L)
-                .errorDescription(null)
-                .build();
-        }
-        List<Path> parsedFiles = new ArrayList<>();
-        List<String> unsuccessfulParsedFiles = new ArrayList<>();
-        long totalRows = 0;
-        long totalProcessedRows = 0;
-        int numTotalFiles = 0;
-        int numCorrectlyProcessedFiles = 0;
-
-        for (Path file : retrievedFiles) {
-            List<CsvException> readerException = new ArrayList<>();
-            List<InstallmentIngestionFlowFileDTO> dtos = parseCsvFile(file, errorList, unsuccessfulParsedFiles);
-            Iterator<InstallmentIngestionFlowFileDTO> iterator = dtos.iterator();
-            DebtPositionMigrationFileResult singleResult = processDebtPositionFile(
-                iterator,
-                readerException,
-                upload,
-                errorList,
-                file.getParent(),
-                file.getFileName().toString()
-            );
-            String originalFileName = file.getFileName().toString();
-            String tempFileName = "parsed-" + originalFileName.replaceFirst("\\.[^.]+$", "") + ".csv";
-            Path parent = file.getParent();
-            Path tempFile = parent.resolve(tempFileName);
-            if (Files.exists(tempFile)) {
-                parsedFiles.add(tempFile);
-                numCorrectlyProcessedFiles++;
-            } else {
-                unsuccessfulParsedFiles.add(file.getFileName() + ": conversion failed");
-            }
-            numTotalFiles++;
-            totalRows += singleResult.getNumTotalRows() != null ? singleResult.getNumTotalRows() : 0;
-            totalProcessedRows += singleResult.getNumCorrectlyProcessedRows() != null ? singleResult.getNumCorrectlyProcessedRows() : 0;
-        }
-
-        return DebtPositionMigrationFileResult.builder()
-            .parsedFiles(parsedFiles)
-            .numCorrectlyProcessedFiles(numCorrectlyProcessedFiles)
-            .numTotalFiles(numTotalFiles)
-            .numTotalRows(totalRows)
-            .numCorrectlyProcessedRows(totalProcessedRows)
-            .errorDescription(buildErrorDescription(unsuccessfulParsedFiles))
-            .build();
-    }
 }
