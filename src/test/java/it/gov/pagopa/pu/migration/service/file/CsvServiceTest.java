@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.migration.service.file;
 
+import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.exceptions.CsvException;
 import it.gov.pagopa.pu.migration.wf.exception.InvalidCsvRowException;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,7 @@ import uk.co.jemos.podam.api.PodamFactoryImpl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -246,4 +248,23 @@ class CsvServiceTest {
 
   }
 
+  @Test
+  void testCreateCsvWriter_returnsConfiguredBeanToCsv() throws Exception {
+    StringWriter writer = new StringWriter();
+    StatefulBeanToCsv<TestBean> beanToCsv = csvService.createCsvWriter(TestBean.class, "default", writer);
+    assertNotNull(beanToCsv);
+    TestBean bean = new TestBean();
+    bean.setField("value");
+    beanToCsv.write(List.of(bean));
+    writer.flush();
+    String csvContent = writer.toString();
+    assertTrue(csvContent.contains("value"));
+  }
+
+  public static class TestBean {
+    @com.opencsv.bean.CsvBindByName
+    private String field;
+    public String getField() { return field; }
+    public void setField(String field) { this.field = field; }
+  }
 }
