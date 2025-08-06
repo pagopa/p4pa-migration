@@ -96,7 +96,6 @@ public class CsvService {
      * @throws IOException if an error occurs while writing the file
      */
     public <C> void createCsv(Path csvFilePath, Class<C> typeClass, Supplier<List<C>> csvRowsSupplier, String csvProfile) throws IOException {
-
         File file = csvFilePath.toFile();
         File parentDir = file.getParentFile();
         if (!parentDir.exists() && !parentDir.mkdirs()) {
@@ -104,17 +103,7 @@ public class CsvService {
         }
 
         try (Writer writer = Files.newBufferedWriter(csvFilePath)) {
-            HeaderColumnNameMappingStrategy<C> mappingStrategy = new HeaderColumnNameMappingStrategy<>();
-            mappingStrategy.setProfile(csvProfile);
-            mappingStrategy.setType(typeClass);
-
-            StatefulBeanToCsv<C> beanToCsv = new StatefulBeanToCsvBuilder<C>(writer)
-                    .withProfile(csvProfile)
-                    .withSeparator(separator)
-                    .withQuotechar(quoteChar)
-                    .withMappingStrategy(mappingStrategy)
-                    .withThrowExceptions(true)
-                    .build();
+            StatefulBeanToCsv<C> beanToCsv = createCsvWriter(typeClass, csvProfile, writer);
 
             List<C> rows;
             int pageRequestCount = 0;
