@@ -97,12 +97,12 @@ public class DebtPositionProcessingService extends MigrationProcessingService<In
                                                                 List<DebtPositionErrorDTO> errorList) {
     Path workingDirectory = file.getParent();
     String fileName = file.getFileName().toString();
-    Path csvFilePath = workingDirectory.resolve("parsed-" + fileName.replaceFirst("\\.[^.]+$", "") + ".csv");
+    Path csvFilePath = workingDirectory.resolve("parsed-" + fileName.replaceFirst("\\.csv",  "_2_0.csv"));
     List<CsvException> readerException = new ArrayList<>();
     try (Writer writer = Files.newBufferedWriter(csvFilePath)) {
       StatefulBeanToCsv<InstallmentIngestionFlowFileDTO> csvWriter = csvService.createCsvWriter(
         InstallmentIngestionFlowFileDTO.class,
-        "V2_0",
+        null,
         writer
       );
       DebtPositionMigrationFileResult migrationFileResult = DebtPositionMigrationFileResult.builder()

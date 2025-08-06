@@ -1,20 +1,10 @@
 package it.gov.pagopa.pu.migration.wf.dto.debtposition;
 
-import com.opencsv.bean.CsvBindAndJoinByName;
 import com.opencsv.bean.CsvBindByName;
-import com.opencsv.bean.CsvDate;
-import it.gov.pagopa.pu.debtposition.dto.generated.Action;
-import it.gov.pagopa.pu.debtposition.dto.generated.PersonEntityType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.collections4.MultiValuedMap;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import static it.gov.pagopa.pu.migration.wf.dto.debtposition.InstallmentIngestionFlowFileVersions.*;
 
 
 @Data
@@ -23,144 +13,112 @@ import static it.gov.pagopa.pu.migration.wf.dto.debtposition.InstallmentIngestio
 @Builder
 public class InstallmentIngestionFlowFileDTO {
 
-    @CsvBindByName(column = "IUPD", profiles = V2_0)
-    @CsvBindByName(column = "iupdOrg", profiles = V2_0_ENG)
+    @CsvBindByName(column = "IUPD")
     private String iupdOrg;
 
-    @CsvBindByName(column = "descrizionePosizioneDebitoria", required = true, profiles = V2_0)
-    @CsvBindByName(column = "description", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "descrizionePosizioneDebitoria")
     private String description;
 
-    @CsvBindByName(column = "dataValidita", profiles = {V1_4, V2_0})
-    @CsvBindByName(column = "validityDate", profiles = V2_0_ENG)
-    @CsvDate(value = "yyyy-MM-dd")
-    private LocalDate validityDate;
+    @CsvBindByName(column = "dataValidita")
+    private String validityDate;
 
-    @CsvBindByName(column = "multiDebtor", profiles = {V2_0, V2_0_ENG})
-    private Boolean multiDebtor;
+    @CsvBindByName(column = "multiDebtor")
+    private String multiDebtor;
 
-    @CsvBindByName(column = "dataNotifica", profiles = V2_0)
-    @CsvBindByName(column = "notificationDate", profiles = V2_0_ENG)
-    @CsvDate(value = "yyyy-MM-dd")
-    private LocalDate notificationDate;
+    @CsvBindByName(column = "dataNotifica")
+    private String notificationDate;
 
-    @CsvBindByName(column = "indiceOpzionePagamento", required = true, profiles = {V1_4, V2_0})
-    @CsvBindByName(column = "paymentOptionIndex", required = true, profiles = V2_0_ENG)
-    private Integer paymentOptionIndex;
+    @CsvBindByName(column = "indiceOpzionePagamento")
+    private String paymentOptionIndex;
 
-    @CsvBindByName(column = "tipoOpzionePagamento", required = true, profiles = V2_0)
-    @CsvBindByName(column = "paymentOptionType", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "tipoOpzionePagamento")
     private String paymentOptionType;
 
-    @CsvBindByName(column = "descrizioneOpzionePagamento", profiles = V2_0)
-    @CsvBindByName(column = "paymentOptionDescription", profiles = V2_0_ENG)
+    @CsvBindByName(column = "descrizioneOpzionePagamento")
     private String paymentOptionDescription;
 
-    @CsvBindByName(column = "iud", profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0, V2_0_ENG})
+    @CsvBindByName(column = "iud")
     private String iud;
 
-    @CsvBindByName(column = "codIUV", profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "iuv", profiles = V2_0_ENG)
+    @CsvBindByName(column = "codIUV")
     private String iuv;
 
-    @CsvBindByName(column = "tipoIdentificativoUnivoco", profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "entityType", profiles = V2_0_ENG)
-    private PersonEntityType entityType;
+    @CsvBindByName(column = "tipoIdentificativoUnivoco")
+    private String entityType;
 
-    @CsvBindByName(column = "codiceIdentificativoUnivoco", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "fiscalCode", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "codiceIdentificativoUnivoco")
     private String fiscalCode;
 
-    @CsvBindByName(column = "anagraficaPagatore", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "fullName", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "anagraficaPagatore")
     private String fullName;
 
-    @CsvBindByName(column = "indirizzoPagatore", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "address", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "indirizzoPagatore")
     private String address;
 
-    @CsvBindByName(column = "civicoPagatore", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "civic", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "civicoPagatore")
     private String civic;
 
-    @CsvBindByName(column = "capPagatore", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "postalCode", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "capPagatore")
     private String postalCode;
 
-    @CsvBindByName(column = "localitaPagatore", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "location", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "localitaPagatore")
     private String location;
 
-    @CsvBindByName(column = "provinciaPagatore", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "province", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "provinciaPagatore")
     private String province;
 
-    @CsvBindByName(column = "nazionePagatore", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "nation", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "nazionePagatore")
     private String nation;
 
-    @CsvBindByName(column = "emailPagatore", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "email", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "emailPagatore")
     private String email;
 
-    @CsvBindByName(column = "dataEsecuzionePagamento", profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "dueDate", profiles = V2_0_ENG)
-    @CsvDate(value = "yyyy-MM-dd")
-    private LocalDate dueDate;
+    @CsvBindByName(column = "dataEsecuzionePagamento")
+    private String dueDate;
 
-    @CsvBindByName(column = "importoDovuto", profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "amount", profiles = V2_0_ENG)
-    private BigDecimal amount;
+    @CsvBindByName(column = "importoDovuto")
+    private String amount;
 
-    @CsvBindByName(column = "tipoDovuto", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "debtPositionTypeCode", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "tipoDovuto")
     private String debtPositionTypeCode;
 
 
-    @CsvBindByName(column = "causaleVersamento", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "remittanceInformation", required = true, profiles = V2_0_ENG)
+    @CsvBindByName(column = "causaleVersamento")
     private String remittanceInformation;
 
-    @CsvBindByName(column = "datiSpecificiRiscossione", profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "legacyPaymentMetadata", profiles = V2_0_ENG)
+    @CsvBindByName(column = "datiSpecificiRiscossione")
     private String legacyPaymentMetadata;
 
-    @CsvBindByName(column = "flagGeneraIuv", required = true, profiles = {V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "flagPuPagoPaPayment", required = true, profiles = V2_0_ENG)
-    private Boolean flagPuPagoPaPayment;
+    @CsvBindByName(column = "flagGeneraIuv")
+    private String flagPuPagoPaPayment;
 
-    @CsvBindByName(column = "bilancio", profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "balance", profiles = V2_0_ENG)
+    @CsvBindByName(column = "bilancio")
     private String balance;
 
-    @CsvBindByName(column = "flagMultiBeneficiario", profiles = {V1_4, V2_0})
-    @CsvBindByName(column = "flagMultiBeneficiary", profiles = V2_0_ENG)
-    private Boolean flagMultiBeneficiary;
+    @CsvBindByName(column = "flagMultiBeneficiario")
+    private String flagMultiBeneficiary;
 
-    @CsvBindByName(column = "numeroBeneficiari", profiles = V2_0)
-    @CsvBindByName(column = "numberBeneficiary", profiles = V2_0_ENG)
-    private Integer numberBeneficiary;
+    @CsvBindByName(column = "numeroBeneficiari")
+    private String numberBeneficiary;
 
-    @CsvBindAndJoinByName(column = ".*_2", elementType = String.class, profiles = {V1_4, V2_0, V2_0_ENG})
-    private MultiValuedMap<String, String> transfer2;
+    @CsvBindByName(column = ".*_2")
+    private String transfer2;
 
-    @CsvBindAndJoinByName(column = ".*_3", elementType = String.class, profiles = {V2_0, V2_0_ENG})
-    private MultiValuedMap<String, String> transfer3;
+    @CsvBindByName(column = ".*_3")
+    private String transfer3;
 
-    @CsvBindAndJoinByName(column = ".*_4", elementType = String.class, profiles = {V2_0, V2_0_ENG})
-    private MultiValuedMap<String, String> transfer4;
+    @CsvBindByName(column = ".*_4")
+    private String transfer4;
 
-    @CsvBindAndJoinByName(column = ".*_5", elementType = String.class, profiles = {V2_0, V2_0_ENG})
-    private MultiValuedMap<String, String> transfer5;
+    @CsvBindByName(column = ".*_5")
+    private String transfer5;
 
-    @CsvBindByName(column = "configurazioniEsecuzione", profiles = V2_0)
-    @CsvBindByName(column = "executionConfig", profiles = V2_0_ENG)
+    @CsvBindByName(column = "configurazioniEsecuzione")
     private String executionConfig;
 
-    @CsvBindByName(column = "azione", required = true, profiles = {V1_0, V1_1, V1_2, V1_3, V1_4, V2_0})
-    @CsvBindByName(column = "action", required = true, profiles = V2_0_ENG)
-    private Action action;
+    @CsvBindByName(column = "azione")
+    private String action;
 
-    @CsvBindByName(column = "draft", profiles = {V2_0, V2_0_ENG})
-    private Boolean draft;
+    @CsvBindByName(column = "draft")
+    private String draft;
 }

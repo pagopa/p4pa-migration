@@ -14,14 +14,14 @@ public class InstallmentIngestionFlowFileRequiredFieldsValidator {
     public static final String CREATION_DATE_FORMAT = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
     public static void setDefaultValues(InstallmentIngestionFlowFileDTO dto){
-        dto.setFlagPuPagoPaPayment(Boolean.FALSE);
+        dto.setFlagPuPagoPaPayment(Boolean.FALSE.toString());
 
         if (dto.getFlagMultiBeneficiary() == null) {
-            dto.setFlagMultiBeneficiary(Boolean.FALSE);
+            dto.setFlagMultiBeneficiary(Boolean.FALSE.toString());
         }
 
         if (dto.getNumberBeneficiary() == null) {
-            dto.setNumberBeneficiary(Boolean.TRUE.equals(dto.getFlagMultiBeneficiary()) ? 1 : 0);
+            dto.setNumberBeneficiary("true".equalsIgnoreCase(dto.getFlagMultiBeneficiary()) ? "1" : "0");
         }
 
         setDefaultIfNotLastVersion(dto);
@@ -32,7 +32,7 @@ public class InstallmentIngestionFlowFileRequiredFieldsValidator {
             dto.setDescription(String.format("DebtPosition with code %s was created on %s", dto.getDebtPositionTypeCode(), CREATION_DATE_FORMAT));
         }
         if (dto.getPaymentOptionIndex() == null) {
-            dto.setPaymentOptionIndex(1);
+            dto.setPaymentOptionIndex("1");
         }
         if (dto.getPaymentOptionType() == null) {
             dto.setPaymentOptionType("SINGLE_INSTALLMENT");

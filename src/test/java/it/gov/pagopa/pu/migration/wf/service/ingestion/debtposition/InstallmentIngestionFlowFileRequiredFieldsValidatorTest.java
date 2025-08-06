@@ -16,15 +16,12 @@ class InstallmentIngestionFlowFileRequiredFieldsValidatorTest {
     @Test
     void givenObligatoryFieldsNullWhenValidateRequiredFieldsThenOk(){
         InstallmentIngestionFlowFileDTO dto = buildInstallmentIngestionFlowFileDTO();
-
         setDefaultValues(dto);
-
-        assertEquals(false, dto.getFlagPuPagoPaPayment());
-        assertEquals(false, dto.getFlagMultiBeneficiary());
-        assertEquals(0, dto.getNumberBeneficiary());
-
+        assertEquals("false", dto.getFlagPuPagoPaPayment());
+        assertEquals("false", dto.getFlagMultiBeneficiary());
+        assertEquals("0", dto.getNumberBeneficiary());
         assertNotNull(dto.getDescription());
-        assertEquals(1, dto.getPaymentOptionIndex());
+        assertEquals("1", dto.getPaymentOptionIndex());
         assertEquals("SINGLE_INSTALLMENT", dto.getPaymentOptionType());
         assertEquals("Pagamento Singolo Avviso", dto.getPaymentOptionDescription());
     }
@@ -32,46 +29,40 @@ class InstallmentIngestionFlowFileRequiredFieldsValidatorTest {
     @Test
     void givenFlagMultiBeneficiaryTrueWhenValidateRequiredFieldsThenOk(){
         InstallmentIngestionFlowFileDTO dto = buildInstallmentIngestionFlowFileDTO();
-        dto.setFlagMultiBeneficiary(true);
-
+        dto.setFlagMultiBeneficiary("true");
         setDefaultValues(dto);
-
-        assertEquals(1, dto.getNumberBeneficiary());
+        assertEquals("1", dto.getNumberBeneficiary());
     }
 
     @Test
     void givenObligatoryFieldsNotNullWhenValidateRequiredFieldsThenDoNothing(){
         InstallmentIngestionFlowFileDTO dto = buildInstallmentIngestionFlowFileDTO();
-        dto.setFlagMultiBeneficiary(true);
-        dto.setFlagPuPagoPaPayment(Boolean.FALSE);
-        dto.setFlagMultiBeneficiary(Boolean.TRUE);
-        dto.setNumberBeneficiary(3);
+        dto.setFlagMultiBeneficiary("true");
+        dto.setFlagPuPagoPaPayment("false");
+        dto.setNumberBeneficiary("3");
         dto.setDescription("DP Description");
-        dto.setPaymentOptionIndex(3);
+        dto.setPaymentOptionIndex("3");
         dto.setPaymentOptionType("Payment Option Type");
         dto.setPaymentOptionDescription("Payment option Description");
-
         setDefaultValues(dto);
-
-        assertEquals(false, dto.getFlagPuPagoPaPayment());
-        assertEquals(true, dto.getFlagMultiBeneficiary());
-        assertEquals(3, dto.getNumberBeneficiary());
-
+        assertEquals("false", dto.getFlagPuPagoPaPayment());
+        assertEquals("true", dto.getFlagMultiBeneficiary());
+        assertEquals("3", dto.getNumberBeneficiary());
         assertEquals("DP Description", dto.getDescription());
-        assertEquals(3, dto.getPaymentOptionIndex());
+        assertEquals("3", dto.getPaymentOptionIndex());
         assertEquals("Payment Option Type", dto.getPaymentOptionType());
         assertEquals("Payment option Description", dto.getPaymentOptionDescription());
     }
 
     private static InstallmentIngestionFlowFileDTO buildInstallmentIngestionFlowFileDTO() {
         InstallmentIngestionFlowFileDTO dto = new InstallmentIngestionFlowFileDTO();
-        dto.setEntityType(PersonEntityType.F);
+        dto.setEntityType(PersonEntityType.F.getValue());
         dto.setFiscalCode("FiscalCode");
         dto.setFullName("FullName");
-        dto.setAmount(BigDecimal.TEN);
+        dto.setAmount(BigDecimal.TEN.toString());
         dto.setDebtPositionTypeCode("DebtPositionTypeCode");
         dto.setRemittanceInformation("RemittanceInformation");
-        dto.setAction(I);
+        dto.setAction(I.getValue());
         return dto;
     }
 }

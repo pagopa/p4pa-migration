@@ -143,8 +143,8 @@ class DebtPositionsMigrationFileTypeHandlerActivityTest {
       .numTotalFiles(1)
       .errorDescription(null)
       .build();
-    when(debtPositionProcessingServiceMock.processMultipleDebtPositionFiles(
-      anyList(),
+    when(debtPositionProcessingServiceMock.processDebtPositionFile(
+      any(),
       any(Uploads.class),
       anyList()
     )).thenReturn(migrationFileResult);
