@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -157,6 +157,26 @@ class DebtPositionProcessingServiceTest {
     assertThat(dto.getFlagMultiBeneficiary()).isEqualTo("false");
     assertThat(dto.getNumberBeneficiary()).isEqualTo("0");
   }
+
+  @Test
+  void consumeRow_whenOrgFiscalCodeSecondarioAndOrgFiscalCode2Different_addsErrorAndReturnsFalse() {
+        InstallmentIngestionFlowFileDTO dto = new InstallmentIngestionFlowFileDTO();
+        dto.setOrgFiscalCodeSecondario("CF2");
+        dto.setOrgFiscalCode2("DIFFERENT_CF2");
+        DebtPositionMigrationFileResult migrationFileResult = DebtPositionMigrationFileResult.builder().lastCsvWriter(mock(StatefulBeanToCsv.class)).build();
+        List<DebtPositionErrorDTO> errorList = new ArrayList<>();
+        Uploads uploads = mock(Uploads.class);
+        long lineNumber = 7L;
+
+        boolean result = service.consumeRow(lineNumber, dto, migrationFileResult, errorList, uploads);
+
+        assertFalse(result);
+        assertEquals(1, errorList.size());
+        DebtPositionErrorDTO error = errorList.get(0);
+        assertEquals("DTO_DIFFERENT_VALUE", error.getErrorCode());
+        assertEquals("OrgFiscalCodeSecondario and OrgFiscalCode2 have not the same value", error.getErrorMessage());
+        assertEquals(lineNumber, error.getRowNumber());
+    }
 
 
 
