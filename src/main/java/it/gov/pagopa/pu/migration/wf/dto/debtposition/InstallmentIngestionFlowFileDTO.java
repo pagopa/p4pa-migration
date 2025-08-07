@@ -82,7 +82,6 @@ public class InstallmentIngestionFlowFileDTO {
     @CsvBindByName(column = "tipoDovuto")
     private String debtPositionTypeCode;
 
-
     @CsvBindByName(column = "causaleVersamento")
     private String remittanceInformation;
 
@@ -92,26 +91,50 @@ public class InstallmentIngestionFlowFileDTO {
     @CsvBindByName(column = "flagGeneraIuv")
     private String flagPuPagoPaPayment;
 
-    @CsvBindByName(column = "bilancio")
+  @CsvBindByName(column = "bilancio")
     private String balance;
 
-    @CsvBindByName(column = "flagMultiBeneficiario")
+  @CsvBindByName(column = "flagMultiBeneficiario")
     private String flagMultiBeneficiary;
 
-    @CsvBindByName(column = "numeroBeneficiari")
+  @CsvBindByName(column = "numeroBeneficiari")
     private String numberBeneficiary;
 
-    @CsvBindByName(column = ".*_2")
-    private String transfer2;
+  @CsvBindByName(column = "codiceFiscaleEnteSecondario")
+  private String orgFiscalCode2;
 
-    @CsvBindByName(column = ".*_3")
-    private String transfer3;
+  @CsvBindByName(column = "denominazioneEnteSecondario")
+  private String orgName2;
 
-    @CsvBindByName(column = ".*_4")
-    private String transfer4;
+  @CsvBindByName(column = "ibanAccreditoEnteSecondario")
+  private String iban2;
 
-    @CsvBindByName(column = ".*_5")
-    private String transfer5;
+  @CsvBindByName(column = "indirizzoEnteSecondario")
+  private String address2;
+
+  @CsvBindByName(column = "civicoEnteSecondario")
+  private String civic2;
+
+  @CsvBindByName(column = "capEnteSecondario")
+  private String postalCode2;
+
+  @CsvBindByName(column = "localitaEnteSecondario")
+  private String location2;
+
+  @CsvBindByName(column = "provinciaEnteSecondario")
+  private String province2;
+
+  @CsvBindByName(column = "nazioneEnteSecondario")
+  private String nation2;
+
+  @CsvBindByName(column = "causaleVersamentoEnteSecondario")
+  private String remittanceInformation2;
+
+  @CsvBindByName(column = "importoVersamentoEnteSecondario")
+  private String amount2;
+
+  @CsvBindByName(column = "datiSpecificiRiscossioneEnteSecondario")
+  private String category2;
 
     @CsvBindByName(column = "configurazioniEsecuzione")
     private String executionConfig;
