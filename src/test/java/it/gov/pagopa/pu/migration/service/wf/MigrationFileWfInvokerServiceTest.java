@@ -41,6 +41,8 @@ class MigrationFileWfInvokerServiceTest {
   @Mock
   private AssessmentsRegistryDataMigrationWFClient assessmentsRegistryDataMigrationWFClientMock;
   @Mock
+  private DebtPositionsDataMigrationWFClient debtPositionsDataMigrationWFClientMock;
+  @Mock
   private DebtPositionsPaidDataMigrationWFClient debtPositionsPaidDataMigrationWFClientMock;
 
   private MigrationFileWfInvokerService service;
@@ -59,6 +61,7 @@ class MigrationFileWfInvokerServiceTest {
       assessmentsDataMigrationWFClientMock,
       assessmentsRegistryDataMigrationWFClientMock,
       debtPositionTypeOrgDataMigrationWFClientMock,
+      debtPositionsDataMigrationWFClientMock,
       debtPositionsPaidDataMigrationWFClientMock
     );
 
@@ -73,6 +76,7 @@ class MigrationFileWfInvokerServiceTest {
       Map.entry(MigrationFileTypeEnum.ASSESSMENTS, assessmentsDataMigrationWFClientMock),
       Map.entry(MigrationFileTypeEnum.ASSESSMENTS_REGISTRY, assessmentsRegistryDataMigrationWFClientMock),
       Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG, debtPositionTypeOrgDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS, debtPositionsDataMigrationWFClientMock),
       Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS_PAID, debtPositionsPaidDataMigrationWFClientMock)
     );
   }
@@ -89,7 +93,8 @@ class MigrationFileWfInvokerServiceTest {
       assessmentsDataMigrationWFClientMock,
       assessmentsRegistryDataMigrationWFClientMock,
       debtPositionTypeOrgDataMigrationWFClientMock,
-      debtPositionsPaidDataMigrationWFClientMock
+      debtPositionsPaidDataMigrationWFClientMock,
+      debtPositionsDataMigrationWFClientMock
     );
   }
 

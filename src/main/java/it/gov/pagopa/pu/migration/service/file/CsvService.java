@@ -96,7 +96,6 @@ public class CsvService {
      * @throws IOException if an error occurs while writing the file
      */
     public <C> void createCsv(Path csvFilePath, Class<C> typeClass, Supplier<List<C>> csvRowsSupplier, String csvProfile) throws IOException {
-
         File file = csvFilePath.toFile();
         File parentDir = file.getParentFile();
         if (!parentDir.exists() && !parentDir.mkdirs()) {
@@ -104,17 +103,7 @@ public class CsvService {
         }
 
         try (Writer writer = Files.newBufferedWriter(csvFilePath)) {
-            HeaderColumnNameMappingStrategy<C> mappingStrategy = new HeaderColumnNameMappingStrategy<>();
-            mappingStrategy.setProfile(csvProfile);
-            mappingStrategy.setType(typeClass);
-
-            StatefulBeanToCsv<C> beanToCsv = new StatefulBeanToCsvBuilder<C>(writer)
-                    .withProfile(csvProfile)
-                    .withSeparator(separator)
-                    .withQuotechar(quoteChar)
-                    .withMappingStrategy(mappingStrategy)
-                    .withThrowExceptions(true)
-                    .build();
+            StatefulBeanToCsv<C> beanToCsv = createCsvWriter(typeClass, csvProfile, writer);
 
             List<C> rows;
             int pageRequestCount = 0;
@@ -180,5 +169,29 @@ public class CsvService {
         } catch (Exception e) {
             throw new IOException("Error while reading csv file: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Creates and returns a StatefulBeanToCsv object ready for writing to a CSV file.
+     * <p>
+     * The caller is responsible for closing the provided Writer after use.
+     *
+     * @param <C>        the type of beans to be written
+     * @param typeClass  the class of the beans
+     * @param csvProfile the CSV profile to use for mapping
+     * @param writer     an open Writer for the destination file
+     * @return a configured StatefulBeanToCsv instance ready for writing
+     */
+    public <C> StatefulBeanToCsv<C> createCsvWriter(Class<C> typeClass, String csvProfile, Writer writer){
+        HeaderColumnNameMappingStrategy<C> mappingStrategy = new HeaderColumnNameMappingStrategy<>();
+        mappingStrategy.setProfile(csvProfile);
+        mappingStrategy.setType(typeClass);
+      return new StatefulBeanToCsvBuilder<C>(writer)
+              .withProfile(csvProfile)
+              .withSeparator(separator)
+              .withQuotechar(quoteChar)
+              .withMappingStrategy(mappingStrategy)
+              .withThrowExceptions(true)
+              .build();
     }
 }
