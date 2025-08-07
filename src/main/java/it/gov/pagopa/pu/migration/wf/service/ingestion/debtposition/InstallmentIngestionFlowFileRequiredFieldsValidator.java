@@ -40,5 +40,21 @@ public class InstallmentIngestionFlowFileRequiredFieldsValidator {
         if (dto.getPaymentOptionDescription() == null) {
             dto.setPaymentOptionDescription("Pagamento Singolo Avviso");
         }
+
+      if (dto.getOrgFiscalCode2() == null && dto.getOrgFiscalCodeSecondario() != null) {
+        dto.setOrgFiscalCode2(dto.getOrgFiscalCodeSecondario());
+        dto.setOrgName2(dto.getOrgNameSecondario());
+        dto.setIban2(dto.getIbanSecondario());
+        dto.setAddress2(dto.getAddressSecondario());
+        dto.setCivic2(dto.getCivicSecondario());
+        dto.setPostalCode2(dto.getPostalCodeSecondario());
+        dto.setLocationSecondario(dto.getLocationSecondario());
+        dto.setProvince2(dto.getProvinceSecondario());
+        dto.setNation2(dto.getNationSecondario());
+        dto.setRemittanceInformation2(dto.getRemittanceInformationSecondario());
+        dto.setAmount2(dto.getAmountSecondario());
+        dto.setCategory2(dto.getCategorySecondario());
+      }
+
     }
 }

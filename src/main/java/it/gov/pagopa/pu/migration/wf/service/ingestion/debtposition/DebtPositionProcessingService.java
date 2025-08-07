@@ -42,6 +42,14 @@ public class DebtPositionProcessingService extends MigrationProcessingService<In
   @Override
   protected boolean consumeRow(long lineNumber, InstallmentIngestionFlowFileDTO dto, DebtPositionMigrationFileResult migrationFileResult, List<DebtPositionErrorDTO> errorList, Uploads uploads) {
     String fileName = uploads.getFileName();
+
+    if(dto.getOrgFiscalCodeSecondario()!= null && dto.getOrgFiscalCode2()!= null && !(dto.getOrgFiscalCodeSecondario().equals(dto.getOrgFiscalCode2()))){
+      DebtPositionErrorDTO error = buildErrorDto(null, lineNumber, "DTO_DIFFERENT_VALUE", "OrgFiscalCodeSecondario and OrgFiscalCode2 have not the same value");
+      errorList.add(error);
+      log.error("OrgFiscalCodeSecondario and OrgFiscalCode2 have not the same value at row {}", lineNumber);
+      return false;
+    }
+
     InstallmentIngestionFlowFileRequiredFieldsValidator.setDefaultValues(dto);
     if (migrationFileResult.getLastCsvWriter() == null) {
       DebtPositionErrorDTO error = buildErrorDto(null, lineNumber, "CSV_WRITER_NULL", "CsvWriter not initialized");
