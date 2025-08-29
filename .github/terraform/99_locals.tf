@@ -4,14 +4,14 @@ locals {
     CreatedBy   = "Terraform"
     Environment = var.env
     Owner       = upper(var.prefix)
-    Source      = "" # Repository URL
-    CostCenter  = ""
+    Source      = "https://github.com/pagopa/p4pa-migration" # Repository URL
+    CostCenter  = "TS310 - PAGAMENTI & SERVIZI"
   }
 
   # Repo
   github = {
     org        = "pagopa"
-    repository = "" # Repository Name
+    repository = "p4pa-migration" # Repository Name
   }
 
   env_secrets   = {}
@@ -23,8 +23,8 @@ locals {
   } : {}
 
   repo_env = var.env_short == "p" ? {
-    SONARCLOUD_PROJECT_NAME = "CHANGE_ME"
-    SONARCLOUD_PROJECT_KEY  = "pagopa_CHANGE_ME"
+    SONARCLOUD_PROJECT_NAME = "p4pa-migration"
+    SONARCLOUD_PROJECT_KEY  = "pagopa_p4pa-migration"
     SONARCLOUD_ORG          = "pagopa"
   } : {}
 

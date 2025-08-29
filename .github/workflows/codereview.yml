@@ -1,4 +1,4 @@
-name: CHANGEME - Code Review
+name: p4pa-migration - Code Review
 
 on:
   push:
