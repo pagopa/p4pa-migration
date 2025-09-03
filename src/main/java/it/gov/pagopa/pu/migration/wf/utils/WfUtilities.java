@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.migration.wf.utils;
 
 import io.temporal.failure.ActivityFailure;
 import io.temporal.failure.ApplicationFailure;
+import it.gov.pagopa.pu.migration.wf.exception.InvalidMigrationFileException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,6 +29,15 @@ public class WfUtilities {
       return activityFailure.getMessage();
     }
     return e.getMessage();
+  }
+
+
+  public static String extractIpaCodeFromFileName(String fileName) {
+    String[] parts = fileName.split("-");
+    if (parts.length < 2) {
+      throw new InvalidMigrationFileException("Invalid file name format: " + fileName);
+    }
+    return parts[0];
   }
 
 }

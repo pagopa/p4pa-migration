@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.migration.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
+import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
 import it.gov.pagopa.pu.migration.dto.FileResourceDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
@@ -16,6 +17,7 @@ import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
+import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -35,8 +37,9 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   private final MigrationFileWfInvokerService wfInvokerService;
   private final ZipFileService zipFileService;
   private final FileShareService fileShareService;
+  private final AuthnService authnService;
 
-  public MigrationFileServiceImpl(FileValidatorService validatorService, FoldersPathsConfig foldersPathsConfig, FileStorerService fileStorerService, UploadsRepository uploadsRepository, UploadDetailsRepository uploadDetailsRepository, MigrationFileWfInvokerService wfInvokerService, ZipFileService zipFileService, FileShareService fileShareService) {
+  public MigrationFileServiceImpl(FileValidatorService validatorService, FoldersPathsConfig foldersPathsConfig, FileStorerService fileStorerService, UploadsRepository uploadsRepository, UploadDetailsRepository uploadDetailsRepository, MigrationFileWfInvokerService wfInvokerService, ZipFileService zipFileService, FileShareService fileShareService, AuthnService authnService) {
     this.validatorService = validatorService;
     this.foldersPathsConfig = foldersPathsConfig;
     this.fileStorerService = fileStorerService;
@@ -45,6 +48,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
     this.wfInvokerService = wfInvokerService;
     this.zipFileService = zipFileService;
     this.fileShareService = fileShareService;
+    this.authnService = authnService;
   }
 
   @Override
@@ -112,7 +116,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   }
 
   @Override
-  public Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser, String accessToken) {
+  public Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
     Long organizationId = AuthorizationService.validateAdminRoleOnBroker(orgIpaCode, loggedUser).getOrganizationId();
 
     List<UploadDetails> uploadDetails = uploadDetailsRepository.findByUploadId(uploadId);
@@ -124,7 +128,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
         Resource errorFile = fileShareService.downloadIngestionFlowErrorsFile(
           organizationId,
           uploadDetail.getIngestionFlowFileId(),
-          accessToken);
+          authnService.getAccessToken(WfUtilities.extractIpaCodeFromFileName(uploadDetail.getFileName())));
         return new FileResourceDTO(errorFile, errorFile.getFilename());
       })
       .toList();

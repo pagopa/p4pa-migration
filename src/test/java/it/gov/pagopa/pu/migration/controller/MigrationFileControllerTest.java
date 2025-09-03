@@ -172,7 +172,7 @@ class MigrationFileControllerTest {
     byte[] fileContent = "result".getBytes();
     Resource expectedResult = new ByteArrayResource(fileContent);
 
-    Mockito.when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser), Mockito.anyString()))
+    Mockito.when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
       .thenReturn(expectedResult);
 
     mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}/errors",orgIpaCode, uploadId)
@@ -185,12 +185,11 @@ class MigrationFileControllerTest {
   void whenGetMigrationErrorsAndNoContentThenReturn204() throws Exception {
     String orgIpaCode = "ORGIPA";
     long uploadId = 0L;
-    String accessToken = "accessToken";
 
     UserInfo loggedUser = new UserInfo();
     SecurityUtilsTest.configureSecurityContext(loggedUser);
 
-    Mockito.when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser), Mockito.eq(accessToken)))
+    Mockito.when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
       .thenReturn(null);
 
     mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}/errors",orgIpaCode, uploadId)
