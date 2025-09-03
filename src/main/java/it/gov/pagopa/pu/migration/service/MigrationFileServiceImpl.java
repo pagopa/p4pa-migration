@@ -18,6 +18,7 @@ import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
 import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -124,9 +125,10 @@ public class MigrationFileServiceImpl implements MigrationFileService {
       throw new EntityNotFoundException("Cannot find UploadDetails for uploadId " + uploadId);
     }
     List<FileResourceDTO> pdfResources = uploadDetails.stream()
+      .filter(uploadDetail -> uploadDetail.getStatus().equals(IngestionFlowFileStatus.ERROR))
       .map(uploadDetail -> {
         Resource errorFile = fileShareService.downloadIngestionFlowErrorsFile(
-          organizationId,
+          uploadDetail.getOrganizationId(),
           uploadDetail.getIngestionFlowFileId(),
           authnService.getAccessToken(WfUtilities.extractIpaCodeFromFileName(uploadDetail.getFileName())));
         return new FileResourceDTO(errorFile, errorFile.getFilename());

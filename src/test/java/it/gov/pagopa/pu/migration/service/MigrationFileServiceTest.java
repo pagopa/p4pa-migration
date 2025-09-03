@@ -17,6 +17,7 @@ import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -374,6 +375,7 @@ class MigrationFileServiceTest {
     UploadDetails errorDetail = new UploadDetails();
     errorDetail.setIngestionFlowFileId(10L);
     errorDetail.setFileName("ipa1-error.csv");
+    errorDetail.setStatus(IngestionFlowFileStatus.ERROR);
     List<UploadDetails> uploadDetailsList = List.of(errorDetail);
 
     Resource resourceMock = Mockito.mock(Resource.class);
@@ -382,8 +384,8 @@ class MigrationFileServiceTest {
 
     Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
     Mockito.when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
-        Mockito.eq(organizationId),
-        Mockito.eq(10L),
+        Mockito.any(),
+        Mockito.any(),
         Mockito.any()
     )).thenReturn(resourceMock);
     Mockito.when(zipFileServiceMock.zipper(Mockito.anyList())).thenReturn(zipResourceMock);

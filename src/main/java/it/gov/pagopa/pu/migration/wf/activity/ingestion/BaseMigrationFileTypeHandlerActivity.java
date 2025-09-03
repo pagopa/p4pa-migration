@@ -168,7 +168,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
         .fileName(file.getFileName().toString())
         .fileSize(file.toFile().length())
         .ingestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.fromValue(ingestionFlowFileType.getValue()))
-        .organizationId(upload.getOrganizationId())
+        .organizationId(organization.getOrganizationId())
         .operatorExternalId(upload.getUpdateOperatorExternalId())
         .filePathName(file.getFileName().toString())
         .status(IngestionFlowFileStatus.UPLOADED)
