@@ -118,7 +118,6 @@ public class MigrationFileServiceImpl implements MigrationFileService {
 
   @Override
   public Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
-    Long organizationId = AuthorizationService.validateAdminRoleOnBroker(orgIpaCode, loggedUser).getOrganizationId();
 
     List<UploadDetails> uploadDetails = uploadDetailsRepository.findByUploadId(uploadId);
     if (uploadDetails.isEmpty()) {
