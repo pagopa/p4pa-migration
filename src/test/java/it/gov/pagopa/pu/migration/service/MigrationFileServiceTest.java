@@ -275,6 +275,21 @@ class MigrationFileServiceTest {
     // Then
     Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.getUpload(orgIpaCode, uploadId, loggedUser));
   }
+
+  @Test
+  void givenUploadIdNotFoundWhenGetUploadThenThrowEntityNotFoundException() {
+    // Given
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    Mockito.when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.empty());
+
+    // Then
+    Assertions.assertThrows(it.gov.pagopa.pu.migration.exception.EntityNotFoundException.class,
+      () -> service.getUpload(orgIpaCode, uploadId, loggedUser));
+  }
 //endregion getUpload
 
 //region test getUpload
@@ -372,6 +387,10 @@ class MigrationFileServiceTest {
     long uploadId = 2L;
     UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
 
+    Uploads uploads = new Uploads();
+    uploads.setOrganizationId(organizationId);
+    Mockito.when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+
     UploadDetails errorDetail = new UploadDetails();
     errorDetail.setIngestionFlowFileId(10L);
     errorDetail.setFileName("ipa1-error.csv");
@@ -401,6 +420,10 @@ class MigrationFileServiceTest {
     String orgIpaCode = "IPACODE";
     long uploadId = 2L;
     UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    Uploads uploads = new Uploads();
+    uploads.setOrganizationId(organizationId);
+    Mockito.when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
 
     Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(List.of());
     Assertions.assertThrows(it.gov.pagopa.pu.migration.exception.EntityNotFoundException.class,
