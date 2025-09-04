@@ -69,7 +69,7 @@ public class MigrationFileControllerImpl implements MigrationFileApi {
   public ResponseEntity<Resource> getMigrationErrors(String orgIpaCode, Long uploadId){
     log.info("Requesting migration errors of upload {} from org {}", uploadId, orgIpaCode);
 
-    Resource uploadsErrorsZip = service.getUploadsErrorsZip(orgIpaCode, uploadId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
+    Resource uploadsErrorsZip = service.getUploadsErrorsZip(orgIpaCode, uploadId, SecurityUtils.getLoggedUser());
     if (uploadsErrorsZip != null){
       HttpHeaders headers = new HttpHeaders();
       headers.setContentDisposition(ContentDisposition.attachment()

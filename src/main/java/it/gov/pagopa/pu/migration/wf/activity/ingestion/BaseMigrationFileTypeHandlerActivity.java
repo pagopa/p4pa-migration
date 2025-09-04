@@ -15,6 +15,7 @@ import it.gov.pagopa.pu.migration.wf.exception.InvalidMigrationFileException;
 import it.gov.pagopa.pu.migration.wf.exception.MigrationFileTypeNotSupportedException;
 import it.gov.pagopa.pu.migration.wf.exception.UploadNotFoundException;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
+import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
@@ -144,7 +145,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
     List<IngestionFlowFile> filesUploaded = new ArrayList<>(retrievedFiles.size());
     for (Path file : retrievedFiles) {
       String fileName = file.getFileName().toString();
-      String ipaCodeFile = extractIpaCodeFromFileName(fileName);
+      String ipaCodeFile = WfUtilities.extractIpaCodeFromFileName(fileName);
 
       Organization organization = organizationService.getOrganizationByIpaCode(ipaCodeFile, authnService.getAccessToken()).
         orElseThrow(() -> new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " not found"));
@@ -167,7 +168,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
         .fileName(file.getFileName().toString())
         .fileSize(file.toFile().length())
         .ingestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.fromValue(ingestionFlowFileType.getValue()))
-        .organizationId(upload.getOrganizationId())
+        .organizationId(organization.getOrganizationId())
         .operatorExternalId(upload.getUpdateOperatorExternalId())
         .filePathName(file.getFileName().toString())
         .status(IngestionFlowFileStatus.UPLOADED)
@@ -181,13 +182,4 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
       .ingestionFlowFiles(filesUploaded)
       .build();
   }
-
-  private String extractIpaCodeFromFileName(String fileName) {
-    String[] parts = fileName.split("-");
-    if (parts.length < 2) {
-      throw new InvalidMigrationFileException("Invalid file name format: " + fileName);
-    }
-    return parts[0];
-  }
-
 }
