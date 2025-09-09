@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.migration.connector.fileshare;
 
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.fileshare.client.FileShareClient;
+import it.gov.pagopa.pu.migration.dto.generated.ErrorDTO;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,9 @@ public class FileShareServiceImpl implements FileShareService {
       return client.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken);
     } catch (HttpClientErrorException e) {
       if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
-        e.getResponseBodyAsString();
-        if (e.getResponseBodyAsString().contains("\"code\":\"INVALID_FILE\"")) {
-          throw new IllegalArgumentException("File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]");
+        ErrorDTO error = e.getResponseBodyAs(ErrorDTO.class);
+        if (error != null && error.getCode() != null && "INVALID_FILE".equals(error.getCode().getValue())) {
+          throw new IllegalArgumentException(error.getMessage() != null ? error.getMessage() : "File name is invalid");
         }
       }
       throw e;
