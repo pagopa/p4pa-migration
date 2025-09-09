@@ -23,9 +23,13 @@ public class FileShareServiceImpl implements FileShareService {
       return client.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken);
     } catch (HttpClientErrorException e) {
       if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
-        ErrorDTO error = e.getResponseBodyAs(ErrorDTO.class);
-        if (error != null && error.getCode() != null && "INVALID_FILE".equals(error.getCode().getValue())) {
-          throw new IllegalArgumentException(error.getMessage() != null ? error.getMessage() : "File name is invalid");
+        try {
+          ErrorDTO error = e.getResponseBodyAs(ErrorDTO.class);
+          if (error != null && error.getCode() != null && "INVALID_FILE".equals(error.getCode().getValue())) {
+            throw new IllegalArgumentException(error.getMessage() != null ? error.getMessage() : "File name is invalid");
+          }
+        } catch (IllegalStateException ex) {
+          throw e;
         }
       }
       throw e;

@@ -139,10 +139,10 @@ class FileShareServiceTest {
       .thenThrow(exception);
 
     // When & Then
-    org.springframework.web.client.HttpClientErrorException ex = Assertions.assertThrows(org.springframework.web.client.HttpClientErrorException.class, () ->
+    HttpClientErrorException ex = Assertions.assertThrows(HttpClientErrorException.class, () ->
       service.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken)
     );
-    Assertions.assertEquals(org.springframework.http.HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    Assertions.assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     Assertions.assertTrue(ex.getResponseBodyAsString().contains("OTHER_ERROR"));
   }
 
@@ -166,10 +166,10 @@ class FileShareServiceTest {
       .thenThrow(exception);
 
     // When & Then
-    org.springframework.web.client.HttpClientErrorException ex = Assertions.assertThrows(org.springframework.web.client.HttpClientErrorException.class, () ->
+    HttpClientErrorException ex = Assertions.assertThrows(HttpClientErrorException.class, () ->
       service.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken)
     );
-    Assertions.assertEquals(org.springframework.http.HttpStatus.FORBIDDEN, ex.getStatusCode());
+    Assertions.assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     Assertions.assertTrue(ex.getResponseBodyAsString().contains("SOME_ERROR"));
   }
 
