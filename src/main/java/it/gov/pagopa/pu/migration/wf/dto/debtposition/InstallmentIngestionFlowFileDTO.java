@@ -89,6 +89,9 @@ public class InstallmentIngestionFlowFileDTO {
   private String legacyPaymentMetadata;
 
   @CsvBindByName(column = "flagGeneraIuv")
+  private String generateNotice;
+
+  @CsvBindByName(column = "flagPuPagoPaPayment")
   private String flagPuPagoPaPayment;
 
   @CsvBindByName(column = "bilancio")
