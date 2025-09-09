@@ -11,6 +11,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith(MockitoExtension.class)
 class FileShareServiceTest {
@@ -66,6 +69,32 @@ class FileShareServiceTest {
 
     // Then
     Assertions.assertSame(expectedResource, result);
+  }
+
+  @Test
+  void whenUploadIngestionFlowFileWithInvalidFileErrorThenThrowIllegalArgumentException() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    Long organizationId = 0L;
+    IngestionFlowFileType ingestionFlowFileType = IngestionFlowFileType.DP_INSTALLMENTS;
+    Resource file = Mockito.mock(Resource.class);
+    String errorBody = "{\"code\":\"INVALID_FILE\",\"message\":\"File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]\"}";
+    HttpClientErrorException exception =
+        HttpClientErrorException.create(
+            HttpStatus.BAD_REQUEST,
+            "Bad Request",
+            HttpHeaders.EMPTY,
+            errorBody.getBytes(),
+            null
+        );
+    Mockito.when(clientMock.uploadIngestionFlowFile(Mockito.same(organizationId), Mockito.same(ingestionFlowFileType), Mockito.same(file), Mockito.same(accessToken)))
+      .thenThrow(exception);
+
+    // When & Then
+    IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
+      service.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken)
+    );
+    Assertions.assertTrue(ex.getMessage().contains("File name must contain a valid version"));
   }
 
 }
