@@ -25,7 +25,7 @@ public class FileShareServiceImpl implements FileShareService {
       if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
         try {
           ErrorDTO error = e.getResponseBodyAs(ErrorDTO.class);
-          if (error != null && error.getCode() != null && "INVALID_FILE".equals(error.getCode().getValue())) {
+          if (error != null && "INVALID_FILE".equals(error.getCode().getValue())) {
             throw new IllegalArgumentException(error.getMessage() != null ? error.getMessage() : "File name is invalid");
           }
         } catch (IllegalStateException ex) {
