@@ -171,29 +171,4 @@ class FileShareServiceTest {
     );
     Assertions.assertSame(exception, ex);
   }
-
-  @Test
-  void whenUploadIngestionFlowFileWithInvalidFileErrorAndNullMessageThenThrowIllegalArgumentExceptionWithDefault() {
-    // Given
-    String accessToken = "ACCESSTOKEN";
-    Long organizationId = 0L;
-    IngestionFlowFileType ingestionFlowFileType = IngestionFlowFileType.DP_INSTALLMENTS;
-    Resource file = Mockito.mock(Resource.class);
-    var errorDto = new ErrorDTO(
-        ErrorDTO.CodeEnum.INVALID_FILE,
-        null);
-    HttpClientErrorException exception = Mockito.mock(HttpClientErrorException.class);
-    Mockito.when(exception.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
-    Mockito.when(exception.getResponseBodyAs(ErrorDTO.class)).thenReturn(errorDto);
-    Mockito.when(clientMock.uploadIngestionFlowFile(
-      Mockito.same(organizationId), Mockito.same(ingestionFlowFileType), Mockito.same(file), Mockito.same(accessToken)))
-      .thenThrow(exception);
-
-    // When & Then
-    IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
-      service.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken)
-    );
-    Assertions.assertEquals("File name is invalid", ex.getMessage());
-  }
-
 }
