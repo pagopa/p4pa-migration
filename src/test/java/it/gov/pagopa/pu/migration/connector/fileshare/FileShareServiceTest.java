@@ -173,4 +173,26 @@ class FileShareServiceTest {
     Assertions.assertTrue(ex.getResponseBodyAsString().contains("SOME_ERROR"));
   }
 
+  @Test
+  void whenUploadIngestionFlowFileWithOtherHttpClientErrorExceptionAndNoBodyConverterThenRethrow() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    Long organizationId = 0L;
+    IngestionFlowFileType ingestionFlowFileType = IngestionFlowFileType.DP_INSTALLMENTS;
+    Resource file = Mockito.mock(Resource.class);
+    HttpClientErrorException exception = Mockito.mock(HttpClientErrorException.class);
+    Mockito.when(exception.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
+    Mockito.when(exception.getResponseBodyAs(it.gov.pagopa.pu.migration.dto.generated.ErrorDTO.class))
+      .thenThrow(new IllegalStateException("Function to convert body not set"));
+    Mockito.when(clientMock.uploadIngestionFlowFile(
+      Mockito.same(organizationId), Mockito.same(ingestionFlowFileType), Mockito.same(file), Mockito.same(accessToken)))
+      .thenThrow(exception);
+
+    // When & Then
+    HttpClientErrorException ex = Assertions.assertThrows(HttpClientErrorException.class, () ->
+      service.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken)
+    );
+    Assertions.assertSame(exception, ex);
+  }
+
 }
