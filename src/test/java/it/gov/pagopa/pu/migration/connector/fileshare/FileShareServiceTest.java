@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.migration.connector.fileshare;
 
+import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.fileshare.client.FileShareClient;
-import it.gov.pagopa.pu.migration.dto.generated.ErrorDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,12 +80,12 @@ class FileShareServiceTest {
     IngestionFlowFileType ingestionFlowFileType = IngestionFlowFileType.DP_INSTALLMENTS;
     Resource file = Mockito.mock(Resource.class);
     String errorMessage = "File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]";
-    var errorDto = new ErrorDTO(
-        ErrorDTO.CodeEnum.INVALID_FILE,
+    var errorDto = new FileshareErrorDTO(
+      FileshareErrorDTO.CodeEnum.INVALID_FILE,
         errorMessage);
     HttpClientErrorException exception = Mockito.mock(HttpClientErrorException.class);
     Mockito.when(exception.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
-    Mockito.when(exception.getResponseBodyAs(ErrorDTO.class)).thenReturn(errorDto);
+    Mockito.when(exception.getResponseBodyAs(FileshareErrorDTO.class)).thenReturn(errorDto);
     Mockito.when(clientMock.uploadIngestionFlowFile(Mockito.same(organizationId), Mockito.same(ingestionFlowFileType), Mockito.same(file), Mockito.same(accessToken)))
       .thenThrow(exception);
 
@@ -159,7 +159,7 @@ class FileShareServiceTest {
     Resource file = Mockito.mock(Resource.class);
     HttpClientErrorException exception = Mockito.mock(HttpClientErrorException.class);
     Mockito.when(exception.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
-    Mockito.when(exception.getResponseBodyAs(ErrorDTO.class))
+    Mockito.when(exception.getResponseBodyAs(FileshareErrorDTO.class))
       .thenThrow(new IllegalStateException("Function to convert body not set"));
     Mockito.when(clientMock.uploadIngestionFlowFile(
       Mockito.same(organizationId), Mockito.same(ingestionFlowFileType), Mockito.same(file), Mockito.same(accessToken)))

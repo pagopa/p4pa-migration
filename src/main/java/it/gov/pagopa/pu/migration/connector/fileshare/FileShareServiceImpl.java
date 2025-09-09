@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.migration.connector.fileshare;
 
+import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.fileshare.client.FileShareClient;
-import it.gov.pagopa.pu.migration.dto.generated.ErrorDTO;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class FileShareServiceImpl implements FileShareService {
     } catch (HttpClientErrorException e) {
       if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
         try {
-          ErrorDTO error = e.getResponseBodyAs(ErrorDTO.class);
+          FileshareErrorDTO error = e.getResponseBodyAs(FileshareErrorDTO.class);
           if (error != null && "INVALID_FILE".equals(error.getCode().getValue())) {
             throw new IllegalArgumentException(error.getMessage());
           }
