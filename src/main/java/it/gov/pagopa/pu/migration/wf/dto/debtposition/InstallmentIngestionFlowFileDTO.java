@@ -91,7 +91,7 @@ public class InstallmentIngestionFlowFileDTO {
   @CsvBindByName(column = "flagGeneraIuv")
   private String generateNotice;
 
-  @CsvBindByName(column = "flagPuPagoPaPayment")
+  @CsvBindByName(column = "flagPagamentoPu")
   private String flagPuPagoPaPayment;
 
   @CsvBindByName(column = "bilancio")
