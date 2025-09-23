@@ -22,7 +22,7 @@ public interface UploadsRepository extends JpaRepository<Uploads, Long> {
     "  errorDescription=:#{#migrationFileResult?.errorDescription}" +
     " where uploadId=:uploadId" +
     "  and status=:oldStatus")
-  int updateStatus(Long uploadId, UploadsStatusEnum oldStatus, UploadsStatusEnum newStatus, MigrationFileResult migrationFileResult);
+  Integer updateStatus(Long uploadId, UploadsStatusEnum oldStatus, UploadsStatusEnum newStatus, MigrationFileResult migrationFileResult);
 
   @Query("SELECT u " +
     " FROM Uploads u " +
