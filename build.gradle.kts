@@ -26,6 +26,9 @@ configurations {
   compileOnly {
     extendsFrom(configurations.annotationProcessor.get())
   }
+  compileClasspath {
+    resolutionStrategy.activateDependencyLocking()
+  }
 }
 
 repositories {
@@ -47,6 +50,7 @@ val guavaVersion = "33.5.0-jre"
 val otelVersion = "1.49.0"
 val openCsvVersion = "5.12.0"
 val commonsBeanUtilsVersion = "1.11.0"
+val commonsLang3Version = "3.19.0"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -55,7 +59,10 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion") {
+    exclude(group = "org.apache.commons", module = "commons-lang3")
+  }
+  implementation ("org.apache.commons:commons-lang3:${commonsLang3Version}")
   implementation("org.codehaus.janino:janino:$janinoVersion")
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
   implementation("io.micrometer:micrometer-registry-prometheus")
@@ -69,12 +76,12 @@ dependencies {
   implementation("io.temporal:temporal-spring-boot-starter:$temporalVersion") {
     exclude(group = "com.google.protobuf", module = "protobuf-java")
     exclude(group = "com.google.protobuf", module = "protobuf-java-util")
-    //exclude(group = "io.grpc", module = "grpc-bom")
+    exclude(group = "io.grpc", module = "grpc-bom")
     exclude(group = "com.google.guava", module = "guava")
   }
   implementation("com.google.protobuf:protobuf-java:$protobufJavaVersion")
   implementation("com.google.protobuf:protobuf-java-util:${protobufJavaVersion}")
-  //implementation("io.grpc:grpc-bom:${grpcBomVersion}")
+  implementation(platform("io.grpc:grpc-bom:${grpcBomVersion}"))
   implementation("com.google.guava:guava:$guavaVersion")
   implementation("io.opentelemetry:opentelemetry-opentracing-shim:${otelVersion}")
 
@@ -125,12 +132,6 @@ tasks {
     filesMatching("**/application.yml") {
       expand(projectInfo)
     }
-  }
-}
-
-configurations {
-  compileClasspath {
-    resolutionStrategy.activateDependencyLocking()
   }
 }
 
