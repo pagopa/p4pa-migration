@@ -42,6 +42,7 @@ val postgresJdbcVersion = "42.7.7"
 val podamVersion = "8.0.2.RELEASE"
 val temporalVersion = "1.31.0"
 val protobufJavaVersion = "4.32.1"
+val grpcBomVersion = "1.75.0"
 val guavaVersion = "33.5.0-jre"
 val otelVersion = "1.49.0"
 val openCsvVersion = "5.12.0"
@@ -62,16 +63,20 @@ dependencies {
   implementation("org.openapitools:jackson-databind-nullable:$openApiToolsVersion")
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
   implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
-  implementation ("org.postgresql:postgresql:${postgresJdbcVersion}")
+  implementation("org.postgresql:postgresql:${postgresJdbcVersion}")
   implementation("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}")
   //temporal
   implementation("io.temporal:temporal-spring-boot-starter:$temporalVersion") {
     exclude(group = "com.google.protobuf", module = "protobuf-java")
+    exclude(group = "com.google.protobuf", module = "protobuf-java-util")
+    //exclude(group = "io.grpc", module = "grpc-bom")
     exclude(group = "com.google.guava", module = "guava")
   }
   implementation("com.google.protobuf:protobuf-java:$protobufJavaVersion")
+  implementation("com.google.protobuf:protobuf-java-util:${protobufJavaVersion}")
+  //implementation("io.grpc:grpc-bom:${grpcBomVersion}")
   implementation("com.google.guava:guava:$guavaVersion")
-  implementation ("io.opentelemetry:opentelemetry-opentracing-shim:${otelVersion}")
+  implementation("io.opentelemetry:opentelemetry-opentracing-shim:${otelVersion}")
 
   //openCsv
   implementation("com.opencsv:opencsv:${openCsvVersion}")
@@ -84,7 +89,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.mockito:mockito-core")
   testImplementation("org.projectlombok:lombok")
-  testImplementation ("uk.co.jemos.podam:podam:${podamVersion}")
+  testImplementation("uk.co.jemos.podam:podam:${podamVersion}")
   testImplementation("com.h2database:h2")
 }
 
