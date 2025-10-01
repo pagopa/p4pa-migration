@@ -26,6 +26,9 @@ configurations {
   compileOnly {
     extendsFrom(configurations.annotationProcessor.get())
   }
+  compileClasspath {
+    resolutionStrategy.activateDependencyLocking()
+  }
 }
 
 repositories {
@@ -42,10 +45,12 @@ val postgresJdbcVersion = "42.7.7"
 val podamVersion = "8.0.2.RELEASE"
 val temporalVersion = "1.31.0"
 val protobufJavaVersion = "4.32.1"
+val grpcBomVersion = "1.75.0"
 val guavaVersion = "33.5.0-jre"
 val otelVersion = "1.49.0"
 val openCsvVersion = "5.12.0"
 val commonsBeanUtilsVersion = "1.11.0"
+val commonsLang3Version = "3.19.0"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -54,7 +59,10 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion") {
+    exclude(group = "org.apache.commons", module = "commons-lang3")
+  }
+  implementation ("org.apache.commons:commons-lang3:${commonsLang3Version}")
   implementation("org.codehaus.janino:janino:$janinoVersion")
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
   implementation("io.micrometer:micrometer-registry-prometheus")
@@ -62,16 +70,20 @@ dependencies {
   implementation("org.openapitools:jackson-databind-nullable:$openApiToolsVersion")
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
   implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
-  implementation ("org.postgresql:postgresql:${postgresJdbcVersion}")
+  implementation("org.postgresql:postgresql:${postgresJdbcVersion}")
   implementation("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}")
   //temporal
   implementation("io.temporal:temporal-spring-boot-starter:$temporalVersion") {
     exclude(group = "com.google.protobuf", module = "protobuf-java")
+    exclude(group = "com.google.protobuf", module = "protobuf-java-util")
+    exclude(group = "io.grpc", module = "grpc-bom")
     exclude(group = "com.google.guava", module = "guava")
   }
   implementation("com.google.protobuf:protobuf-java:$protobufJavaVersion")
+  implementation("com.google.protobuf:protobuf-java-util:${protobufJavaVersion}")
+  implementation(platform("io.grpc:grpc-bom:${grpcBomVersion}"))
   implementation("com.google.guava:guava:$guavaVersion")
-  implementation ("io.opentelemetry:opentelemetry-opentracing-shim:${otelVersion}")
+  implementation("io.opentelemetry:opentelemetry-opentracing-shim:${otelVersion}")
 
   //openCsv
   implementation("com.opencsv:opencsv:${openCsvVersion}")
@@ -84,7 +96,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.mockito:mockito-core")
   testImplementation("org.projectlombok:lombok")
-  testImplementation ("uk.co.jemos.podam:podam:${podamVersion}")
+  testImplementation("uk.co.jemos.podam:podam:${podamVersion}")
   testImplementation("com.h2database:h2")
 }
 
@@ -120,12 +132,6 @@ tasks {
     filesMatching("**/application.yml") {
       expand(projectInfo)
     }
-  }
-}
-
-configurations {
-  compileClasspath {
-    resolutionStrategy.activateDependencyLocking()
   }
 }
 
