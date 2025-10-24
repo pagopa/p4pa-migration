@@ -35,7 +35,8 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
 
   private static final Set<IngestionFlowFileStatus> INGESTION_FLOW_FILE_TERMINAL_STATUSES = Set.of(
     IngestionFlowFileStatus.COMPLETED,
-    IngestionFlowFileStatus.ERROR
+    IngestionFlowFileStatus.ERROR,
+    IngestionFlowFileStatus.WARNING
   );
 
   private UploadsStatusUpdateActivity uploadsStatusUpdateActivity;
