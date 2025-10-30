@@ -19,7 +19,7 @@ class InstallmentIngestionFlowFileRequiredFieldsValidatorTest {
         setDefaultValues(dto);
         assertEquals("false", dto.getFlagPuPagoPaPayment());
         assertEquals("false", dto.getFlagMultiBeneficiary());
-        assertEquals("0", dto.getNumberBeneficiary());
+        assertEquals("1", dto.getNumberBeneficiary());
         assertNotNull(dto.getDescription());
         assertEquals("1", dto.getPaymentOptionIndex());
         assertEquals("SINGLE_INSTALLMENT", dto.getPaymentOptionType());
@@ -31,7 +31,7 @@ class InstallmentIngestionFlowFileRequiredFieldsValidatorTest {
         InstallmentIngestionFlowFileDTO dto = buildInstallmentIngestionFlowFileDTO();
         dto.setFlagMultiBeneficiary("true");
         setDefaultValues(dto);
-        assertEquals("1", dto.getNumberBeneficiary());
+        assertEquals("2", dto.getNumberBeneficiary());
     }
 
     @Test
