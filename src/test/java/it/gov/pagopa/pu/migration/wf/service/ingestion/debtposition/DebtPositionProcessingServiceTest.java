@@ -155,7 +155,7 @@ class DebtPositionProcessingServiceTest {
     dto.setNumberBeneficiary(null);
     InstallmentIngestionFlowFileRequiredFieldsValidator.setDefaultValues(dto);
     assertThat(dto.getFlagMultiBeneficiary()).isEqualTo("false");
-    assertThat(dto.getNumberBeneficiary()).isEqualTo("0");
+    assertThat(dto.getNumberBeneficiary()).isEqualTo("1");
   }
 
   @Test
