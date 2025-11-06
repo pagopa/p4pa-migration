@@ -48,7 +48,7 @@ public class InstallmentIngestionFlowFileRequiredFieldsValidator {
         dto.setAddress2(dto.getAddressSecondario());
         dto.setCivic2(dto.getCivicSecondario());
         dto.setPostalCode2(dto.getPostalCodeSecondario());
-        dto.setLocationSecondario(dto.getLocationSecondario());
+        dto.setLocation2(dto.getLocationSecondario());
         dto.setProvince2(dto.getProvinceSecondario());
         dto.setNation2(dto.getNationSecondario());
         dto.setRemittanceInformation2(dto.getRemittanceInformationSecondario());

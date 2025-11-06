@@ -130,7 +130,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
       throw new EntityNotFoundException("Cannot find UploadDetails for uploadId " + uploadId);
     }
     List<FileResourceDTO> pdfResources = uploadDetails.stream()
-      .filter(uploadDetail -> uploadDetail.getStatus().equals(IngestionFlowFileStatus.ERROR))
+      .filter(uploadDetail -> uploadDetail.getStatus().equals(IngestionFlowFileStatus.ERROR) || uploadDetail.getStatus().equals(IngestionFlowFileStatus.WARNING))
       .map(uploadDetail -> {
         Resource errorFile = fileShareService.downloadIngestionFlowErrorsFile(
           uploadDetail.getOrganizationId(),

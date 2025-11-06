@@ -415,6 +415,41 @@ class MigrationFileServiceTest {
   }
 
   @Test
+  void givenUploadDetailsWithWarningWhenGetUploadsErrorsZipThenReturnResource() {
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    Uploads uploads = new Uploads();
+    uploads.setOrganizationId(organizationId);
+    Mockito.when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+
+    UploadDetails errorDetail = new UploadDetails();
+    errorDetail.setIngestionFlowFileId(10L);
+    errorDetail.setFileName("ipa1-error.csv");
+    errorDetail.setStatus(IngestionFlowFileStatus.WARNING);
+    List<UploadDetails> uploadDetailsList = List.of(errorDetail);
+
+    Resource resourceMock = Mockito.mock(Resource.class);
+    Mockito.when(resourceMock.getFilename()).thenReturn("error.pdf");
+    ByteArrayResource zipResourceMock = Mockito.mock( ByteArrayResource.class);
+
+    Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
+    Mockito.when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
+      Mockito.any(),
+      Mockito.any(),
+      Mockito.any()
+    )).thenReturn(resourceMock);
+    Mockito.when(zipFileServiceMock.zipper(Mockito.anyList())).thenReturn(zipResourceMock);
+    Mockito.when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
+
+    Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
+    Assertions.assertSame(zipResourceMock, result);
+  }
+
+
+  @Test
   void givenNoUploadDetailsWhenGetUploadsErrorsZipThenThrowEntityNotFoundException() {
     long organizationId = 1L;
     String orgIpaCode = "IPACODE";
