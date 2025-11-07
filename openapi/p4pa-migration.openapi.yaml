@@ -354,3 +354,5 @@ components:
             - FORBIDDEN
         message:
           type: string
+        traceId:
+          type: string

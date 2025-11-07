@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.migration.exception;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import it.gov.pagopa.pu.migration.dto.generated.ErrorDTO;
+import it.gov.pagopa.pu.migration.utils.Utilities;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -84,7 +85,7 @@ public class ControllerExceptionHandler {
     return ResponseEntity
       .status(httpStatus)
       .contentType(MediaType.APPLICATION_JSON)
-      .body(new ErrorDTO(errorEnum, message));
+      .body(new ErrorDTO(errorEnum, message, Utilities.getTraceId()));
   }
 
   private static void logException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus) {
