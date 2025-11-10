@@ -82,7 +82,8 @@ class FileShareServiceTest {
     String errorMessage = "File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]";
     var errorDto = new FileshareErrorDTO(
       FileshareErrorDTO.CodeEnum.INVALID_FILE,
-        errorMessage);
+        errorMessage,
+      null);
     HttpClientErrorException exception = Mockito.mock(HttpClientErrorException.class);
     Mockito.when(exception.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
     Mockito.when(exception.getResponseBodyAs(FileshareErrorDTO.class)).thenReturn(errorDto);
