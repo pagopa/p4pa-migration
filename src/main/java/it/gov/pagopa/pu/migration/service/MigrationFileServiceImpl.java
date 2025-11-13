@@ -19,6 +19,7 @@ import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
 import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -28,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 public class MigrationFileServiceImpl implements MigrationFileService {
 
@@ -133,13 +135,20 @@ public class MigrationFileServiceImpl implements MigrationFileService {
     List<FileResourceDTO> pdfResources = uploadDetails.stream()
       .filter(uploadDetail -> uploadDetail.getStatus().equals(IngestionFlowFileStatus.ERROR) || uploadDetail.getStatus().equals(IngestionFlowFileStatus.WARNING))
       .map(uploadDetail -> {
-        Resource errorFile = fileShareService.downloadIngestionFlowErrorsFile(
-          uploadDetail.getOrganizationId(),
-          uploadDetail.getIngestionFlowFileId(),
-          authnService.getAccessToken(WfUtilities.extractIpaCodeFromFileName(uploadDetail.getFileName())));
-        if (errorFile != null && errorFile.exists()) {
-          return new FileResourceDTO(errorFile, errorFile.getFilename());
-        } else {
+        try {
+          Resource errorFile = fileShareService.downloadIngestionFlowErrorsFile(
+            uploadDetail.getOrganizationId(),
+            uploadDetail.getIngestionFlowFileId(),
+            authnService.getAccessToken(WfUtilities.extractIpaCodeFromFileName(uploadDetail.getFileName())));
+          if (errorFile != null && errorFile.exists()) {
+            return new FileResourceDTO(errorFile, errorFile.getFilename());
+          } else {
+            log.warn("Error file not found for ingestionFlowFileId {}", uploadDetail.getIngestionFlowFileId());
+            return null;
+          }
+        } catch (Exception e) {
+          log.warn("Error downloading error file for ingestionFlowFileId {}: {}",
+            uploadDetail.getIngestionFlowFileId(), e.getMessage());
           return null;
         }
       })
