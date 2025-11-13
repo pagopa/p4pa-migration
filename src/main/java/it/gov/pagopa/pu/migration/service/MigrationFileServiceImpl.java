@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class MigrationFileServiceImpl implements MigrationFileService {
@@ -136,8 +137,13 @@ public class MigrationFileServiceImpl implements MigrationFileService {
           uploadDetail.getOrganizationId(),
           uploadDetail.getIngestionFlowFileId(),
           authnService.getAccessToken(WfUtilities.extractIpaCodeFromFileName(uploadDetail.getFileName())));
-        return new FileResourceDTO(errorFile, errorFile.getFilename());
+        if (errorFile != null && errorFile.exists()) {
+          return new FileResourceDTO(errorFile, errorFile.getFilename());
+        } else {
+          return null;
+        }
       })
+      .filter(Objects::nonNull)
       .toList();
 
     if (pdfResources.isEmpty()) {
