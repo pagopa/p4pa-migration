@@ -399,7 +399,6 @@ class MigrationFileServiceTest {
 
     Resource resourceMock = Mockito.mock(Resource.class);
     Mockito.when(resourceMock.getFilename()).thenReturn("error.pdf");
-    Mockito.when(resourceMock.exists()).thenReturn(true);
     ByteArrayResource zipResourceMock = Mockito.mock( ByteArrayResource.class);
 
     Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
@@ -434,7 +433,6 @@ class MigrationFileServiceTest {
 
     Resource resourceMock = Mockito.mock(Resource.class);
     Mockito.when(resourceMock.getFilename()).thenReturn("error.pdf");
-    Mockito.when(resourceMock.exists()).thenReturn(true);
     ByteArrayResource zipResourceMock = Mockito.mock( ByteArrayResource.class);
 
     Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
@@ -467,14 +465,12 @@ class MigrationFileServiceTest {
     warningDetail.setStatus(IngestionFlowFileStatus.WARNING);
     List<UploadDetails> uploadDetailsList = List.of(warningDetail);
 
-    Resource resourceMock = Mockito.mock(Resource.class);
-    Mockito.when(resourceMock.exists()).thenReturn(false); // Simula file non esistente
     Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
     Mockito.when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
       Mockito.any(),
       Mockito.any(),
       Mockito.any()
-    )).thenReturn(resourceMock);
+    )).thenReturn(null);
     Mockito.when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
@@ -516,14 +512,12 @@ class MigrationFileServiceTest {
     errorDetail.setStatus(IngestionFlowFileStatus.ERROR);
     List<UploadDetails> uploadDetailsList = List.of(errorDetail);
 
-    Resource resourceMock = Mockito.mock(Resource.class);
-    Mockito.when(resourceMock.exists()).thenReturn(false); // Simula file non esistente
     Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
     Mockito.when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
         Mockito.any(),
         Mockito.any(),
         Mockito.any()
-    )).thenReturn(resourceMock);
+    )).thenReturn(null);
     Mockito.when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
@@ -558,7 +552,6 @@ class MigrationFileServiceTest {
 
     Resource resourceMock = Mockito.mock(Resource.class);
     Mockito.when(resourceMock.getFilename()).thenReturn("error2.pdf");
-    Mockito.when(resourceMock.exists()).thenReturn(true);
     ByteArrayResource zipResourceMock = Mockito.mock(ByteArrayResource.class);
 
     Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);

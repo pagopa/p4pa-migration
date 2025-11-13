@@ -140,7 +140,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
             uploadDetail.getOrganizationId(),
             uploadDetail.getIngestionFlowFileId(),
             authnService.getAccessToken(WfUtilities.extractIpaCodeFromFileName(uploadDetail.getFileName())));
-          if (errorFile != null && errorFile.exists()) {
+          if (errorFile != null) {
             return new FileResourceDTO(errorFile, errorFile.getFilename());
           } else {
             log.warn("Error file not found for ingestionFlowFileId {}", uploadDetail.getIngestionFlowFileId());
