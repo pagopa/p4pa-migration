@@ -364,7 +364,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   typeMappings.set(
     mapOf(
       "LocalDateTime" to "java.time.LocalDateTime",
-      "object" to "com.fasterxml.jackson.databind.JsonNode"
+      "object" to "tools.jackson.databind.JsonNode"
     )
   )
   configOptions.set(
