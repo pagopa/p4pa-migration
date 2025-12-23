@@ -1,9 +1,12 @@
 package it.gov.pagopa.pu.migration.connector.fileshare;
 
+import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.migration.connector.fileshare.client.FileShareClient;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 public class FileShareServiceImpl implements FileShareService {
@@ -16,7 +19,21 @@ public class FileShareServiceImpl implements FileShareService {
 
   @Override
   public Long uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, Resource file, String accessToken) {
-    return client.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken);
+    try {
+      return client.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken);
+    } catch (HttpClientErrorException e) {
+      if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+        try {
+          FileshareErrorDTO error = e.getResponseBodyAs(FileshareErrorDTO.class);
+          if (error != null && FileshareErrorDTO.CodeEnum.INVALID_FILE.equals(error.getCode())) {
+            throw new IllegalArgumentException(error.getMessage());
+          }
+        } catch (IllegalStateException ex) {
+          throw e;
+        }
+      }
+      throw e;
+    }
   }
 
   @Override

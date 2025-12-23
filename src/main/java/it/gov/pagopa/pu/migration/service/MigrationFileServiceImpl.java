@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.migration.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
+import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
 import it.gov.pagopa.pu.migration.dto.FileResourceDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
@@ -16,6 +17,9 @@ import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
+import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -23,7 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 
+@Slf4j
 @Service
 public class MigrationFileServiceImpl implements MigrationFileService {
 
@@ -35,8 +41,9 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   private final MigrationFileWfInvokerService wfInvokerService;
   private final ZipFileService zipFileService;
   private final FileShareService fileShareService;
+  private final AuthnService authnService;
 
-  public MigrationFileServiceImpl(FileValidatorService validatorService, FoldersPathsConfig foldersPathsConfig, FileStorerService fileStorerService, UploadsRepository uploadsRepository, UploadDetailsRepository uploadDetailsRepository, MigrationFileWfInvokerService wfInvokerService, ZipFileService zipFileService, FileShareService fileShareService) {
+  public MigrationFileServiceImpl(FileValidatorService validatorService, FoldersPathsConfig foldersPathsConfig, FileStorerService fileStorerService, UploadsRepository uploadsRepository, UploadDetailsRepository uploadDetailsRepository, MigrationFileWfInvokerService wfInvokerService, ZipFileService zipFileService, FileShareService fileShareService, AuthnService authnService) {
     this.validatorService = validatorService;
     this.foldersPathsConfig = foldersPathsConfig;
     this.fileStorerService = fileStorerService;
@@ -45,6 +52,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
     this.wfInvokerService = wfInvokerService;
     this.zipFileService = zipFileService;
     this.fileShareService = fileShareService;
+    this.authnService = authnService;
   }
 
   @Override
@@ -112,21 +120,39 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   }
 
   @Override
-  public Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser, String accessToken) {
+  public Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
     Long organizationId = AuthorizationService.validateAdminRoleOnBroker(orgIpaCode, loggedUser).getOrganizationId();
+
+    Uploads uploads = uploadsRepository.findById(uploadId).orElseThrow(() -> new EntityNotFoundException("Cannot find Upload having id " + uploadId));
+    if(!uploads.getOrganizationId().equals(organizationId)){
+      throw new AuthorizationDeniedException("UploadId not related to requested organization");
+    }
 
     List<UploadDetails> uploadDetails = uploadDetailsRepository.findByUploadId(uploadId);
     if (uploadDetails.isEmpty()) {
       throw new EntityNotFoundException("Cannot find UploadDetails for uploadId " + uploadId);
     }
     List<FileResourceDTO> pdfResources = uploadDetails.stream()
+      .filter(uploadDetail -> uploadDetail.getStatus().equals(IngestionFlowFileStatus.ERROR) || uploadDetail.getStatus().equals(IngestionFlowFileStatus.WARNING))
       .map(uploadDetail -> {
-        Resource errorFile = fileShareService.downloadIngestionFlowErrorsFile(
-          organizationId,
-          uploadDetail.getIngestionFlowFileId(),
-          accessToken);
-        return new FileResourceDTO(errorFile, errorFile.getFilename());
+        try {
+          Resource errorFile = fileShareService.downloadIngestionFlowErrorsFile(
+            uploadDetail.getOrganizationId(),
+            uploadDetail.getIngestionFlowFileId(),
+            authnService.getAccessToken(WfUtilities.extractIpaCodeFromFileName(uploadDetail.getFileName())));
+          if (errorFile != null) {
+            return new FileResourceDTO(errorFile, errorFile.getFilename());
+          } else {
+            log.warn("Error file not found for ingestionFlowFileId {}", uploadDetail.getIngestionFlowFileId());
+            return null;
+          }
+        } catch (Exception e) {
+          log.warn("Error downloading error file for ingestionFlowFileId {}: {}",
+            uploadDetail.getIngestionFlowFileId(), e.getMessage());
+          return null;
+        }
       })
+      .filter(Objects::nonNull)
       .toList();
 
     if (pdfResources.isEmpty()) {

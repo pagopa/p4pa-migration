@@ -37,8 +37,8 @@ public class ZipFileService {
 	private final double maxCompressionRatio;
 
 	public ZipFileService(@Value("${zip-file.max-entries}") int maxEntries,
-						  @Value("${zip-file.max-uncompressed-size}") long maxUncompressedSize,
-						  @Value("${zip-file.max-compression-ratio}") double maxCompressionRatio) {
+                          @Value("${zip-file.max-uncompressed-size}") long maxUncompressedSize,
+                          @Value("${zip-file.max-compression-ratio}") double maxCompressionRatio) {
 		this.maxEntries = maxEntries;
 		this.maxUncompressedSize = maxUncompressedSize;
 		this.maxCompressionRatio = maxCompressionRatio;
@@ -47,7 +47,7 @@ public class ZipFileService {
 	/**
 	 * Extracts the contents of a ZIP file to a specified target directory and returns
 	 * a list of paths to the extracted files.
-	 *
+	 * <BR />
 	 * This method performs secure extraction by validating:
 	 * <ul>
 	 *   <li>The number of entries in the ZIP file does not exceed a predefined threshold.</li>
@@ -80,41 +80,54 @@ public class ZipFileService {
 
 			ZipEntry zipEntry;
 			while ((zipEntry = zis.getNextEntry()) != null) {
+                if(isMacosxFolder(zipEntry)){
+                    continue;
+                }
 				validateEntryCount(++entryCount);
 				Path targetPath = validateAndPrepareTargetPath(zipEntry, target);
 
-				long totalSizeEntry = 0;
-				byte[] buffer = new byte[2048];
+				if(zipEntry.isDirectory()){
+					Files.createDirectories(targetPath);
+				} else {
+					long totalSizeEntry = 0;
+					byte[] buffer = new byte[2048];
 
-				try (OutputStream out = Files.newOutputStream(targetPath, StandardOpenOption.CREATE)) {
-					int bytesRead;
-					while ((bytesRead = zis.read(buffer)) > 0) {
-						totalSizeEntry += bytesRead;
-						totalUncompressedSize += bytesRead;
+					Files.createDirectories(targetPath.getParent());
 
-						validateUncompressedSize(totalUncompressedSize);
-						validateCompressionRatio(zipEntry, totalSizeEntry);
+					try (OutputStream out = Files.newOutputStream(targetPath, StandardOpenOption.CREATE)) {
+						int bytesRead;
+						while ((bytesRead = zis.read(buffer)) > 0) {
+							totalSizeEntry += bytesRead;
+							totalUncompressedSize += bytesRead;
 
-						out.write(buffer, 0, bytesRead);
+							validateUncompressedSize(totalUncompressedSize);
+							validateCompressionRatio(zipEntry, totalSizeEntry);
+
+							out.write(buffer, 0, bytesRead);
+						}
 					}
+					extractedPaths.add(targetPath);
 				}
-				extractedPaths.add(targetPath);
 				zis.closeEntry();
 			}
 		} catch (IOException e) {
-			throw new InvalidFileException("Error while unzipping file: " + source);
+			throw new InvalidFileException("Error while unzipping file: " + source, e);
 		}
 		return extractedPaths;
 	}
 
-	/**
+    private boolean isMacosxFolder(ZipEntry zipEntry) {
+        return zipEntry.getName().startsWith("__MACOSX/");
+    }
+
+    /**
 	 * Extracts the contents of a ZIP file to its own directory and returns a list of paths
 	 * to the extracted files.
-	 *
+	 * <BR />
 	 * This method uses the directory of the provided ZIP file as the default extraction location.
 	 * The contents of the ZIP file will be extracted into a subdirectory named after the ZIP file
 	 * (without its extension) within the same directory.
-	 *
+	 * <BR />
 	 * Internally, this method delegates the extraction process to {@link #unzip(Path, Path)}.
 	 *
 	 * @param path the path to the ZIP file to be extracted
@@ -205,7 +218,7 @@ public class ZipFileService {
 
 	/**
 	 * Validates the safety of a file name within a ZIP archive.
-	 *
+	 * <BR />
 	 * The file name is considered safe if it:
 	 * <ul>
 	 *   <li>Starts with an alphanumeric character.</li>
@@ -241,7 +254,7 @@ public class ZipFileService {
 
 	/**
 	 * Compresses the specified files into a single ZIP archive at the given ZIP file path.
-	 *
+	 * <BR />
 	 * This method performs the following operations:
 	 * <ul>
 	 *   <li>Creates a ZIP archive at the specified path.</li>
@@ -268,7 +281,7 @@ public class ZipFileService {
 			}
 			return zipFilePath.toFile();
 		} catch (IOException e) {
-			throw new InvalidFileException("Error while zipping: " + zipFilePath);
+			throw new InvalidFileException("Error while zipping: " + zipFilePath, e);
 		}
 	}
 
@@ -295,7 +308,7 @@ public class ZipFileService {
       return new ByteArrayResource(baos.toByteArray());
 
     } catch (IOException e) {
-      throw new ZipFileException("Error while zipping");
+      throw new ZipFileException("Error while zipping", e);
     }
   }
 

@@ -19,7 +19,7 @@ public interface UploadDetailsRepository extends JpaRepository<UploadDetails, Lo
     "  numCorrectlyImportedRows=:#{#ingestionFlowFile.numCorrectlyImportedRows}," +
     "  errorDescription=:#{#ingestionFlowFile.errorDescription}" +
     " where uploadDetailId=:uploadDetailId")
-  int updateStatus(Long uploadDetailId, IngestionFlowFile ingestionFlowFile);
+  Integer updateStatus(Long uploadDetailId, IngestionFlowFile ingestionFlowFile);
 
   List<UploadDetails> findByUploadId(Long uploadId);
 }

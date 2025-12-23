@@ -57,7 +57,7 @@ class DebtPositionProcessingServiceTest {
   @Test
   void processDebtPositionFileReturnsResultFromCsvService() throws Exception {
     Path tempDir = Files.createTempDirectory("debtposition-test-dir-");
-    Path file = Files.createTempFile(tempDir, "debtposition-test-", ".csv");
+    Path file = Files.createTempFile(tempDir, "debtposition-test-1_4", ".csv");
     try {
       List<InstallmentIngestionFlowFileDTO> dtos = new ArrayList<>();
       InstallmentIngestionFlowFileDTO validDto = new InstallmentIngestionFlowFileDTO();
@@ -95,7 +95,7 @@ class DebtPositionProcessingServiceTest {
 
   @Test
   void readAndParseRows_handlesNullErrorList() throws IOException {
-        Path file = Files.createTempFile("debtposition-test-", ".csv");
+        Path file = Files.createTempFile("debtposition-test-1_4", ".csv");
         try {
             List<InstallmentIngestionFlowFileDTO> dtos = new ArrayList<>();
             InstallmentIngestionFlowFileDTO validDto = new InstallmentIngestionFlowFileDTO();
@@ -120,7 +120,7 @@ class DebtPositionProcessingServiceTest {
 
   @Test
   void readAndParseRows_populatesErrorListOnCsvException() throws IOException {
-    Path file = Files.createTempFile("debtposition-test-", ".csv");
+    Path file = Files.createTempFile("debtposition-test-1_4", ".csv");
     try {
       List<DebtPositionErrorDTO> errorList = new ArrayList<>();
       List<CsvException> csvExceptions = List.of(new CsvException("csv error 1"), new CsvException("csv error 2"));
@@ -155,7 +155,7 @@ class DebtPositionProcessingServiceTest {
     dto.setNumberBeneficiary(null);
     InstallmentIngestionFlowFileRequiredFieldsValidator.setDefaultValues(dto);
     assertThat(dto.getFlagMultiBeneficiary()).isEqualTo("false");
-    assertThat(dto.getNumberBeneficiary()).isEqualTo("0");
+    assertThat(dto.getNumberBeneficiary()).isEqualTo("1");
   }
 
   @Test
@@ -178,7 +178,22 @@ class DebtPositionProcessingServiceTest {
         assertEquals(lineNumber, error.getRowNumber());
     }
 
-
-
+  @Test
+  void processDebtPositionFile_withFileNameNotMatchingRegex_shouldReturnErrorResult() throws Exception {
+    Path tempDir = Files.createTempDirectory("debtposition-test-dir-");
+    Path file = tempDir.resolve("incorrect file name 1_4.csv");
+    Files.createFile(file);
+    try {
+      DebtPositionMigrationFileResult result = service.processDebtPositionFile(file, mock(Uploads.class), new ArrayList<>());
+      assertNotNull(result);
+      assertThat(result.getErrorDescription()).isNotNull();
+      assertThat(result.getErrorDescription()).contains("Incorrect file name format");
+      verify(csvServiceMock, never()).createCsvWriter(any(), any(), any());
+      verify(csvServiceMock, never()).readCsv(any(), any(), any());
+    } finally {
+      Files.deleteIfExists(file);
+      Files.deleteIfExists(tempDir);
+    }
+  }
 
 }

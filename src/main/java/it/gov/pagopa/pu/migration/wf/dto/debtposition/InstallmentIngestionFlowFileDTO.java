@@ -70,7 +70,7 @@ public class InstallmentIngestionFlowFileDTO {
   @CsvBindByName(column = "nazionePagatore")
   private String nation;
 
-  @CsvBindByName(column = "emailPagatore")
+  @CsvBindByName(column = "mailPagatore")
   private String email;
 
   @CsvBindByName(column = "dataEsecuzionePagamento")
@@ -88,7 +88,10 @@ public class InstallmentIngestionFlowFileDTO {
   @CsvBindByName(column = "datiSpecificiRiscossione")
   private String legacyPaymentMetadata;
 
-  @CsvBindByName(column = "flagGeneraIuv")
+  @CsvBindByName(column = "flgGeneraIuv")
+  private String generateNotice;
+
+  @CsvBindByName(column = "flagPagamentoPu")
   private String flagPuPagoPaPayment;
 
   @CsvBindByName(column = "bilancio")

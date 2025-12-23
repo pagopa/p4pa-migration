@@ -15,6 +15,14 @@ public class TestUtils {
   private TestUtils() {
   }
 
+  static {
+    clearDefaultTimezone();
+  }
+
+  public static void clearDefaultTimezone() {
+    TimeZone.setDefault(Constants.DEFAULT_TIMEZONE);
+  }
+
   /**
    * It will assert not null on all o's fields
    */

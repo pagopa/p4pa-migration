@@ -81,3 +81,8 @@ Ensure the following tools are installed on your machine:
 ```sh
 ./gradlew dependencies --write-locks
 ```
+
+### ⚖️ Generate dependencies licenses
+```sh
+./gradlew generateLicenseReport
+```

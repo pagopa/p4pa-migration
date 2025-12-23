@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.migration.exception;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import it.gov.pagopa.pu.migration.dto.generated.ErrorDTO;
+import it.gov.pagopa.pu.migration.utils.Utilities;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -23,6 +23,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DatabindException;
 
 import java.util.stream.Collectors;
 
@@ -84,7 +86,7 @@ public class ControllerExceptionHandler {
     return ResponseEntity
       .status(httpStatus)
       .contentType(MediaType.APPLICATION_JSON)
-      .body(new ErrorDTO(errorEnum, message));
+      .body(new ErrorDTO(errorEnum, message, Utilities.getTraceId()));
   }
 
   private static void logException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus) {
@@ -106,10 +108,10 @@ public class ControllerExceptionHandler {
   private static String buildReturnedMessage(Exception ex) {
     switch (ex) {
       case HttpMessageNotReadableException httpMessageNotReadableException -> {
-        if (httpMessageNotReadableException.getCause() instanceof JsonMappingException jsonMappingException) {
+        if (httpMessageNotReadableException.getCause() instanceof DatabindException jsonMappingException) {
           return "Cannot parse body. " +
             jsonMappingException.getPath().stream()
-              .map(JsonMappingException.Reference::getFieldName)
+              .map(JacksonException.Reference::getPropertyName)
               .collect(Collectors.joining(".")) +
             ": " + jsonMappingException.getOriginalMessage();
         }

@@ -477,6 +477,9 @@
           },
           "message" : {
             "type" : "string"
+          },
+          "traceId" : {
+            "type" : "string"
           }
         },
         "required" : [ "code", "message" ]
@@ -582,7 +585,7 @@
       },
       "IngestionFlowFileStatus" : {
         "type" : "string",
-        "enum" : [ "UPLOADED", "PROCESSING", "COMPLETED", "ERROR", "WAITING_FILE" ]
+        "enum" : [ "UPLOADED", "PROCESSING", "COMPLETED", "ERROR", "WAITING_FILE", "WARNING" ]
       },
       "IngestionFlowFileTypeEnum" : {
         "type" : "string",
