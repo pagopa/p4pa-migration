@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.migration.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.migration.config.json.JsonConfig;
+import it.gov.pagopa.pu.migration.utils.TestUtils;
 import it.gov.pagopa.pu.migration.utils.UtilitiesTest;
 import jakarta.servlet.ServletException;
 import jakarta.validation.ConstraintViolationException;
@@ -74,6 +75,11 @@ class ControllerExceptionHandlerTest {
     String testEndpoint(@RequestParam(DATA) String data, @Valid @RequestBody TestRequestBody body) {
       return "OK";
     }
+  }
+
+  @BeforeEach
+  void init() {
+    TestUtils.clearDefaultTimezone();
   }
 
   @Data

@@ -26,8 +26,9 @@ public class FileShareClient {
           organizationId,
           ingestionFlowFileType,
           FileOrigin.SIL,
-          file,
           file.getFilename(),
+          null,
+          file,
           null)
         .getIngestionFlowFileId();
 
