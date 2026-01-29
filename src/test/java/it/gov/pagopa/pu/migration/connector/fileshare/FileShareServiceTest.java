@@ -81,9 +81,10 @@ class FileShareServiceTest {
     Resource file = Mockito.mock(Resource.class);
     String errorMessage = "File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]";
     var errorDto = new FileshareErrorDTO(
-      FileshareErrorDTO.CodeEnum.INVALID_FILE,
-        errorMessage,
-      null);
+      FileshareErrorDTO.CategoryEnum.INVALID_FILE,
+      errorMessage,
+      "traceId",
+      "code");
     HttpClientErrorException exception = Mockito.mock(HttpClientErrorException.class);
     Mockito.when(exception.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
     Mockito.when(exception.getResponseBodyAs(FileshareErrorDTO.class)).thenReturn(errorDto);
@@ -167,6 +168,54 @@ class FileShareServiceTest {
       .thenThrow(exception);
 
     // When & Then
+    HttpClientErrorException ex = Assertions.assertThrows(HttpClientErrorException.class, () ->
+      service.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken)
+    );
+    Assertions.assertSame(exception, ex);
+  }
+
+  @Test
+  void whenUploadIngestionFlowFileWithNullErrorBodyThenRethrow() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    Long organizationId = 0L;
+    IngestionFlowFileType ingestionFlowFileType = IngestionFlowFileType.DP_INSTALLMENTS;
+    Resource file = Mockito.mock(Resource.class);
+
+    HttpClientErrorException exception = Mockito.mock(HttpClientErrorException.class);
+    Mockito.when(exception.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
+
+    Mockito.when(exception.getResponseBodyAs(FileshareErrorDTO.class)).thenReturn(null);
+
+    Mockito.when(clientMock.uploadIngestionFlowFile(Mockito.same(organizationId), Mockito.same(ingestionFlowFileType), Mockito.same(file), Mockito.same(accessToken)))
+      .thenThrow(exception);
+
+    HttpClientErrorException ex = Assertions.assertThrows(HttpClientErrorException.class, () ->
+      service.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken)
+    );
+    Assertions.assertSame(exception, ex);
+  }
+
+  @Test
+  void whenUploadIngestionFlowFileWithDifferentErrorCategoryFromInvalidFileErrorThenRethrow() {
+    String accessToken = "ACCESSTOKEN";
+    Long organizationId = 0L;
+    IngestionFlowFileType ingestionFlowFileType = IngestionFlowFileType.DP_INSTALLMENTS;
+    Resource file = Mockito.mock(Resource.class);
+
+    var errorDto = new FileshareErrorDTO(
+      FileshareErrorDTO.CategoryEnum.GENERIC_ERROR,
+      "Generic error message",
+      "traceId",
+      "code");
+
+    HttpClientErrorException exception = Mockito.mock(HttpClientErrorException.class);
+    Mockito.when(exception.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
+    Mockito.when(exception.getResponseBodyAs(FileshareErrorDTO.class)).thenReturn(errorDto);
+
+    Mockito.when(clientMock.uploadIngestionFlowFile(Mockito.same(organizationId), Mockito.same(ingestionFlowFileType), Mockito.same(file), Mockito.same(accessToken)))
+      .thenThrow(exception);
+
     HttpClientErrorException ex = Assertions.assertThrows(HttpClientErrorException.class, () ->
       service.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, file, accessToken)
     );
