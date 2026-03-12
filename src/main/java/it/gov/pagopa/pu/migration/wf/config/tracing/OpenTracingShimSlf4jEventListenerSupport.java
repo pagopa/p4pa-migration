@@ -16,11 +16,11 @@ import java.util.List;
  * Necessary because applicationInsight will prevent OTel to log the spans.
  */
 @Service
-public class Slf4jEventListenerSupport implements EventListener {
+public class OpenTracingShimSlf4jEventListenerSupport implements EventListener {
 
   private final List<String> correlationFields;
 
-  public Slf4jEventListenerSupport(TracingProperties tracingProperties) {
+  public OpenTracingShimSlf4jEventListenerSupport(TracingProperties tracingProperties) {
     this.correlationFields = tracingProperties.getBaggage().getCorrelation().getFields();
   }
 
