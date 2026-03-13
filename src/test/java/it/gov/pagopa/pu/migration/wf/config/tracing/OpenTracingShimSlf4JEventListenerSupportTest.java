@@ -20,12 +20,12 @@ import org.springframework.boot.micrometer.tracing.autoconfigure.TracingProperti
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-class Slf4jEventListenerSupportTest {
+class OpenTracingShimSlf4JEventListenerSupportTest {
 
   @Mock
   private TracingProperties tracingPropertiesMock;
 
-  private Slf4jEventListenerSupport slf4jEventListenerSupport;
+  private OpenTracingShimSlf4jEventListenerSupport openTracingShimSlf4JEventListenerSupport;
 
   @BeforeEach
   void init() {
@@ -39,7 +39,7 @@ class Slf4jEventListenerSupportTest {
     Mockito.when(correlationMock.getFields())
       .thenReturn(List.of("propagatedField"));
 
-    slf4jEventListenerSupport = new Slf4jEventListenerSupport(tracingPropertiesMock);
+    openTracingShimSlf4JEventListenerSupport = new OpenTracingShimSlf4jEventListenerSupport(tracingPropertiesMock);
   }
 
   @AfterEach
@@ -54,7 +54,7 @@ class Slf4jEventListenerSupportTest {
       EventPublishingContextWrapper.ScopeClosedEvent event = Mockito.mock(EventPublishingContextWrapper.ScopeClosedEvent.class);
 
       // When
-      slf4jEventListenerSupport.onEvent(event);
+      openTracingShimSlf4JEventListenerSupport.onEvent(event);
 
       // Then
       mdcMock.verifyNoInteractions();
@@ -78,7 +78,7 @@ class Slf4jEventListenerSupportTest {
       getSpanStub
         .thenReturn(Mockito.mock(Span.class));
 
-      slf4jEventListenerSupport.onEvent(eventMock);
+      openTracingShimSlf4JEventListenerSupport.onEvent(eventMock);
 
       mdcMock.verifyNoInteractions();
     }
@@ -101,7 +101,7 @@ class Slf4jEventListenerSupportTest {
       getSpanStub
         .thenReturn(null);
 
-      slf4jEventListenerSupport.onEvent(eventMock);
+      openTracingShimSlf4JEventListenerSupport.onEvent(eventMock);
 
       mdcMock.verifyNoInteractions();
     }
@@ -144,7 +144,7 @@ class Slf4jEventListenerSupportTest {
           Pair.of("nonPropagatedField", "nonPropagatedValue")
         ));
 
-      slf4jEventListenerSupport.onEvent(eventMock);
+      openTracingShimSlf4JEventListenerSupport.onEvent(eventMock);
 
       mdcMock.verify(() -> MDC.put("traceId", "TRACEID"));
       mdcMock.verify(() -> MDC.put("spanId", "SPANID"));
