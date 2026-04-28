@@ -1,5 +1,5 @@
 {
-  "openapi" : "3.1.0",
+  "openapi" : "3.0.1",
   "info" : {
     "title" : "p4pa-migration",
     "description" : "Api and Models",
@@ -45,14 +45,14 @@
           "content" : {
             "multipart/form-data" : {
               "schema" : {
+                "required" : [ "migrationFile" ],
                 "type" : "object",
                 "properties" : {
                   "migrationFile" : {
                     "type" : "string",
                     "format" : "binary"
                   }
-                },
-                "required" : [ "migrationFile" ]
+                }
               }
             }
           }
@@ -450,6 +450,7 @@
   "components" : {
     "schemas" : {
       "UploadMigrationFileResponseDTO" : {
+        "required" : [ "runId", "uploadId", "workflowId" ],
         "type" : "object",
         "properties" : {
           "uploadId" : {
@@ -462,14 +463,14 @@
           "runId" : {
             "type" : "string"
           }
-        },
-        "required" : [ "runId", "uploadId", "workflowId" ]
+        }
       },
       "CodeEnum" : {
         "type" : "string",
         "enum" : [ "NOT_FOUND", "BAD_REQUEST", "GENERIC_ERROR", "FILE_UPLOAD_ERROR", "INVALID_FILE", "FORBIDDEN" ]
       },
       "ErrorDTO" : {
+        "required" : [ "code", "message" ],
         "type" : "object",
         "properties" : {
           "code" : {
@@ -479,16 +480,17 @@
             "type" : "string"
           },
           "traceId" : {
-            "type" : "string"
+            "type" : "string",
+            "nullable" : true
           }
-        },
-        "required" : [ "code", "message" ]
+        }
       },
       "MigrationFileTypeEnum" : {
         "type" : "string",
         "enum" : [ "ORGANIZATIONS", "ORG_SIL_SERVICES", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG", "DEBT_POSITIONS_TYPE_ORG_OPERATORS", "PAYMENT_NOTIFICATION", "PAYMENTS_REPORTING", "TREASURY_CSV_COMPLETE", "ASSESSMENTS", "ASSESSMENTS_REGISTRY", "DEBT_POSITIONS", "DEBT_POSITIONS_PAID" ]
       },
       "WorkflowStatusDTO" : {
+        "required" : [ "runId", "status", "taskQueue", "workflowId", "workflowType" ],
         "type" : "object",
         "properties" : {
           "workflowId" : {
@@ -508,23 +510,27 @@
           },
           "startDateTime" : {
             "type" : "string",
-            "format" : "date-time"
+            "format" : "date-time",
+            "nullable" : true
           },
           "executionDateTime" : {
             "type" : "string",
-            "format" : "date-time"
+            "format" : "date-time",
+            "nullable" : true
           },
           "endDateTime" : {
             "type" : "string",
-            "format" : "date-time"
+            "format" : "date-time",
+            "nullable" : true
           },
           "duration" : {
-            "type" : "string"
+            "type" : "string",
+            "nullable" : true
           }
-        },
-        "required" : [ "runId", "status", "taskQueue", "workflowId", "workflowType" ]
+        }
       },
       "Uploads" : {
+        "required" : [ "fileName", "filePathName", "fileSize", "fileType", "organizationId", "status" ],
         "type" : "object",
         "properties" : {
           "creationDate" : {
@@ -576,8 +582,7 @@
             "type" : "integer",
             "format" : "int32"
           }
-        },
-        "required" : [ "fileName", "filePathName", "fileSize", "fileType", "organizationId", "status" ]
+        }
       },
       "UploadsStatusEnum" : {
         "type" : "string",
@@ -592,6 +597,7 @@
         "enum" : [ "RECEIPT", "RECEIPT_PAGOPA", "PAYMENTS_REPORTING", "PAYMENTS_REPORTING_PAGOPA", "TREASURY_OPI", "TREASURY_CSV", "TREASURY_XLS", "TREASURY_POSTE", "TREASURY_CSV_COMPLETE", "DP_INSTALLMENTS", "PAYMENT_NOTIFICATION", "ORGANIZATIONS", "ORGANIZATIONS_SIL_SERVICE", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG", "DEBT_POSITIONS_TYPE_ORG_OPERATORS", "ASSESSMENTS", "ASSESSMENTS_REGISTRY", "SEND_NOTIFICATION" ]
       },
       "UploadDetails" : {
+        "required" : [ "fileName", "filePathName", "fileSize", "ingestionFlowFileType", "organizationId", "status", "uploadId" ],
         "type" : "object",
         "properties" : {
           "creationDate" : {
@@ -654,8 +660,7 @@
             "type" : "integer",
             "format" : "int64"
           }
-        },
-        "required" : [ "fileName", "filePathName", "fileSize", "ingestionFlowFileType", "organizationId", "status", "uploadId" ]
+        }
       }
     },
     "securitySchemes" : {
