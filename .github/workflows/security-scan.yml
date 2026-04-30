@@ -37,7 +37,7 @@ jobs:
         run: docker build . --file Dockerfile --tag localbuild/testimage:latest
       - name: Run the Trivy scan action itself with GitHub Advanced Security code scanning integration enabled
         id: scan
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # 0.28.0
+        uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478 # 0.34.2
         with:
           trivy-config: 'config/trivy.yaml'
           image-ref: "localbuild/testimage:latest"
@@ -54,7 +54,7 @@ jobs:
           echo "CVE_HIGH=$(echo $SCAN_RESULTS | grep -o HIGH | wc -l)" >> $GITHUB_ENV
           echo "CVE_MEDIUM=$(echo $SCAN_RESULTS | grep -o MEDIUM | wc -l)" >> $GITHUB_ENV
 
-          printf "$SCAN_RESULTS"
+          printf '%b\n' "$SCAN_RESULTS"
       - name: Fails if CVE HIGH or CRITICAL are detected
         id: cve-threshold
         if: env.CVE_HIGH > 0 || env.CVE_CRITICAL > 0

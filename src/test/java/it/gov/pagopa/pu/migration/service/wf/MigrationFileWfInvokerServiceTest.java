@@ -1,0 +1,121 @@
+package it.gov.pagopa.pu.migration.service.wf;
+
+import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
+import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
+import it.gov.pagopa.pu.migration.model.Uploads;
+import it.gov.pagopa.pu.migration.wf.client.ingestion.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Map;
+
+@ExtendWith(MockitoExtension.class)
+class MigrationFileWfInvokerServiceTest {
+
+  @Mock
+  private OrganizationDataMigrationWFClient organizationDataMigrationWFClientMock;
+  @Mock
+  private OrgSilServiceDataMigrationWFClient orgSilServiceDataMigrationWFClientMock;
+  @Mock
+  private DebtPositionTypeDataMigrationWFClient debtPositionTypeDataMigrationWFClientMock;
+  @Mock
+  private DebtPositionTypeOrgOperatorDataMigrationWFClient debtPositionTypeOrgOperatorDataMigrationWFClientMock;
+  @Mock
+  private PaymentNotificationDataMigrationWFClient paymentNotificationDataMigrationWFClientMock;
+  @Mock
+  private PaymentsReportingDataMigrationWFClient paymentsReportingDataMigrationWFClientMock;
+
+  @Mock
+  private TreasuryCsvCompleteDataMigrationWFClient treasuryCsvCompleteDataMigrationWFClientMock;
+  @Mock
+  private DebtPositionTypeOrgDataMigrationWFClient debtPositionTypeOrgDataMigrationWFClientMock;
+  @Mock
+  private AssessmentsDataMigrationWFClient assessmentsDataMigrationWFClientMock;
+  @Mock
+  private AssessmentsRegistryDataMigrationWFClient assessmentsRegistryDataMigrationWFClientMock;
+  @Mock
+  private DebtPositionsDataMigrationWFClient debtPositionsDataMigrationWFClientMock;
+  @Mock
+  private DebtPositionsPaidDataMigrationWFClient debtPositionsPaidDataMigrationWFClientMock;
+
+  private MigrationFileWfInvokerService service;
+
+  private Map<MigrationFileTypeEnum, DataMigrationWfClient> fileType2ExpectedClientMock;
+
+  @BeforeEach
+  void init() {
+    service = new MigrationFileWfInvokerServiceImpl(organizationDataMigrationWFClientMock,
+      orgSilServiceDataMigrationWFClientMock,
+      debtPositionTypeDataMigrationWFClientMock,
+      debtPositionTypeOrgOperatorDataMigrationWFClientMock,
+      paymentNotificationDataMigrationWFClientMock,
+      paymentsReportingDataMigrationWFClientMock,
+      treasuryCsvCompleteDataMigrationWFClientMock,
+      assessmentsDataMigrationWFClientMock,
+      assessmentsRegistryDataMigrationWFClientMock,
+      debtPositionTypeOrgDataMigrationWFClientMock,
+      debtPositionsDataMigrationWFClientMock,
+      debtPositionsPaidDataMigrationWFClientMock
+    );
+
+    fileType2ExpectedClientMock = Map.ofEntries(
+      Map.entry(MigrationFileTypeEnum.ORGANIZATIONS, organizationDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.ORG_SIL_SERVICES, orgSilServiceDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE, debtPositionTypeDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS, debtPositionTypeOrgOperatorDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.PAYMENT_NOTIFICATION, paymentNotificationDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.PAYMENTS_REPORTING, paymentsReportingDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.TREASURY_CSV_COMPLETE, treasuryCsvCompleteDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.ASSESSMENTS, assessmentsDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.ASSESSMENTS_REGISTRY, assessmentsRegistryDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG, debtPositionTypeOrgDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS, debtPositionsDataMigrationWFClientMock),
+      Map.entry(MigrationFileTypeEnum.DEBT_POSITIONS_PAID, debtPositionsPaidDataMigrationWFClientMock)
+    );
+  }
+
+  @AfterEach
+  void verifyNoMoreInteractions() {
+    Mockito.verifyNoMoreInteractions(organizationDataMigrationWFClientMock,
+      orgSilServiceDataMigrationWFClientMock,
+      debtPositionTypeDataMigrationWFClientMock,
+      debtPositionTypeOrgOperatorDataMigrationWFClientMock,
+      paymentNotificationDataMigrationWFClientMock,
+      paymentsReportingDataMigrationWFClientMock,
+      treasuryCsvCompleteDataMigrationWFClientMock,
+      assessmentsDataMigrationWFClientMock,
+      assessmentsRegistryDataMigrationWFClientMock,
+      debtPositionTypeOrgDataMigrationWFClientMock,
+      debtPositionsPaidDataMigrationWFClientMock,
+      debtPositionsDataMigrationWFClientMock
+    );
+  }
+
+  @ParameterizedTest
+  @EnumSource(MigrationFileTypeEnum.class)
+  void test(MigrationFileTypeEnum fileType) {
+    // Given
+    Uploads uploads = new Uploads();
+    uploads.setFileType(fileType);
+
+    WorkflowCreatedDTO expectedResult = new WorkflowCreatedDTO();
+
+    DataMigrationWfClient mock = fileType2ExpectedClientMock.get(fileType);
+    Mockito.when(mock.migrate(uploads.getUploadId()))
+      .thenReturn(expectedResult);
+
+    // When
+    WorkflowCreatedDTO result = service.invokeWf(uploads);
+
+    // Then
+    Assertions.assertSame(expectedResult, result);
+  }
+
+}
