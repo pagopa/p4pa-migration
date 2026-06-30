@@ -4,9 +4,9 @@ info:
   description: Api and Models
   version: 0.0.1
 servers:
-  - url: http://localhost:8080/migration
+  - url: http://localhost:8080
 paths:
-  /organization/{orgIpaCode}/{migrationFileType}:
+  /migration/organization/{orgIpaCode}/{migrationFileType}:
     post:
       tags:
         - migration-file
@@ -48,7 +48,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /organization/{orgIpaCode}:
+  /migration/organization/{orgIpaCode}:
     get:
       tags:
         - migration-file
@@ -86,7 +86,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /organization/{orgIpaCode}/migrations/{uploadId}:
+  /migration/organization/{orgIpaCode}/migrations/{uploadId}:
     get:
       tags:
         - migration-file
@@ -118,7 +118,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /organization/{orgIpaCode}/migrations/{uploadId}/details:
+  /migration/organization/{orgIpaCode}/migrations/{uploadId}/details:
     get:
       tags:
         - migration-file
@@ -152,7 +152,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /organization/{orgIpaCode}/migrations/{uploadId}/details/{uploadDetailsId}:
+  /migration/organization/{orgIpaCode}/migrations/{uploadId}/details/{uploadDetailsId}:
     get:
       tags:
         - migration-file
@@ -190,7 +190,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /organization/{orgIpaCode}/migrations/{uploadId}/errors:
+  /migration/organization/{orgIpaCode}/migrations/{uploadId}/errors:
     get:
       tags:
         - migration-file
@@ -227,7 +227,7 @@ paths:
           description: Not Found - Upload not found
         '500':
           description: Internal Server Error - Error during errors processing
-  /workflows/{workflowId}/status:
+  /internal/workflows/{workflowId}/status:
     get:
       tags:
         - Workflow

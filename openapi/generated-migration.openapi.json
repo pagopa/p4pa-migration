@@ -6,7 +6,7 @@
     "version" : "0.0.1"
   },
   "servers" : [ {
-    "url" : "http://localhost",
+    "url" : "https://${hostname}/migration",
     "description" : "Generated server url"
   } ],
   "security" : [ {
@@ -15,12 +15,9 @@
   "tags" : [ {
     "name" : "migration-file",
     "description" : "the migration-file API"
-  }, {
-    "name" : "Workflow",
-    "description" : "the Workflow API"
   } ],
   "paths" : {
-    "/migration/organization/{orgIpaCode}/{migrationFileType}" : {
+    "/organization/{orgIpaCode}/{migrationFileType}" : {
       "post" : {
         "tags" : [ "migration-file" ],
         "summary" : "uploadMigrationFlowFile",
@@ -84,7 +81,7 @@
         } ]
       }
     },
-    "/migration/organization/{orgIpaCode}" : {
+    "/organization/{orgIpaCode}" : {
       "get" : {
         "tags" : [ "migration-file" ],
         "summary" : "getMigrationFlows",
@@ -142,7 +139,7 @@
         } ]
       }
     },
-    "/migration/organization/{orgIpaCode}/migrations/{uploadId}" : {
+    "/organization/{orgIpaCode}/migrations/{uploadId}" : {
       "get" : {
         "tags" : [ "migration-file" ],
         "summary" : "getMigrationFlow",
@@ -191,7 +188,7 @@
         } ]
       }
     },
-    "/migration/organization/{orgIpaCode}/migrations/{uploadId}/errors" : {
+    "/organization/{orgIpaCode}/migrations/{uploadId}/errors" : {
       "get" : {
         "tags" : [ "migration-file" ],
         "summary" : "getMigrationErrors",
@@ -286,7 +283,7 @@
         } ]
       }
     },
-    "/migration/organization/{orgIpaCode}/migrations/{uploadId}/details" : {
+    "/organization/{orgIpaCode}/migrations/{uploadId}/details" : {
       "get" : {
         "tags" : [ "migration-file" ],
         "summary" : "getMigrationFlowDetails",
@@ -338,7 +335,7 @@
         } ]
       }
     },
-    "/migration/organization/{orgIpaCode}/migrations/{uploadId}/details/{uploadDetailsId}" : {
+    "/organization/{orgIpaCode}/migrations/{uploadId}/details/{uploadDetailsId}" : {
       "get" : {
         "tags" : [ "migration-file" ],
         "summary" : "getMigrationFlowDetail",
@@ -375,57 +372,6 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/UploadDetails"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Server Error",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorDTO"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "BearerAuth" : [ ]
-        } ]
-      }
-    },
-    "/internal/workflows/{workflowId}/status" : {
-      "get" : {
-        "tags" : [ "Workflow" ],
-        "summary" : "Get Workflow Status",
-        "description" : "Retrieve the current status of a Temporal workflow by its ID.",
-        "operationId" : "getWorkflowStatus",
-        "parameters" : [ {
-          "name" : "workflowId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Workflow status retrieved successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/WorkflowStatusDTO"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Workflow not found",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorDTO"
                 }
               }
             }
@@ -619,46 +565,6 @@
           "numCorrectlyImportedRows" : {
             "type" : "integer",
             "format" : "int64"
-          }
-        }
-      },
-      "WorkflowStatusDTO" : {
-        "required" : [ "runId", "status", "taskQueue", "workflowId", "workflowType" ],
-        "type" : "object",
-        "properties" : {
-          "workflowId" : {
-            "type" : "string"
-          },
-          "workflowType" : {
-            "type" : "string"
-          },
-          "status" : {
-            "type" : "string"
-          },
-          "runId" : {
-            "type" : "string"
-          },
-          "taskQueue" : {
-            "type" : "string"
-          },
-          "startDateTime" : {
-            "type" : "string",
-            "format" : "date-time",
-            "nullable" : true
-          },
-          "executionDateTime" : {
-            "type" : "string",
-            "format" : "date-time",
-            "nullable" : true
-          },
-          "endDateTime" : {
-            "type" : "string",
-            "format" : "date-time",
-            "nullable" : true
-          },
-          "duration" : {
-            "type" : "string",
-            "nullable" : true
           }
         }
       }
