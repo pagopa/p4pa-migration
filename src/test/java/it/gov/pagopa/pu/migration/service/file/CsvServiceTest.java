@@ -2,10 +2,9 @@ package it.gov.pagopa.pu.migration.service.file;
 
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.exceptions.CsvException;
-import it.gov.pagopa.pu.migration.wf.exception.InvalidCsvRowException;
+import lombok.Getter;
+import lombok.Setter;
 import org.junit.jupiter.api.Test;
-import uk.co.jemos.podam.api.PodamFactory;
-import uk.co.jemos.podam.api.PodamFactoryImpl;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,17 +12,13 @@ import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class CsvServiceTest {
 
-  private final PodamFactory podamFactory = new PodamFactoryImpl();
-  private final CsvService csvService = new CsvService(';','\"', 5, 10);
+  private final CsvService csvService = new CsvService(';','\"');
 
   @Test
   void testCreateCsv_success() throws IOException {
@@ -181,74 +176,6 @@ class CsvServiceTest {
   }
 
   @Test
-  void testCreateCsvFromBean_success() throws IOException {
-    // Give
-    Path filePath = Path.of("build", "tmp", "test", "EXPORT.csv");
-
-    TestCsv testCsv = podamFactory.manufacturePojo(TestCsv.class);
-    TestCsv testCsv1 = podamFactory.manufacturePojo(TestCsv.class);
-    TestCsv testCsv2 = podamFactory.manufacturePojo(TestCsv.class);
-
-    List<TestCsv> testCsvList = List.of(testCsv, testCsv1, testCsv2);
-    AtomicBoolean supplierCalled = new AtomicBoolean(false);
-
-    Supplier<List<TestCsv>> csvRowsSupplier = () -> {
-      if (supplierCalled.get()) {
-        return Collections.emptyList();
-      } else {
-        supplierCalled.set(true);
-        return testCsvList;
-      }
-    };
-    // When
-    csvService.createCsv(filePath, TestCsv.class, csvRowsSupplier, "v1");
-
-    // Then
-    File file = filePath.toFile();
-    assertTrue(file.exists(), "The file should exist.");
-    assertTrue(file.length() > 0, "The file should not be empty.");
-  }
-
-
-  @Test
-  void testCreateCsvFromBean_whenPageRequestCountBiggerThenThreshold_thenThrowIllegalException() {
-    // Given
-    Path filePath = Path.of("build", "tmp", "test", "EXPORT.csv");
-
-    TestCsv testCsv = podamFactory.manufacturePojo(TestCsv.class);
-    TestCsv testCsv1 = podamFactory.manufacturePojo(TestCsv.class);
-    TestCsv testCsv2 = podamFactory.manufacturePojo(TestCsv.class);
-
-    List<TestCsv> testCsvList = List.of(testCsv, testCsv1, testCsv2);
-
-    // When
-    IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
-      csvService.createCsv(filePath, TestCsv.class, () -> testCsvList, "v1"));
-
-    // Then
-    File file = filePath.toFile();
-    assertTrue(file.exists(), "The file should exist.");
-    assertTrue(file.length() > 0, "The file should not be empty.");
-    assertEquals("Export process reached error threshold page request count: 11", ex.getMessage());
-  }
-
-  @Test
-  void testCreateCsv_whenCsvRequiredFieldEmptyException_thenThrowInvalidCsvRowException() {
-    // Given
-    Path filePath = Path.of("build", "tmp", "test", "EXPORT.csv");
-
-    TestCsv testCsv = podamFactory.manufacturePojo(TestCsv.class);
-    testCsv.setColumn1(null);
-    List<TestCsv> testCsvList = List.of(testCsv);
-
-    // When / Then
-    InvalidCsvRowException ex = assertThrows(InvalidCsvRowException.class, () -> csvService.createCsv(filePath, TestCsv.class, () -> testCsvList, "v1"));
-
-    assertEquals("Invalid CSV row: Field 'column1' is mandatory but no value was provided.", ex.getMessage());
-
-  }
-
-  @Test
   void testCreateCsvWriter_returnsConfiguredBeanToCsv() throws Exception {
     StringWriter writer = new StringWriter();
     StatefulBeanToCsv<TestBean> beanToCsv = csvService.createCsvWriter(TestBean.class, "default", writer);
@@ -261,10 +188,12 @@ class CsvServiceTest {
     assertTrue(csvContent.contains("value"));
   }
 
+  @Setter
+  @Getter
   public static class TestBean {
+
     @com.opencsv.bean.CsvBindByName
     private String field;
-    public String getField() { return field; }
-    public void setField(String field) { this.field = field; }
+
   }
 }

@@ -94,23 +94,6 @@ springdoc:
   api-docs.version: openapi_3_0
   writer-with-default-pretty-printer: true
 
-jwt:
-  access-token:
-    public-key: "\${JWT_TOKEN_PUBLIC_KEY:-----BEGIN PUBLIC KEY-----
-                MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2ovm/rd3g69dq9PisinQ
-                6mWy8ZttT8D+GKXCsHZycsGnN7b74TPyYy+4+h+9cgJeizp8RDRrufHjiBrqi/2r
-                eOk/rD7ZHbpfQvHK8MYfgIVdtTxYMX/GGdOrX6/5TV2b8e2aCG6GmxF0UuEvxY9o
-                TmcZUxnIeDtl/ixz4DQ754eS363qWfEA92opW+jcYzr07sbQtR86e+Z/s/CUeX6W
-                1PHNvBqdlAgp2ecr/1DOLq1D9hEANBPSwbt+FM6FNe4vLphi7GTwiB0yaAuy+jE8
-                odND6HPvvvmgbK1/2qTHn/HJjWUm11LUC73BszR32BKbdEEhxPQnnwswVekWzPi1
-                IwIDAQAB
-                -----END PUBLIC KEY-----}"
-
-migration-files:
-  page-request-thresholds:
-    warn: "\${MIGRATION_FILES_PAGE_REQUEST_THRESHOLDS_WARN: 100}"
-    error: "\${MIGRATION_FILES_PAGE_REQUEST_THRESHOLDS_ERROR: 1000}"
-
 folders:
   shared: "\${SHARED_FOLDER_ROOT:/shared}"
   tmp: "\${TMP_FOLDER:/tmp}"
@@ -171,17 +154,15 @@ rest:
     wait-time-millis: "\${FILE_SHARE_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${FILE_SHARE_PRINT_BODY_WHEN_ERROR:true}"
   organization:
-    base-url: "\${ORGANIZATION_BASE_URL:http://localhost:8080}"
+    base-url: "\${ORGANIZATION_BASE_URL:}"
     max-attempts: "\${ORGANIZATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${ORGANIZATION_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${ORGANIZATION_PRINT_BODY_WHEN_ERROR:true}"
   debt-position:
-    base-url: "\${DEBT_POSITION_BASE_URL:http://localhost:8080}"
+    base-url: "\${DEBT_POSITION_BASE_URL:}"
     max-attempts: "\${DEBT_POSITION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${DEBT_POSITION_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${DEBT_POSITION_PRINT_BODY_WHEN_ERROR:true}"
-
-
 
 workflow:
   default:
