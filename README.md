@@ -11,11 +11,13 @@ See [p4pa-doc](https://github.com/pagopa/p4pa-doc) for further documentation.
 * To handle the massive import of data from a previous installation.
 
 ## 🌐 APIs
-See [OpenAPI](openapi/p4pa-auth.openapi.yaml), exposed through the following path:
+See [OpenAPI](openapi/generated.openapi.json):
+* Complete OpenApi;
+  See [OpenAPI](openapi/generated-migration.openapi.json):
+* APIs to be exposed on the internet.
+
+Both exposed through the path:
 * `/swagger-ui/index.html`
-
-See [Postman collection](/postman/p4pa-auth-E2E.postman_collection.json) and [Postman Environment](https://pagopa.atlassian.net/wiki/spaces/SPAC/pages/1094615081/Environment+collection+postman).
-
 
 ### 📌 Relevant APIs
 * `POST /migration/organization/{orgIpaCode}/{migrationFileType}`: To upload a file;
@@ -209,9 +211,6 @@ Ensure the following tools are installed on your machine:
 ```sh
 ./gradlew test
 ```
-
-#### 📌 Postman
-See [Postman collection](/postman/p4pa-auth-E2E.postman_collection.json) and [Postman Environment](https://pagopa.atlassian.net/wiki/spaces/SPAC/pages/1094615081/Environment+collection+postman).
 
 ### 🚀 Run local
 
