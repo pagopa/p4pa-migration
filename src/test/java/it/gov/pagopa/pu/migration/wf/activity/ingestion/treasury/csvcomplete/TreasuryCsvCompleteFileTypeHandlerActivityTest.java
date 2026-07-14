@@ -105,18 +105,20 @@ class TreasuryCsvCompleteFileTypeHandlerActivityTest {
         .updateOperatorExternalId("user")
         .build()
     ));
-    when(authnServiceMock.getAccessToken()).thenReturn("tokenOrg");
-    when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
+    String accessToken = "token";
+    when(authnServiceMock.getAccessToken()).thenReturn(accessToken);
+    String organizationAccessToken = "tokenOrg";
+    when(authnServiceMock.getAccessToken("IPA12345")).thenReturn(organizationAccessToken);
     Organization org = new Organization();
     org.setIpaCode("IPA12345");
     org.setBrokerId(1L);
     org.setOrganizationId(10L);
-    when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA12345"), anyString())).thenReturn(Optional.of(org));
+    when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA12345"), eq(accessToken))).thenReturn(Optional.of(org));
 
     Organization brokerOrg = new Organization();
     brokerOrg.setBrokerId(1L);
-    brokerOrg.setOrganizationId(1L);
-    when(organizationServiceMock.getOrganizationById(eq(1L), anyString())).thenReturn(Optional.of(brokerOrg));
+    brokerOrg.setOrganizationId(2L);
+    when(organizationServiceMock.getOrganizationById(eq(1L), eq(accessToken))).thenReturn(Optional.of(brokerOrg));
 
     try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
          MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
@@ -127,7 +129,7 @@ class TreasuryCsvCompleteFileTypeHandlerActivityTest {
         eq(10L),
         any(),
         any(FileSystemResource.class),
-        anyString()
+        eq(organizationAccessToken)
       )).thenReturn(1L);
 
       String fileName = file1.getFileName().toString();
