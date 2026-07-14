@@ -115,6 +115,11 @@ class PaymentsReportingMigrationFileTypeHandlerActivityTest {
         org.setOrganizationId(10L);
         when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA12345"), anyString())).thenReturn(Optional.of(org));
 
+        Organization brokerOrg = new Organization();
+        brokerOrg.setBrokerId(1L);
+        brokerOrg.setOrganizationId(1L);
+        when(organizationServiceMock.getOrganizationById(eq(1L), eq("tokenOrg"))).thenReturn(Optional.of(brokerOrg));
+
         try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
              MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
             securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(loggedUser);
@@ -210,6 +215,12 @@ class PaymentsReportingMigrationFileTypeHandlerActivityTest {
         org.setOrganizationId(999L);
         when(authnServiceMock.getAccessToken()).thenReturn("tokenOrg");
         when(organizationServiceMock.getOrganizationByIpaCode("IPA99999", "tokenOrg")).thenReturn(Optional.of(org));
+
+        Organization brokerOrg = new Organization();
+        brokerOrg.setBrokerId(1L);
+        brokerOrg.setOrganizationId(1L);
+        when(organizationServiceMock.getOrganizationById(1L, "tokenOrg")).thenReturn(Optional.of(brokerOrg));
+
         try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
              MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
             securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(null);
