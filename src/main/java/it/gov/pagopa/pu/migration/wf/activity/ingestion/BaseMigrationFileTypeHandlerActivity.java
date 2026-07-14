@@ -146,11 +146,14 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
     for (Path file : retrievedFiles) {
       String fileName = file.getFileName().toString();
       String ipaCodeFile = WfUtilities.extractIpaCodeFromFileName(fileName);
+      String accessToken = authnService.getAccessToken();
 
-      Organization organization = organizationService.getOrganizationByIpaCode(ipaCodeFile, authnService.getAccessToken()).
+      Organization organization = organizationService.getOrganizationByIpaCode(ipaCodeFile, accessToken).
         orElseThrow(() -> new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " not found"));
+      Organization brokerOrganization = organizationService.getOrganizationById(upload.getOrganizationId(), accessToken)
+        .orElseThrow(() -> new InvalidMigrationFileException("Broker organization with id " + upload.getOrganizationId() + " not found"));
 
-      if (!organization.getBrokerId().equals(upload.getOrganizationId())) {
+      if (!organization.getBrokerId().equals(brokerOrganization.getBrokerId())) {
         throw new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " is not associated to managed organizations.");
       }
       String zipName = Utilities.replaceFileExtension(fileName, ".zip");
