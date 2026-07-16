@@ -98,19 +98,26 @@ class DebtPositionsPaidMigrationFileTypeHandlerActivityTest {
         .updateOperatorExternalId("user")
         .build()
     ));
-    when(authnServiceMock.getAccessToken()).thenReturn("token");
+    String accessToken = "token";
+    when(authnServiceMock.getAccessToken()).thenReturn(accessToken);
     Organization org = new Organization();
     org.setIpaCode("IPA12345");
     org.setBrokerId(1L);
     org.setOrganizationId(10L);
-    when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA12345"), anyString())).thenReturn(Optional.of(org));
+    when(organizationServiceMock.getOrganizationByIpaCode("IPA12345", accessToken)).thenReturn(Optional.of(org));
 
-    when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
+    Organization brokerOrg = new Organization();
+    brokerOrg.setBrokerId(1L);
+    brokerOrg.setOrganizationId(2L);
+    when(organizationServiceMock.getOrganizationById(1L, accessToken)).thenReturn(Optional.of(brokerOrg));
+
+    String organizationAccessToken = "tokenOrg";
+    when(authnServiceMock.getAccessToken("IPA12345")).thenReturn(organizationAccessToken);
     when(fileShareServiceMock.uploadIngestionFlowFile(
       anyLong(),
       any(),
       any(FileSystemResource.class),
-      anyString()
+      eq(organizationAccessToken)
     )).thenReturn(1L);
 
     String fileName = file1.getFileName().toString();

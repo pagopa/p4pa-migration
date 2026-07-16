@@ -107,13 +107,20 @@ class PaymentNotificationFileTypeHandlerActivityTest {
         .build()
     ));
 
-    when(authnServiceMock.getAccessToken()).thenReturn("tokenOrg");
-    when(authnServiceMock.getAccessToken("IPA12345")).thenReturn("tokenOrg");
+    String accessToken = "token";
+    when(authnServiceMock.getAccessToken()).thenReturn(accessToken);
+    String organizationAccessToken = "tokenOrg";
+    when(authnServiceMock.getAccessToken("IPA12345")).thenReturn(organizationAccessToken);
     Organization org = new Organization();
     org.setIpaCode("IPA12345");
     org.setBrokerId(1L);
     org.setOrganizationId(10L);
-    when(organizationServiceMock.getOrganizationByIpaCode(eq("IPA12345"), anyString())).thenReturn(Optional.of(org));
+    when(organizationServiceMock.getOrganizationByIpaCode("IPA12345", accessToken)).thenReturn(Optional.of(org));
+
+    Organization brokerOrg = new Organization();
+    brokerOrg.setBrokerId(1L);
+    brokerOrg.setOrganizationId(2L);
+    when(organizationServiceMock.getOrganizationById(1L, accessToken)).thenReturn(Optional.of(brokerOrg));
 
     try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
          MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
@@ -124,7 +131,7 @@ class PaymentNotificationFileTypeHandlerActivityTest {
         eq(10L),
         any(),
         any(FileSystemResource.class),
-        anyString()
+        eq(organizationAccessToken)
       )).thenReturn(1L);
 
       String fileName = file1.getFileName().toString();
@@ -208,8 +215,15 @@ class PaymentNotificationFileTypeHandlerActivityTest {
     org.setIpaCode("IPA99999");
     org.setBrokerId(998L);
     org.setOrganizationId(999L);
-    when(authnServiceMock.getAccessToken()).thenReturn("tokenOrg");
-    when(organizationServiceMock.getOrganizationByIpaCode("IPA99999", "tokenOrg")).thenReturn(Optional.of(org));
+    String accessToken = "token";
+    when(authnServiceMock.getAccessToken()).thenReturn(accessToken);
+    when(organizationServiceMock.getOrganizationByIpaCode("IPA99999", accessToken)).thenReturn(Optional.of(org));
+
+    Organization brokerOrg = new Organization();
+    brokerOrg.setBrokerId(1L);
+    brokerOrg.setOrganizationId(2L);
+    when(organizationServiceMock.getOrganizationById(1L, accessToken)).thenReturn(Optional.of(brokerOrg));
+
     try (MockedStatic<SecurityUtils> securityUtilsMockedStatic = mockStatic(SecurityUtils.class);
          MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
       securityUtilsMockedStatic.when(SecurityUtils::getLoggedUser).thenReturn(null);
