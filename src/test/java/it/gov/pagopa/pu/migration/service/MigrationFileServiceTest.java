@@ -35,6 +35,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class MigrationFileServiceTest {
 
@@ -102,6 +104,7 @@ class MigrationFileServiceTest {
       .organizationIpaCode(orgIpaCode)
       .organizationFiscalCode(orgFiscalCode)
       .roles(List.of(AuthorizationService.ROLE_ADMIN))
+      .orgSubUnitCodes(List.of())
       .build()));
     return loggedUser;
   }
@@ -113,16 +116,16 @@ class MigrationFileServiceTest {
     long organizationId = 1L;
     String orgIpaCode = "IPACODE";
     MigrationFileTypeEnum migrationFileType = MigrationFileTypeEnum.ORGANIZATIONS;
-    MultipartFile file = Mockito.mock(MultipartFile.class);
+    MultipartFile file = mock(MultipartFile.class);
 
     String migrationFileSubFolder = "pathToFile";
     String filePath = "filePath";
     String fileName = "fileName.zip";
     long fileSize = 123L;
 
-    Mockito.when(file.getOriginalFilename())
+    when(file.getOriginalFilename())
       .thenReturn(fileName);
-    Mockito.when(file.getSize())
+    when(file.getSize())
       .thenReturn(fileSize);
 
     UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
@@ -139,16 +142,16 @@ class MigrationFileServiceTest {
     Uploads storedUploads = new Uploads();
     WorkflowCreatedDTO expectedWfCreated = new WorkflowCreatedDTO();
 
-    Mockito.when(foldersPathsConfigMock.getMigrationFilePath(migrationFileType))
+    when(foldersPathsConfigMock.getMigrationFilePath(migrationFileType))
       .thenReturn(migrationFileSubFolder);
 
-    Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, migrationFileSubFolder, fileName))
+    when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, migrationFileSubFolder, fileName))
       .thenReturn(new SaveFileResultDTO(filePath, null));
 
-    Mockito.when(uploadsRepositoryMock.save(upload2Store))
+    when(uploadsRepositoryMock.save(upload2Store))
       .thenReturn(storedUploads);
 
-    Mockito.when(wfInvokerServiceMock.invokeWf(storedUploads))
+    when(wfInvokerServiceMock.invokeWf(storedUploads))
       .thenReturn(expectedWfCreated);
 
     // When
@@ -159,7 +162,7 @@ class MigrationFileServiceTest {
     Assertions.assertSame(storedUploads, result.getKey());
     Assertions.assertSame(expectedWfCreated, result.getValue());
 
-    Mockito.verify(validatorServiceMock).validateMultipartFile(file);
+    verify(validatorServiceMock).validateMultipartFile(file);
   }
 
   @Test
@@ -167,7 +170,7 @@ class MigrationFileServiceTest {
     // Given
     String orgIpaCode = "IPACODE";
     MigrationFileTypeEnum migrationFileType = MigrationFileTypeEnum.ORGANIZATIONS;
-    MultipartFile file = Mockito.mock(MultipartFile.class);
+    MultipartFile file = mock(MultipartFile.class);
 
     UserInfo loggedUser = new UserInfo();
     loggedUser.setBrokerFiscalCode("ORGFC");
@@ -177,6 +180,7 @@ class MigrationFileServiceTest {
       .organizationIpaCode(orgIpaCode)
       .organizationFiscalCode("ORGFC2")
       .roles(List.of(AuthorizationService.ROLE_ADMIN))
+      .orgSubUnitCodes(List.of())
       .build()));
 
     // When
@@ -196,7 +200,7 @@ class MigrationFileServiceTest {
     UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
 
     List<Uploads> expectedResult = List.of();
-    Mockito.when(uploadsRepositoryMock.findByOrganizationIdAndFileTypeAndStatus(organizationId, fileType, status))
+    when(uploadsRepositoryMock.findByOrganizationIdAndFileTypeAndStatus(organizationId, fileType, status))
       .thenReturn(expectedResult);
 
     // Then
@@ -234,7 +238,7 @@ class MigrationFileServiceTest {
     Uploads expectedResult = new Uploads();
     expectedResult.setOrganizationId(organizationId);
 
-    Mockito.when(uploadsRepositoryMock.findById(uploadId))
+    when(uploadsRepositoryMock.findById(uploadId))
       .thenReturn(Optional.of(expectedResult));
 
     // Then
@@ -269,7 +273,7 @@ class MigrationFileServiceTest {
     Uploads expectedResult = new Uploads();
     expectedResult.setOrganizationId(-1L);
 
-    Mockito.when(uploadsRepositoryMock.findById(uploadId))
+    when(uploadsRepositoryMock.findById(uploadId))
       .thenReturn(Optional.of(expectedResult));
 
     // Then
@@ -284,7 +288,7 @@ class MigrationFileServiceTest {
     long uploadId = 2L;
     UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
 
-    Mockito.when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.empty());
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.empty());
 
     // Then
     Assertions.assertThrows(it.gov.pagopa.pu.migration.exception.EntityNotFoundException.class,
@@ -304,12 +308,12 @@ class MigrationFileServiceTest {
 
     List<UploadDetails> expectedResult = List.of();
 
-    service = Mockito.spy(service);
-    Mockito.doReturn(null)
+    service = spy(service);
+    doReturn(null)
         .when(service)
           .getUpload(orgIpaCode, uploadId, loggedUser);
 
-    Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId))
+    when(uploadDetailsRepositoryMock.findByUploadId(uploadId))
       .thenReturn(expectedResult);
 
     // Then
@@ -317,7 +321,7 @@ class MigrationFileServiceTest {
 
     // When
     Assertions.assertSame(expectedResult, result);
-    Mockito.verify(service).getUpload(orgIpaCode, uploadId, loggedUser);
+    verify(service).getUpload(orgIpaCode, uploadId, loggedUser);
   }
 //endregion getUpload
 
@@ -335,12 +339,12 @@ class MigrationFileServiceTest {
     UploadDetails expectedResult = new UploadDetails();
     expectedResult.setUploadId(uploadId);
 
-    service = Mockito.spy(service);
-    Mockito.doReturn(null)
+    service = spy(service);
+    doReturn(null)
       .when(service)
       .getUpload(orgIpaCode, uploadId, loggedUser);
 
-    Mockito.when(uploadDetailsRepositoryMock.findById(uploadDetailId))
+    when(uploadDetailsRepositoryMock.findById(uploadDetailId))
       .thenReturn(Optional.of(expectedResult));
 
     // Then
@@ -348,7 +352,7 @@ class MigrationFileServiceTest {
 
     // When
     Assertions.assertSame(expectedResult, result);
-    Mockito.verify(service).getUpload(orgIpaCode, uploadId, loggedUser);
+    verify(service).getUpload(orgIpaCode, uploadId, loggedUser);
   }
 
   @Test
@@ -364,14 +368,14 @@ class MigrationFileServiceTest {
     UploadDetails expectedResult = new UploadDetails();
     expectedResult.setUploadId(-1L);
 
-    service = Mockito.spy(service);
-    Mockito.doReturn(null)
+    service = spy(service);
+    doReturn(null)
       .when(service)
       .getUpload(orgIpaCode, uploadId, loggedUser);
 
     UploadDetails wrongDetail = new UploadDetails();
     wrongDetail.setUploadId(-1L);
-    Mockito.when(uploadDetailsRepositoryMock.findById(Mockito.anyLong()))
+    when(uploadDetailsRepositoryMock.findById(Mockito.anyLong()))
       .thenReturn(Optional.of(wrongDetail));
 
     // Then
@@ -389,7 +393,7 @@ class MigrationFileServiceTest {
 
     Uploads uploads = new Uploads();
     uploads.setOrganizationId(organizationId);
-    Mockito.when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
 
     UploadDetails errorDetail = new UploadDetails();
     errorDetail.setIngestionFlowFileId(10L);
@@ -397,18 +401,18 @@ class MigrationFileServiceTest {
     errorDetail.setStatus(IngestionFlowFileStatus.ERROR);
     List<UploadDetails> uploadDetailsList = List.of(errorDetail);
 
-    Resource resourceMock = Mockito.mock(Resource.class);
-    Mockito.when(resourceMock.getFilename()).thenReturn("error.pdf");
-    ByteArrayResource zipResourceMock = Mockito.mock( ByteArrayResource.class);
+    Resource resourceMock = mock(Resource.class);
+    when(resourceMock.getFilename()).thenReturn("error.pdf");
+    ByteArrayResource zipResourceMock = mock( ByteArrayResource.class);
 
-    Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
-    Mockito.when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
+    when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
+    when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
         Mockito.any(),
         Mockito.any(),
         Mockito.any()
     )).thenReturn(resourceMock);
-    Mockito.when(zipFileServiceMock.zipper(Mockito.anyList())).thenReturn(zipResourceMock);
-    Mockito.when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
+    when(zipFileServiceMock.zipper(Mockito.anyList())).thenReturn(zipResourceMock);
+    when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
     Assertions.assertSame(zipResourceMock, result);
@@ -423,7 +427,7 @@ class MigrationFileServiceTest {
 
     Uploads uploads = new Uploads();
     uploads.setOrganizationId(organizationId);
-    Mockito.when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
 
     UploadDetails errorDetail = new UploadDetails();
     errorDetail.setIngestionFlowFileId(10L);
@@ -431,18 +435,18 @@ class MigrationFileServiceTest {
     errorDetail.setStatus(IngestionFlowFileStatus.WARNING);
     List<UploadDetails> uploadDetailsList = List.of(errorDetail);
 
-    Resource resourceMock = Mockito.mock(Resource.class);
-    Mockito.when(resourceMock.getFilename()).thenReturn("error.pdf");
-    ByteArrayResource zipResourceMock = Mockito.mock( ByteArrayResource.class);
+    Resource resourceMock = mock(Resource.class);
+    when(resourceMock.getFilename()).thenReturn("error.pdf");
+    ByteArrayResource zipResourceMock = mock( ByteArrayResource.class);
 
-    Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
-    Mockito.when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
+    when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
+    when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
       Mockito.any(),
       Mockito.any(),
       Mockito.any()
     )).thenReturn(resourceMock);
-    Mockito.when(zipFileServiceMock.zipper(Mockito.anyList())).thenReturn(zipResourceMock);
-    Mockito.when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
+    when(zipFileServiceMock.zipper(Mockito.anyList())).thenReturn(zipResourceMock);
+    when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
     Assertions.assertSame(zipResourceMock, result);
@@ -457,7 +461,7 @@ class MigrationFileServiceTest {
 
     Uploads uploads = new Uploads();
     uploads.setOrganizationId(organizationId);
-    Mockito.when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
 
     UploadDetails warningDetail = new UploadDetails();
     warningDetail.setIngestionFlowFileId(10L);
@@ -465,17 +469,17 @@ class MigrationFileServiceTest {
     warningDetail.setStatus(IngestionFlowFileStatus.WARNING);
     List<UploadDetails> uploadDetailsList = List.of(warningDetail);
 
-    Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
-    Mockito.when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
+    when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
+    when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
       Mockito.any(),
       Mockito.any(),
       Mockito.any()
     )).thenReturn(null);
-    Mockito.when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
+    when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
     Assertions.assertNull(result);
-    Mockito.verify(zipFileServiceMock, Mockito.never()).zipper(Mockito.anyList());
+    verify(zipFileServiceMock, never()).zipper(Mockito.anyList());
   }
 
 
@@ -488,9 +492,9 @@ class MigrationFileServiceTest {
 
     Uploads uploads = new Uploads();
     uploads.setOrganizationId(organizationId);
-    Mockito.when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
 
-    Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(List.of());
+    when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(List.of());
     Assertions.assertThrows(it.gov.pagopa.pu.migration.exception.EntityNotFoundException.class,
       () -> service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser));
   }
@@ -504,7 +508,7 @@ class MigrationFileServiceTest {
 
     Uploads uploads = new Uploads();
     uploads.setOrganizationId(organizationId);
-    Mockito.when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
 
     UploadDetails errorDetail = new UploadDetails();
     errorDetail.setIngestionFlowFileId(10L);
@@ -512,17 +516,17 @@ class MigrationFileServiceTest {
     errorDetail.setStatus(IngestionFlowFileStatus.ERROR);
     List<UploadDetails> uploadDetailsList = List.of(errorDetail);
 
-    Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
-    Mockito.when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
+    when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
+    when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
         Mockito.any(),
         Mockito.any(),
         Mockito.any()
     )).thenReturn(null);
-    Mockito.when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
+    when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
     Assertions.assertNull(result);
-    Mockito.verify(zipFileServiceMock, Mockito.never()).zipper(Mockito.anyList());
+    verify(zipFileServiceMock, never()).zipper(Mockito.anyList());
   }
 
   @Test
@@ -534,7 +538,7 @@ class MigrationFileServiceTest {
 
     Uploads uploads = new Uploads();
     uploads.setOrganizationId(organizationId);
-    Mockito.when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
 
     UploadDetails errorDetail1 = new UploadDetails();
     errorDetail1.setIngestionFlowFileId(10L);
@@ -550,33 +554,33 @@ class MigrationFileServiceTest {
 
     List<UploadDetails> uploadDetailsList = List.of(errorDetail1, errorDetail2);
 
-    Resource resourceMock = Mockito.mock(Resource.class);
-    Mockito.when(resourceMock.getFilename()).thenReturn("error2.pdf");
-    ByteArrayResource zipResourceMock = Mockito.mock(ByteArrayResource.class);
+    Resource resourceMock = mock(Resource.class);
+    when(resourceMock.getFilename()).thenReturn("error2.pdf");
+    ByteArrayResource zipResourceMock = mock(ByteArrayResource.class);
 
-    Mockito.when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
+    when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(uploadDetailsList);
 
     // First call throws exception, second call succeeds
-    Mockito.when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
+    when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
         Mockito.eq(organizationId),
         Mockito.eq(10L),
         Mockito.anyString()
     )).thenThrow(new RuntimeException("File not found on server"));
 
-    Mockito.when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
+    when(fileShareServiceMock.downloadIngestionFlowErrorsFile(
         Mockito.eq(organizationId),
         Mockito.eq(11L),
         Mockito.anyString()
     )).thenReturn(resourceMock);
 
-    Mockito.when(zipFileServiceMock.zipper(Mockito.anyList())).thenReturn(zipResourceMock);
-    Mockito.when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
+    when(zipFileServiceMock.zipper(Mockito.anyList())).thenReturn(zipResourceMock);
+    when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
 
     Assertions.assertSame(zipResourceMock, result);
     // Verify that zipper was called with only one file (the successful one)
-    Mockito.verify(zipFileServiceMock).zipper(Mockito.argThat(list -> list.size() == 1));
+    verify(zipFileServiceMock).zipper(Mockito.argThat(list -> list.size() == 1));
   }
 //endregion
 }

@@ -1,10 +1,10 @@
 package it.gov.pagopa.pu.migration.controller;
 
+import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowStatusDTO;
 import it.gov.pagopa.pu.migration.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.migration.wf.service.temporal.WorkflowService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,6 +33,8 @@ class WorkflowControllerTest {
 
   @MockitoBean
   private WorkflowService serviceMock;
+  @MockitoBean
+  private Tracer tracerMock;
 
   @Test
   void whenGetWorkflowStatusThenOk() throws Exception {
@@ -41,7 +44,7 @@ class WorkflowControllerTest {
       .status("ok")
       .build();
 
-    Mockito.when(serviceMock.getWorkflowStatus(workflowId))
+    when(serviceMock.getWorkflowStatus(workflowId))
       .thenReturn(workflowStatusDTO);
 
     MvcResult result = mockMvc.perform(
