@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.migration.dto.FileResourceDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
 import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
-import it.gov.pagopa.pu.migration.exception.EntityNotFoundException;
+import it.gov.pagopa.pu.migration.exception.common.NotFoundException;
 import it.gov.pagopa.pu.migration.model.UploadDetails;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadDetailsRepository;
@@ -94,7 +94,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
     Long organizationId = AuthorizationService.validateAdminRoleOnBroker(orgIpaCode, loggedUser)
       .getOrganizationId();
 
-    Uploads uploads = uploadsRepository.findById(uploadId).orElseThrow(() -> new EntityNotFoundException("Cannot find Upload having id " + uploadId));
+    Uploads uploads = uploadsRepository.findById(uploadId).orElseThrow(() -> new NotFoundException("UPLOADS_NOT_FOUND", "Cannot find Upload having id " + uploadId));
     if(!uploads.getOrganizationId().equals(organizationId)){
       throw new AuthorizationDeniedException("UploadId not related to requested org");
     }
@@ -112,7 +112,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   public UploadDetails getUploadDetail(String orgIpaCode, Long uploadId, Long uploadDetailsId, UserInfo loggedUser) {
     getUpload(orgIpaCode, uploadId, loggedUser);
 
-    UploadDetails uploadDetail = uploadDetailsRepository.findById(uploadDetailsId).orElseThrow(() -> new EntityNotFoundException("Cannot find Upload Details having id " + uploadDetailsId));
+    UploadDetails uploadDetail = uploadDetailsRepository.findById(uploadDetailsId).orElseThrow(() -> new NotFoundException("UPLOAD_DETAILS_NOT_FOUND", "Cannot find Upload Details having id " + uploadDetailsId));
     if(!uploadDetail.getUploadId().equals(uploadId)){
       throw new AuthorizationDeniedException("UploadDetailsId not related to requested upload");
     }
@@ -123,14 +123,14 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   public Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
     Long organizationId = AuthorizationService.validateAdminRoleOnBroker(orgIpaCode, loggedUser).getOrganizationId();
 
-    Uploads uploads = uploadsRepository.findById(uploadId).orElseThrow(() -> new EntityNotFoundException("Cannot find Upload having id " + uploadId));
+    Uploads uploads = uploadsRepository.findById(uploadId).orElseThrow(() -> new NotFoundException("UPLOADS_NOT_FOUND", "Cannot find Upload having id " + uploadId));
     if(!uploads.getOrganizationId().equals(organizationId)){
       throw new AuthorizationDeniedException("UploadId not related to requested organization");
     }
 
     List<UploadDetails> uploadDetails = uploadDetailsRepository.findByUploadId(uploadId);
     if (uploadDetails.isEmpty()) {
-      throw new EntityNotFoundException("Cannot find UploadDetails for uploadId " + uploadId);
+      throw new NotFoundException("UPLOAD_DETAILS_NOT_FOUND", "Cannot find UploadDetails for uploadId " + uploadId);
     }
     List<FileResourceDTO> pdfResources = uploadDetails.stream()
       .filter(uploadDetail -> uploadDetail.getStatus().equals(IngestionFlowFileStatus.ERROR) || uploadDetail.getStatus().equals(IngestionFlowFileStatus.WARNING))

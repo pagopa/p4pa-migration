@@ -9,6 +9,7 @@ import it.gov.pagopa.pu.migration.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
 import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
+import it.gov.pagopa.pu.migration.exception.common.NotFoundException;
 import it.gov.pagopa.pu.migration.model.UploadDetails;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadDetailsRepository;
@@ -291,7 +292,7 @@ class MigrationFileServiceTest {
     when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.empty());
 
     // Then
-    Assertions.assertThrows(it.gov.pagopa.pu.migration.exception.EntityNotFoundException.class,
+    Assertions.assertThrows(NotFoundException.class,
       () -> service.getUpload(orgIpaCode, uploadId, loggedUser));
   }
 //endregion getUpload
@@ -495,7 +496,7 @@ class MigrationFileServiceTest {
     when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
 
     when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(List.of());
-    Assertions.assertThrows(it.gov.pagopa.pu.migration.exception.EntityNotFoundException.class,
+    Assertions.assertThrows(NotFoundException.class,
       () -> service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser));
   }
 
