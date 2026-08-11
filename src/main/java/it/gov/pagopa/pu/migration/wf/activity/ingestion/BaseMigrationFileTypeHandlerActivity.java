@@ -17,8 +17,8 @@ import it.gov.pagopa.pu.migration.wf.exception.UploadNotFoundException;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -153,7 +154,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
       Organization brokerOrganization = organizationService.getOrganizationById(upload.getOrganizationId(), accessToken)
         .orElseThrow(() -> new InvalidMigrationFileException("Broker organization with id " + upload.getOrganizationId() + " not found"));
 
-      if (!organization.getBrokerId().equals(brokerOrganization.getBrokerId())) {
+      if (!Objects.equals(organization.getBrokerId(), brokerOrganization.getBrokerId())) {
         throw new InvalidMigrationFileException("Organization with ipa code " + ipaCodeFile + " is not associated to managed organizations.");
       }
       String zipName = Utilities.replaceFileExtension(fileName, ".zip");
@@ -161,7 +162,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
       File zippedFile = zipFileService.zipper(zipFilePath, List.of(file));
       log.info("Processing unzipped file: {}", file);
       Long id = fileShareService.uploadIngestionFlowFile(
-        organization.getOrganizationId(),
+        Objects.requireNonNull(organization.getOrganizationId()),
         ingestionFlowFileType,
         new FileSystemResource(zippedFile),
         authnService.getAccessToken(ipaCodeFile)
@@ -171,7 +172,7 @@ public abstract class BaseMigrationFileTypeHandlerActivity<T extends MigrationFi
         .fileName(file.getFileName().toString())
         .fileSize(file.toFile().length())
         .ingestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.fromValue(ingestionFlowFileType.getValue()))
-        .organizationId(organization.getOrganizationId())
+        .organizationId(Objects.requireNonNull(organization.getOrganizationId()))
         .operatorExternalId(upload.getUpdateOperatorExternalId())
         .filePathName(file.getFileName().toString())
         .status(IngestionFlowFileStatus.UPLOADED)

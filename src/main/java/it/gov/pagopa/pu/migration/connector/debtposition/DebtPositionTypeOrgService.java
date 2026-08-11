@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.migration.connector.debtposition;
 
-import it.gov.pagopa.pu.debtposition.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 
 import java.util.Optional;
 

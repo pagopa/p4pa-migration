@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion.debtpositiontypeorgperator;
 
-import it.gov.pagopa.pu.debtposition.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.debtposition.DebtPositionTypeOrgService;
 import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
@@ -35,8 +35,6 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
 
   @Mock
   private DebtPosTypeOrgOperatorsErrorsArchiverService errorsArchiverServiceMock;
-  @Mock
-  private Path workingDirectory;
   @Mock
   private OrganizationService organizationServiceMock;
   @Mock

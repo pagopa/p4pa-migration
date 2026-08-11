@@ -1,11 +1,11 @@
 package it.gov.pagopa.pu.migration.connector.debtposition.client;
 
-import it.gov.pagopa.pu.debtposition.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.migration.connector.debtposition.config.DebtPositionApisHolder;
+import it.gov.pagopa.pu.migration.exception.common.RestInvokeNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 @Lazy
 @Service
@@ -22,7 +22,7 @@ public class DebtPositionTypeOrgClient {
         try {
             return debtPositionApisHolder.getDebtPositionTypeOrgEntityApi(accessToken)
                     .crudGetDebtpositiontypeorg(String.valueOf(debtPositionTypeOrgId));
-        } catch (HttpClientErrorException.NotFound e){
+        } catch (RestInvokeNotFoundException e){
             log.info("Cannot find DebtPositionTypeOrg having id {}", debtPositionTypeOrgId);
             return null;
         }
@@ -34,7 +34,7 @@ public class DebtPositionTypeOrgClient {
         try {
             return debtPositionApisHolder.getDebtPositionTypeOrgSearchControllerApi(accessToken)
                     .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(orgId, code);
-        } catch (HttpClientErrorException.NotFound e){
+        } catch (RestInvokeNotFoundException e){
             log.info("Cannot find DebtPositionTypeOrg having organizationId {} and code {}", orgId, code);
             return null;
         }
