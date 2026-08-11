@@ -1,10 +1,10 @@
 package it.gov.pagopa.pu.migration.connector.processexecutions.client;
 
 import it.gov.pagopa.pu.migration.connector.processexecutions.config.ProcessExecutionsApisHolder;
+import it.gov.pagopa.pu.migration.exception.common.RestInvokeNotFoundException;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 @Slf4j
 @Service
@@ -22,7 +22,7 @@ public class IngestionFlowFileEntityClient {
       log.debug("Fetching ingestion flow file with ID [{}]", ingestionFlowFileId);
       return processExecutionsApisHolder.getIngestionFlowFileEntityControllerApi(accessToken)
         .crudGetIngestionflowfile(String.valueOf(ingestionFlowFileId));
-    } catch (HttpClientErrorException.NotFound e) {
+    } catch (RestInvokeNotFoundException e) {
       log.info("Cannot find IngestionFlowFile with ID [{}]", ingestionFlowFileId);
       return null;
     }

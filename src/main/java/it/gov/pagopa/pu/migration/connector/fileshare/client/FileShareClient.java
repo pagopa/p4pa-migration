@@ -38,11 +38,12 @@ public class FileShareClient {
       log.error(err);
       throw new IngestionFlowFileAlreadyProcessedException(err);
     }
+
   }
 
   public Resource downloadIngestionFlowErrorsFile(Long organizationId, Long ingestionFlowFileId, String accessToken) {
     return apisHolder.getIngestionFlowFileApi(accessToken)
-      .downloadIngestionFlowErrorsFile(organizationId,ingestionFlowFileId);
+      .downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId);
   }
 
 }

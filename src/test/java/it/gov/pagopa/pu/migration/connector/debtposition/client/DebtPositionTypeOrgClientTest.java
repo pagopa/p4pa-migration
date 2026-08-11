@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.debtpositions.client.generated.DebtPositionTypeOrgEntity
 import it.gov.pagopa.pu.debtpositions.client.generated.DebtPositionTypeOrgSearchControllerApi;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.migration.connector.debtposition.config.DebtPositionApisHolder;
+import it.gov.pagopa.pu.migration.exception.common.RestInvokeNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
 
 import static org.mockito.Mockito.when;
 
@@ -92,7 +92,7 @@ class DebtPositionTypeOrgClientTest {
     when(debtPositionApisHolderMock.getDebtPositionTypeOrgEntityApi(accessToken))
       .thenReturn(debtPositionTypeOrgEntityApiMock);
     when(debtPositionTypeOrgEntityApiMock.crudGetDebtpositiontypeorg(debtPositionTypeOrgId+""))
-      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
 
     // When
     DebtPositionTypeOrg result = debtPositionTypeOrgClient.getById(debtPositionTypeOrgId, accessToken);

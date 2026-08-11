@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.migration.connector.processexecutions.client;
 
 import it.gov.pagopa.pu.migration.connector.processexecutions.config.ProcessExecutionsApisHolder;
+import it.gov.pagopa.pu.migration.exception.common.RestInvokeNotFoundException;
 import it.gov.pagopa.pu.processexecutions.client.generated.IngestionFlowFileControllerApi;
 import it.gov.pagopa.pu.processexecutions.client.generated.IngestionFlowFileEntityControllerApi;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
@@ -13,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -72,7 +72,7 @@ class IngestionFlowFileEntityClientTest {
       .thenReturn(ingestionFlowFileEntityControllerApiMock);
 
     when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileId+""))
-      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
 
     IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
@@ -108,7 +108,7 @@ class IngestionFlowFileEntityClientTest {
     when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
       .thenReturn(ingestionFlowFileEntityControllerApiMock);
     when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileIdString))
-      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
 
     // When
     IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
