@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.migration.connector.debtposition.client;
 
-import it.gov.pagopa.pu.debtposition.client.generated.DebtPositionTypeOrgEntityControllerApi;
-import it.gov.pagopa.pu.debtposition.client.generated.DebtPositionTypeOrgSearchControllerApi;
-import it.gov.pagopa.pu.debtposition.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.debtpositions.client.generated.DebtPositionTypeOrgEntityControllerApi;
+import it.gov.pagopa.pu.debtpositions.client.generated.DebtPositionTypeOrgSearchControllerApi;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.migration.connector.debtposition.config.DebtPositionApisHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -14,6 +14,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -49,9 +51,9 @@ class DebtPositionTypeOrgClientTest {
         String code = "CODE";
         DebtPositionTypeOrg expectedResult = new DebtPositionTypeOrg();
 
-        Mockito.when(debtPositionApisHolderMock.getDebtPositionTypeOrgSearchControllerApi(accessToken))
+        when(debtPositionApisHolderMock.getDebtPositionTypeOrgSearchControllerApi(accessToken))
                 .thenReturn(debtPositionTypeOrgSearchApiMock);
-        Mockito.when(debtPositionTypeOrgSearchApiMock.crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(orgId, code))
+        when(debtPositionTypeOrgSearchApiMock.crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(orgId, code))
                 .thenReturn(expectedResult);
 
         // When
@@ -69,9 +71,9 @@ class DebtPositionTypeOrgClientTest {
     Long debtPositionTypeOrgId = 0L;
     DebtPositionTypeOrg expectedResult = new DebtPositionTypeOrg();
 
-    Mockito.when(debtPositionApisHolderMock.getDebtPositionTypeOrgEntityApi(accessToken))
+    when(debtPositionApisHolderMock.getDebtPositionTypeOrgEntityApi(accessToken))
       .thenReturn(debtPositionTypeOrgEntityApiMock);
-    Mockito.when(debtPositionTypeOrgEntityApiMock.crudGetDebtpositiontypeorg(debtPositionTypeOrgId+""))
+    when(debtPositionTypeOrgEntityApiMock.crudGetDebtpositiontypeorg(debtPositionTypeOrgId+""))
       .thenReturn(expectedResult);
 
     // When
@@ -87,9 +89,9 @@ class DebtPositionTypeOrgClientTest {
     String accessToken = "ACCESSTOKEN";
     Long debtPositionTypeOrgId = 0L;
 
-    Mockito.when(debtPositionApisHolderMock.getDebtPositionTypeOrgEntityApi(accessToken))
+    when(debtPositionApisHolderMock.getDebtPositionTypeOrgEntityApi(accessToken))
       .thenReturn(debtPositionTypeOrgEntityApiMock);
-    Mockito.when(debtPositionTypeOrgEntityApiMock.crudGetDebtpositiontypeorg(debtPositionTypeOrgId+""))
+    when(debtPositionTypeOrgEntityApiMock.crudGetDebtpositiontypeorg(debtPositionTypeOrgId+""))
       .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
 
     // When

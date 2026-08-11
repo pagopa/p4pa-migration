@@ -56,7 +56,7 @@ val micrometerVersion = "1.7.0"
 val httpClientVersion = "5.6.1"
 val httpCoreVersion = "5.4.2"
 val kafkaAppender = "0.2.0-RC2"
-val lz4JavaVersion = "1.11.0"
+val lz4JavaVersion = "1.11.1"
 val bouncycastleVersion = "1.84"
 val postgresJdbcVersion = "42.7.13"
 val podamVersion = "8.0.2.RELEASE"
@@ -244,7 +244,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-auth.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
   invokerPackage.set("it.gov.pagopa.pu.auth.generated")
-  apiPackage.set("it.gov.pagopa.pu.auth.controller.generated")
+  apiPackage.set("it.gov.pagopa.pu.auth.client.generated")
   modelPackage.set("it.gov.pagopa.pu.auth.dto.generated")
   configOptions.set(
     mapOf(
@@ -275,7 +275,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-fileshare.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.fileshare.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.fileshare.generated")
+  apiPackage.set("it.gov.pagopa.pu.fileshare.client.generated")
   modelPackage.set("it.gov.pagopa.pu.fileshare.dto.generated")
   typeMappings.set(
     mapOf(
@@ -312,8 +313,9 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-process-executions.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.p4paprocessexecutions.controller.generated")
-  modelPackage.set("it.gov.pagopa.pu.p4paprocessexecutions.dto.generated")
+  invokerPackage.set("it.gov.pagopa.pu.processexecutions.generated")
+  apiPackage.set("it.gov.pagopa.pu.processexecutions.client.generated")
+  modelPackage.set("it.gov.pagopa.pu.processexecutions.dto.generated")
   typeMappings.set(
     mapOf(
       "LocalDateTime" to "java.time.LocalDateTime"
@@ -381,9 +383,9 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-debt-positions.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  invokerPackage.set("it.gov.pagopa.pu.debtposition.generated")
-  apiPackage.set("it.gov.pagopa.pu.debtposition.client.generated")
-  modelPackage.set("it.gov.pagopa.pu.debtposition.dto.generated")
+  invokerPackage.set("it.gov.pagopa.pu.debtpositions.generated")
+  apiPackage.set("it.gov.pagopa.pu.debtpositions.client.generated")
+  modelPackage.set("it.gov.pagopa.pu.debtpositions.dto.generated")
   typeMappings.set(
     mapOf(
       "LocalDateTime" to "java.time.LocalDateTime",
