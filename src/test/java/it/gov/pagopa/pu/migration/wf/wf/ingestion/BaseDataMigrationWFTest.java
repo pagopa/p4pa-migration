@@ -11,8 +11,8 @@ import it.gov.pagopa.pu.migration.wf.activity.UploadsStatusUpdateActivity;
 import it.gov.pagopa.pu.migration.wf.activity.ingestion.MigrationFileTypeHandlerActivity;
 import it.gov.pagopa.pu.migration.wf.config.stub.DataMigrationWfConfig;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -27,8 +27,9 @@ import org.springframework.context.ApplicationContext;
 import java.time.Duration;
 import java.util.List;
 
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public abstract class BaseDataMigrationWFTest<A extends MigrationFileTypeHandlerActivity> {
 
@@ -47,16 +48,16 @@ public abstract class BaseDataMigrationWFTest<A extends MigrationFileTypeHandler
     DataMigrationWfConfig configMock = mock(DataMigrationWfConfig.class);
     ApplicationContext applicationContextMock = mock(ApplicationContext.class);
 
-    Mockito.when(configMock.buildUploadsStatusUpdateActivityStub()).thenReturn(uploadsStatusUpdateActivityMock);
-    Mockito.when(configMock.buildIngestionFlowFileRetrieverActivityStub()).thenReturn(ingestionFlowFileRetrieverActivityMock);
-    Mockito.when(configMock.buildUploadDetailsUpdateActivityStub()).thenReturn(uploadDetailsUpdateActivityMock);
+    when(configMock.buildUploadsStatusUpdateActivityStub()).thenReturn(uploadsStatusUpdateActivityMock);
+    when(configMock.buildIngestionFlowFileRetrieverActivityStub()).thenReturn(ingestionFlowFileRetrieverActivityMock);
+    when(configMock.buildUploadDetailsUpdateActivityStub()).thenReturn(uploadDetailsUpdateActivityMock);
 
     Pair<OngoingStubbing<A>, Class<A>> stub2mockClass = getMigrationFileTypeHandlerActivityMockConfiguration(configMock);
-    migrationFileTypeHandlerActivityMock = Mockito.mock(stub2mockClass.getRight());
+    migrationFileTypeHandlerActivityMock = mock(stub2mockClass.getRight());
     stub2mockClass.getLeft()
       .thenReturn(migrationFileTypeHandlerActivityMock);
 
-    Mockito.when(applicationContextMock.getBean(DataMigrationWfConfig.class)).thenReturn(configMock);
+    when(applicationContextMock.getBean(DataMigrationWfConfig.class)).thenReturn(configMock);
 
     wf = buildWf();
     wf.setApplicationContext(applicationContextMock);
@@ -84,15 +85,15 @@ public abstract class BaseDataMigrationWFTest<A extends MigrationFileTypeHandler
       .errorDescription("DUMMY")
       .build();
 
-    Mockito.when(migrationFileTypeHandlerActivityMock.processFile(uploadId))
+    when(migrationFileTypeHandlerActivityMock.processFile(uploadId))
       .thenThrow(new RuntimeException("DUMMY"));
 
     // When
     wf.migrate(uploadId);
 
     // Then
-    Mockito.verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
-    Mockito.verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.PROCESSING, UploadsStatusEnum.ERROR, expectedResult);
+    verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
+    verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.PROCESSING, UploadsStatusEnum.ERROR, expectedResult);
   }
 
   @Test
@@ -123,13 +124,13 @@ public abstract class BaseDataMigrationWFTest<A extends MigrationFileTypeHandler
       .errorDescription("DUMMY")
       .status(IngestionFlowFileStatus.ERROR);
 
-    Mockito.when(migrationFileTypeHandlerActivityMock.processFile(uploadId))
+    when(migrationFileTypeHandlerActivityMock.processFile(uploadId))
       .thenReturn(expectedResult);
 
-    Mockito.when(uploadDetailsUpdateActivityMock.saveDetail(UploadDetailsMapper.map(uploadId, ingestionFlowFileAtStart)))
+    when(uploadDetailsUpdateActivityMock.saveDetail(UploadDetailsMapper.map(uploadId, ingestionFlowFileAtStart)))
       .thenReturn(storedUploadDetails);
 
-    Mockito.when(ingestionFlowFileRetrieverActivityMock.getIngestionFlowFile(ingestionFlowFileId))
+    when(ingestionFlowFileRetrieverActivityMock.getIngestionFlowFile(ingestionFlowFileId))
       .thenReturn(ingestionFlowFileError);
 
     try (MockedStatic<Workflow> workflowMockedStatic = Mockito.mockStatic(Workflow.class)) {
@@ -142,9 +143,9 @@ public abstract class BaseDataMigrationWFTest<A extends MigrationFileTypeHandler
         Something went wrong while waiting upload details processing:
         An error occurred while importing ingestionFlowFileId 10 having type DP_INSTALLMENTS: DUMMY""",
         expectedResult.getErrorDescription());
-      Mockito.verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
-      Mockito.verify(uploadDetailsUpdateActivityMock).updateDetailStatus(uploadDetailId, ingestionFlowFileError);
-      Mockito.verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.PROCESSING, UploadsStatusEnum.ERROR, expectedResult);
+      verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
+      verify(uploadDetailsUpdateActivityMock).updateDetailStatus(uploadDetailId, ingestionFlowFileError);
+      verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.PROCESSING, UploadsStatusEnum.ERROR, expectedResult);
 
       workflowMockedStatic.verifyNoMoreInteractions();
     }
@@ -182,13 +183,13 @@ public abstract class BaseDataMigrationWFTest<A extends MigrationFileTypeHandler
       .errorDescription(null)
       .status(IngestionFlowFileStatus.COMPLETED);
 
-    Mockito.when(migrationFileTypeHandlerActivityMock.processFile(uploadId))
+    when(migrationFileTypeHandlerActivityMock.processFile(uploadId))
       .thenReturn(expectedResult);
 
-    Mockito.when(uploadDetailsUpdateActivityMock.saveDetail(UploadDetailsMapper.map(uploadId, ingestionFlowFileAtStart)))
+    when(uploadDetailsUpdateActivityMock.saveDetail(UploadDetailsMapper.map(uploadId, ingestionFlowFileAtStart)))
         .thenReturn(storedUploadDetails);
 
-    Mockito.when(ingestionFlowFileRetrieverActivityMock.getIngestionFlowFile(ingestionFlowFileId))
+    when(ingestionFlowFileRetrieverActivityMock.getIngestionFlowFile(ingestionFlowFileId))
       .thenReturn(ingestionFlowFileAtStart)
       .thenReturn(ingestionFlowFileProcessing)
       .thenReturn(ingestionFlowFileCompleted);
@@ -198,9 +199,9 @@ public abstract class BaseDataMigrationWFTest<A extends MigrationFileTypeHandler
       wf.migrate(uploadId);
 
       // Then
-      Mockito.verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
-      Mockito.verify(uploadDetailsUpdateActivityMock).updateDetailStatus(uploadDetailId, ingestionFlowFileCompleted);
-      Mockito.verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.PROCESSING, UploadsStatusEnum.COMPLETED, expectedResult);
+      verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
+      verify(uploadDetailsUpdateActivityMock).updateDetailStatus(uploadDetailId, ingestionFlowFileCompleted);
+      verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.PROCESSING, UploadsStatusEnum.COMPLETED, expectedResult);
       workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofMinutes(1)), times(1));
       workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofMinutes(2)), times(1));
     }

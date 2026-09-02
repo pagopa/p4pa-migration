@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.migration.repository;
 
 import it.gov.pagopa.pu.migration.model.UploadDetails;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

@@ -1,7 +1,9 @@
 package it.gov.pagopa.pu.migration.exception;
 
-public class InvalidAccessTokenException extends RuntimeException {
+import it.gov.pagopa.pu.migration.exception.common.BaseBusinessException;
+
+public class InvalidAccessTokenException extends BaseBusinessException {
   public InvalidAccessTokenException(String message) {
-    super(message);
+    super("INVALID_ACCESS_TOKEN", message);
   }
 }
