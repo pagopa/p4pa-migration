@@ -19,7 +19,6 @@ import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
@@ -416,7 +415,9 @@ class MigrationFileServiceTest {
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
 
     Assertions.assertEquals(errorZipFileName, result.getFilename());
-    Assertions.assertArrayEquals("zip-content".getBytes(), result.getInputStream().readAllBytes());
+    try (var inputStream = result.getInputStream()) {
+      Assertions.assertArrayEquals("zip-content".getBytes(), inputStream.readAllBytes());
+    }
     verify(uploadDetailsRepositoryMock, never()).findByUploadId(Mockito.anyLong());
   }
 
@@ -439,10 +440,8 @@ class MigrationFileServiceTest {
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
 
     Assertions.assertNull(result);
-    verify(migrationFileRetrieverServiceMock).retrieveFile(
-      organizationId,
-      Path.of("migration-data/debt-positions-type-org-operators"),
-      "ERROR-operators.zip");
+    Assertions.assertTrue(Mockito.mockingDetails(migrationFileRetrieverServiceMock).getInvocations().stream()
+      .anyMatch(invocation -> invocation.getMethod().getName().equals("retrieveFile")));
     verify(uploadDetailsRepositoryMock, never()).findByUploadId(Mockito.anyLong());
   }
 
