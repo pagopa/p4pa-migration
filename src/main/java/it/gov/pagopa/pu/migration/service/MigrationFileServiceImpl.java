@@ -17,15 +17,20 @@ import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
+import it.gov.pagopa.pu.migration.utils.AESUtils;
+import it.gov.pagopa.pu.migration.utils.Utilities;
 import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
@@ -128,6 +133,10 @@ public class MigrationFileServiceImpl implements MigrationFileService {
       throw new AuthorizationDeniedException("UploadId not related to requested organization");
     }
 
+    if (uploads.getFileType() == MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS) {
+      return getDebtPositionTypeOrgOperatorsErrorsZip(uploads);
+    }
+
     List<UploadDetails> uploadDetails = uploadDetailsRepository.findByUploadId(uploadId);
     if (uploadDetails.isEmpty()) {
       throw new EntityNotFoundException("Cannot find UploadDetails for uploadId " + uploadId);
@@ -160,5 +169,25 @@ public class MigrationFileServiceImpl implements MigrationFileService {
     }
 
     return zipFileService.zipper(pdfResources);
+  }
+
+  private Resource getDebtPositionTypeOrgOperatorsErrorsZip(Uploads upload) {
+    String errorZipFileName = "ERROR-" + Utilities.replaceFileExtension(upload.getFileName(), ".zip");
+    Path errorDirectory = fileStorerService.buildOrganizationBasePath(upload.getOrganizationId())
+      .resolve(upload.getFilePathName())
+      .resolve(foldersPathsConfig.getProcessTargetSubFolders().getErrors());
+    Path encryptedErrorZip = errorDirectory.resolve(errorZipFileName + AESUtils.CIPHER_EXTENSION);
+
+    if (!Files.isRegularFile(encryptedErrorZip)) {
+      log.warn("Error ZIP not found for uploadId {}: {}", upload.getUploadId(), encryptedErrorZip);
+      return null;
+    }
+
+    return new InputStreamResource(fileStorerService.decryptFile(errorDirectory, errorZipFileName)) {
+      @Override
+      public String getFilename() {
+        return errorZipFileName;
+      }
+    };
   }
 }

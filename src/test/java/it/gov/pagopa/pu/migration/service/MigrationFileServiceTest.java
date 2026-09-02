@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,11 +33,19 @@ import org.springframework.core.io.Resource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class MigrationFileServiceTest {
+
+  @TempDir
+  Path tempDir;
 
   @Mock
   private FileValidatorService validatorServiceMock;
@@ -159,7 +168,7 @@ class MigrationFileServiceTest {
     Assertions.assertSame(storedUploads, result.getKey());
     Assertions.assertSame(expectedWfCreated, result.getValue());
 
-    Mockito.verify(validatorServiceMock).validateMultipartFile(file);
+    verify(validatorServiceMock).validateMultipartFile(file);
   }
 
   @Test
@@ -317,7 +326,7 @@ class MigrationFileServiceTest {
 
     // When
     Assertions.assertSame(expectedResult, result);
-    Mockito.verify(service).getUpload(orgIpaCode, uploadId, loggedUser);
+    verify(service).getUpload(orgIpaCode, uploadId, loggedUser);
   }
 //endregion getUpload
 
@@ -348,7 +357,7 @@ class MigrationFileServiceTest {
 
     // When
     Assertions.assertSame(expectedResult, result);
-    Mockito.verify(service).getUpload(orgIpaCode, uploadId, loggedUser);
+    verify(service).getUpload(orgIpaCode, uploadId, loggedUser);
   }
 
   @Test
@@ -380,6 +389,70 @@ class MigrationFileServiceTest {
 //endregion getUpload
 
 //region test getUploadsErrorsZip
+  @Test
+  void givenDebtPositionTypeOrgOperatorsErrorZipWhenGetUploadsErrorsZipThenReturnDecryptedResource() throws Exception {
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+    String filePathName = "migration-data/debt-positions-type-org-operators";
+    String fileName = "operators.csv";
+    String errorZipFileName = "ERROR-operators.zip";
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    Uploads uploads = Uploads.builder()
+      .uploadId(uploadId)
+      .organizationId(organizationId)
+      .fileType(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS)
+      .filePathName(filePathName)
+      .fileName(fileName)
+      .build();
+    Path organizationDirectory = tempDir.resolve(String.valueOf(organizationId));
+    Path errorDirectory = organizationDirectory.resolve(filePathName).resolve("errors");
+    Files.createDirectories(errorDirectory);
+    Files.createFile(errorDirectory.resolve(errorZipFileName + ".cipher"));
+
+    FoldersPathsConfig.ProcessTargetSubFolders subFolders = new FoldersPathsConfig.ProcessTargetSubFolders();
+    subFolders.setErrors("errors");
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+    when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationDirectory);
+    when(foldersPathsConfigMock.getProcessTargetSubFolders()).thenReturn(subFolders);
+    when(fileStorerServiceMock.decryptFile(errorDirectory, errorZipFileName))
+      .thenReturn(new ByteArrayInputStream("zip-content".getBytes()));
+
+    Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
+
+    Assertions.assertEquals(errorZipFileName, result.getFilename());
+    Assertions.assertArrayEquals("zip-content".getBytes(), result.getInputStream().readAllBytes());
+    verify(uploadDetailsRepositoryMock, never()).findByUploadId(Mockito.anyLong());
+  }
+
+  @Test
+  void givenDebtPositionTypeOrgOperatorsWithoutErrorZipWhenGetUploadsErrorsZipThenReturnNull() {
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    Uploads uploads = Uploads.builder()
+      .uploadId(uploadId)
+      .organizationId(organizationId)
+      .fileType(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS)
+      .filePathName("migration-data/debt-positions-type-org-operators")
+      .fileName("operators.csv")
+      .build();
+    FoldersPathsConfig.ProcessTargetSubFolders subFolders = new FoldersPathsConfig.ProcessTargetSubFolders();
+    subFolders.setErrors("errors");
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+    when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
+      .thenReturn(tempDir.resolve(String.valueOf(organizationId)));
+    when(foldersPathsConfigMock.getProcessTargetSubFolders()).thenReturn(subFolders);
+
+    Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
+
+    Assertions.assertNull(result);
+    verify(uploadDetailsRepositoryMock, never()).findByUploadId(Mockito.anyLong());
+  }
+
   @Test
   void givenUploadDetailsWithErrorsWhenGetUploadsErrorsZipThenReturnResource() {
     long organizationId = 1L;
@@ -475,7 +548,7 @@ class MigrationFileServiceTest {
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
     Assertions.assertNull(result);
-    Mockito.verify(zipFileServiceMock, Mockito.never()).zipper(Mockito.anyList());
+    verify(zipFileServiceMock, never()).zipper(Mockito.anyList());
   }
 
 
@@ -522,7 +595,7 @@ class MigrationFileServiceTest {
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
     Assertions.assertNull(result);
-    Mockito.verify(zipFileServiceMock, Mockito.never()).zipper(Mockito.anyList());
+    verify(zipFileServiceMock, never()).zipper(Mockito.anyList());
   }
 
   @Test
@@ -576,7 +649,7 @@ class MigrationFileServiceTest {
 
     Assertions.assertSame(zipResourceMock, result);
     // Verify that zipper was called with only one file (the successful one)
-    Mockito.verify(zipFileServiceMock).zipper(Mockito.argThat(list -> list.size() == 1));
+    verify(zipFileServiceMock).zipper(Mockito.argThat(list -> list.size() == 1));
   }
 //endregion
 }
