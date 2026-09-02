@@ -17,6 +17,7 @@ import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
+import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -34,7 +34,6 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -43,9 +42,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MigrationFileServiceTest {
-
-  @TempDir
-  Path tempDir;
 
   @Mock
   private FileValidatorService validatorServiceMock;
@@ -65,6 +61,8 @@ class MigrationFileServiceTest {
   private FileShareService fileShareServiceMock;
   @Mock
   private AuthnService authnService;
+  @Mock
+  private MigrationFileRetrieverService migrationFileRetrieverServiceMock;
 
   private MigrationFileService service;
 
@@ -79,7 +77,8 @@ class MigrationFileServiceTest {
       wfInvokerServiceMock,
       zipFileServiceMock,
       fileShareServiceMock,
-      authnService);
+      authnService,
+      migrationFileRetrieverServiceMock);
   }
 
   @AfterEach
@@ -406,17 +405,8 @@ class MigrationFileServiceTest {
       .filePathName(filePathName)
       .fileName(fileName)
       .build();
-    Path organizationDirectory = tempDir.resolve(String.valueOf(organizationId));
-    Path errorDirectory = organizationDirectory.resolve(filePathName).resolve("errors");
-    Files.createDirectories(errorDirectory);
-    Files.createFile(errorDirectory.resolve(errorZipFileName + ".cipher"));
-
-    FoldersPathsConfig.ProcessTargetSubFolders subFolders = new FoldersPathsConfig.ProcessTargetSubFolders();
-    subFolders.setErrors("errors");
     when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
-    when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationDirectory);
-    when(foldersPathsConfigMock.getProcessTargetSubFolders()).thenReturn(subFolders);
-    when(fileStorerServiceMock.decryptFile(errorDirectory, errorZipFileName))
+    when(migrationFileRetrieverServiceMock.retrieveFile(organizationId, Path.of(filePathName), errorZipFileName))
       .thenReturn(new ByteArrayInputStream("zip-content".getBytes()));
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
@@ -440,16 +430,15 @@ class MigrationFileServiceTest {
       .filePathName("migration-data/debt-positions-type-org-operators")
       .fileName("operators.csv")
       .build();
-    FoldersPathsConfig.ProcessTargetSubFolders subFolders = new FoldersPathsConfig.ProcessTargetSubFolders();
-    subFolders.setErrors("errors");
     when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
-    when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
-      .thenReturn(tempDir.resolve(String.valueOf(organizationId)));
-    when(foldersPathsConfigMock.getProcessTargetSubFolders()).thenReturn(subFolders);
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
 
     Assertions.assertNull(result);
+    verify(migrationFileRetrieverServiceMock).retrieveFile(
+      organizationId,
+      Path.of("migration-data/debt-positions-type-org-operators"),
+      "ERROR-operators.zip");
     verify(uploadDetailsRepositoryMock, never()).findByUploadId(Mockito.anyLong());
   }
 

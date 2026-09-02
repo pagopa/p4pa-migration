@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion;
 
+import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.exception.InvalidFileException;
 import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
@@ -13,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -43,7 +45,11 @@ class MigrationFileRetrieverServiceTest {
 
   @BeforeEach
   void setup() throws IOException {
-    service = new MigrationFileRetrieverService(TEMPORARY_PATH, fileStorerServiceMock, fileValidatorServiceMock, zipFileServiceMock);
+    FoldersPathsConfig foldersPathsConfig = new FoldersPathsConfig();
+    FoldersPathsConfig.ProcessTargetSubFolders processTargetSubFolders = new FoldersPathsConfig.ProcessTargetSubFolders();
+    processTargetSubFolders.setErrors("errors");
+    foldersPathsConfig.setProcessTargetSubFolders(processTargetSubFolders);
+    service = new MigrationFileRetrieverService(TEMPORARY_PATH, foldersPathsConfig, fileStorerServiceMock, fileValidatorServiceMock, zipFileServiceMock);
     zipFile = tempDir.resolve("encryptedFile.zip");
     try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipFile))) {
       addZipEntry(zos, "file1.txt", "This is the content of file1.");
@@ -160,6 +166,25 @@ class MigrationFileRetrieverServiceTest {
     //When & Then
     assertThrows(InvalidFileException.class,
       () -> service.retrieveAndUnzipFile(organizationId, sourcePath, filename), "ZIP validation failed");
+  }
+
+  @Test
+  void givenArchivedErrorFileWhenRetrieveFileThenReturnDecryptedStream() throws IOException {
+    Long organizationId = 1L;
+    Path organizationPath = tempDir.resolve(String.valueOf(organizationId));
+    Path sourcePath = Path.of("migration-data", "debt-positions-type-org-operators");
+    String filename = "ERROR-operators.zip";
+    Path errorDirectory = organizationPath.resolve(sourcePath).resolve("errors");
+    Files.createDirectories(errorDirectory);
+    Files.createFile(errorDirectory.resolve(filename + AESUtils.CIPHER_EXTENSION));
+    InputStream expectedStream = new java.io.ByteArrayInputStream("zip-content".getBytes());
+
+    when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationPath);
+    when(fileStorerServiceMock.decryptFile(errorDirectory, filename)).thenReturn(expectedStream);
+
+    InputStream result = service.retrieveFile(organizationId, sourcePath, filename);
+
+    assertSame(expectedStream, result);
   }
 
   /**
