@@ -289,8 +289,8 @@ class AuthorizationServiceTest {
       expectedUserInfo = new UserInfo();
       expectedUserInfo.setMappedExternalUserId("USERID");
       expectedUserInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of(AuthorizationService.ROLE_ADMIN))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of(""), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of(AuthorizationService.ROLE_ADMIN), List.of())
       ));
     }
 
@@ -317,8 +317,8 @@ class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 
@@ -344,8 +344,8 @@ class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 

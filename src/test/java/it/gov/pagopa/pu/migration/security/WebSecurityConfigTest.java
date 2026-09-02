@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.migration.security;
 
+import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.migration.controller.generated.MigrationFileApi;
 import it.gov.pagopa.pu.migration.service.AuthorizationService;
 import it.gov.pagopa.pu.migration.service.MigrationFileService;
@@ -28,6 +29,8 @@ class WebSecurityConfigTest {
 
   @MockitoBean
   private AuthorizationService authorizationServiceMock;
+  @MockitoBean
+  private Tracer tracerMock;
 
   @Test
   void givenURLWhenWithoutAccessTokenThenReturn403() throws Exception {

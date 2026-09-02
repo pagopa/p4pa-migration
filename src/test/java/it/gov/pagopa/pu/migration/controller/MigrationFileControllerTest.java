@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.migration.controller;
 
+import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
@@ -27,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -41,6 +43,8 @@ class MigrationFileControllerTest {
 
   @MockitoBean
   private MigrationFileService serviceMock;
+  @MockitoBean
+  private Tracer tracerMock;
 
   @AfterEach
   void clear(){
@@ -66,7 +70,7 @@ class MigrationFileControllerTest {
     UserInfo loggedUser = new UserInfo();
     SecurityUtilsTest.configureSecurityContext(loggedUser);
 
-    Mockito.when(serviceMock.upload(Mockito.eq(orgIpaCode), Mockito.eq(fileType), Mockito.eq(file), Mockito.same(loggedUser)))
+    when(serviceMock.upload(Mockito.eq(orgIpaCode), Mockito.eq(fileType), Mockito.eq(file), Mockito.same(loggedUser)))
       .thenReturn(Pair.of(upload, wfCreated));
 
     mockMvc.perform(multipart("/migration/organization/{orgIpaCode}/{migrationFileType}",orgIpaCode, fileType)
@@ -88,7 +92,7 @@ class MigrationFileControllerTest {
     List<Uploads> expectedResult = List.of(new Uploads());
     expectedResult.getFirst().setUploadId(1L);
 
-    Mockito.when(serviceMock.getUploads(Mockito.eq(orgIpaCode), Mockito.eq(fileType), Mockito.eq(status), Mockito.same(loggedUser)))
+    when(serviceMock.getUploads(Mockito.eq(orgIpaCode), Mockito.eq(fileType), Mockito.eq(status), Mockito.same(loggedUser)))
       .thenReturn(expectedResult);
 
     mockMvc.perform(get("/migration/organization/{orgIpaCode}",orgIpaCode)
@@ -110,7 +114,7 @@ class MigrationFileControllerTest {
     Uploads expectedResult = new Uploads();
     expectedResult.setUploadId(uploadId);
 
-    Mockito.when(serviceMock.getUpload(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
+    when(serviceMock.getUpload(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
       .thenReturn(expectedResult);
 
     mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}",orgIpaCode, uploadId)
@@ -130,7 +134,7 @@ class MigrationFileControllerTest {
     List<UploadDetails> expectedResult = List.of(new UploadDetails());
     expectedResult.getFirst().setUploadDetailId(1L);
 
-    Mockito.when(serviceMock.getUploadDetails(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
+    when(serviceMock.getUploadDetails(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
       .thenReturn(expectedResult);
 
     mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}/details",orgIpaCode, uploadId)
@@ -151,7 +155,7 @@ class MigrationFileControllerTest {
     UploadDetails expectedResult = new UploadDetails();
     expectedResult.setUploadDetailId(uploadDetailId);
 
-    Mockito.when(serviceMock.getUploadDetail(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.eq(uploadDetailId), Mockito.same(loggedUser)))
+    when(serviceMock.getUploadDetail(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.eq(uploadDetailId), Mockito.same(loggedUser)))
       .thenReturn(expectedResult);
 
     mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}/details/{uploadDetailId}",orgIpaCode, uploadId, uploadDetailId)
@@ -172,7 +176,7 @@ class MigrationFileControllerTest {
     byte[] fileContent = "result".getBytes();
     Resource expectedResult = new ByteArrayResource(fileContent);
 
-    Mockito.when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
+    when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
       .thenReturn(expectedResult);
 
     mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}/errors",orgIpaCode, uploadId)
@@ -189,7 +193,7 @@ class MigrationFileControllerTest {
     UserInfo loggedUser = new UserInfo();
     SecurityUtilsTest.configureSecurityContext(loggedUser);
 
-    Mockito.when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
+    when(serviceMock.getUploadsErrorsZip(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
       .thenReturn(null);
 
     mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}/errors",orgIpaCode, uploadId)

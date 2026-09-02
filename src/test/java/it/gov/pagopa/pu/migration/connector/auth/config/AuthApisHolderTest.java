@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.migration.connector.auth.config;
 
+import it.gov.pagopa.pu.migration.config.json.JsonConfig;
 import it.gov.pagopa.pu.migration.connector.BaseApiHolderTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,47 +13,65 @@ import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class AuthApisHolderTest extends BaseApiHolderTest {
-    @Mock
-    private RestTemplateBuilder restTemplateBuilderMock;
+  @Mock
+  private RestTemplateBuilder restTemplateBuilderMock;
 
-    private AuthApisHolder authApisHolder;
+  private AuthApisHolder apisHolder;
+  private AuthApiClientConfig apiClientConfig;
 
-    @BeforeEach
-    void setUp() {
-        Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
-        Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-        AuthApiClientConfig clientConfig = AuthApiClientConfig.builder()
-          .baseUrl("http://example.com")
-          .build();
-        authApisHolder = new AuthApisHolder(clientConfig, restTemplateBuilderMock);
-    }
+  @BeforeEach
+  void setUp() {
+    when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
+    when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
 
-    @AfterEach
-    void verifyNoMoreInteractions() {
-        Mockito.verifyNoMoreInteractions(
-                restTemplateBuilderMock,
-                restTemplateMock
-        );
-    }
+    apiClientConfig = AuthApiClientConfig.builder()
+      .baseUrl("http://example.com")
+      .maxAttempts(3)
+      .build();
+    apisHolder = new AuthApisHolder(apiClientConfig, restTemplateBuilderMock, new JsonConfig().objectMapperJackson3());
 
-    @Test
-    void whenGetAuthzApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
-        assertAuthenticationShouldBeSetInThreadSafeMode(
-                accessToken -> authApisHolder.getAuthzApi(accessToken)
-                        .getUserInfoFromMappedExternaUserId("externalUserId"),
-                new ParameterizedTypeReference<>() {},
-                authApisHolder::unload);
-    }
+    verifyHttpClientErrorJsonBodyHandlerConfiguration(apisHolder.getAuthnApi(null));
+  }
 
-    @Test
-    void whenGetAuthnApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
-        assertAuthenticationShouldBeSetInThreadSafeMode(
-                accessToken -> authApisHolder.getAuthnApi(accessToken)
-                        .getUserInfo(),
-                new ParameterizedTypeReference<>() {},
-                authApisHolder::unload);
-    }
+  @AfterEach
+  void verifyNoMoreInteractions() {
+    Mockito.verifyNoMoreInteractions(
+      restTemplateBuilderMock,
+      restTemplateMock
+    );
+  }
+
+  @Test
+  void testRetryConfiguration() {
+    assertRetry(apiClientConfig,
+      accessToken -> apisHolder.getAuthnApi(accessToken)
+        .getUserInfo(),
+      new ParameterizedTypeReference<>() {}
+    );
+  }
+
+  @Test
+  void whenGetAuthzApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken -> apisHolder.getAuthzApi(accessToken)
+        .getUserInfoFromMappedExternaUserId("externalUserId"),
+      new ParameterizedTypeReference<>() {
+      },
+      apisHolder::unload);
+  }
+
+  @Test
+  void whenGetAuthnApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken -> apisHolder.getAuthnApi(accessToken)
+        .getUserInfo(),
+      new ParameterizedTypeReference<>() {
+      },
+      apisHolder::unload);
+  }
 
 }

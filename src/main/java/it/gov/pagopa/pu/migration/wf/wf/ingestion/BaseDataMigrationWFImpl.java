@@ -13,8 +13,8 @@ import it.gov.pagopa.pu.migration.wf.config.stub.DataMigrationWfConfig;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
 import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -70,8 +70,6 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
 
   public void migrate(long uploadId) {
     log.info("Starting {} on uploadId {}", getClass().getSimpleName(), uploadId);
-    // FIXME: could start a new ingestion if there other organizationId uploads PROCESSING?
-    //  Or should we await as done in it.gov.pagopa.pu.workflow.wf.ingestionflow.debtposition.wfingestion.DebtPositionIngestionFlowWFImpl
     uploadsStatusUpdateActivity.updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
 
     MigrationFileResult result;

@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.migration.mapper;
 
 import it.gov.pagopa.pu.migration.model.UploadDetails;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 
 public class UploadDetailsMapper {
   private UploadDetailsMapper(){}
