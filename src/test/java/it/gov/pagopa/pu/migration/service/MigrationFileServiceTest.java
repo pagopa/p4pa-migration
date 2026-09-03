@@ -123,7 +123,7 @@ class MigrationFileServiceTest {
     long organizationId = 1L;
     String orgIpaCode = "IPACODE";
     MigrationFileTypeEnum migrationFileType = MigrationFileTypeEnum.ORGANIZATIONS;
-    MultipartFile file = Mockito.mock(MultipartFile.class);
+    MultipartFile file = mock(MultipartFile.class);
 
     String migrationFileSubFolder = "pathToFile";
     String filePath = "filePath";
@@ -177,7 +177,7 @@ class MigrationFileServiceTest {
     // Given
     String orgIpaCode = "IPACODE";
     MigrationFileTypeEnum migrationFileType = MigrationFileTypeEnum.ORGANIZATIONS;
-    MultipartFile file = Mockito.mock(MultipartFile.class);
+    MultipartFile file = mock(MultipartFile.class);
 
     UserInfo loggedUser = new UserInfo();
     loggedUser.setBrokerFiscalCode("ORGFC");
