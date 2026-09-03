@@ -69,6 +69,9 @@ val openCsvVersion = "5.12.0"
 val commonsBeanUtilsVersion = "1.11.0"
 val commonsLang3Version = "3.20.0"
 
+// CVE Security dependencies
+val tomcatEmbedCoreVersion = "11.0.25"
+
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -111,6 +114,9 @@ dependencies {
 
   //openCsv
   implementation("com.opencsv:opencsv:$openCsvVersion")
+
+  // CVE Security dependencies
+  implementation("org.apache.tomcat.embed:tomcat-embed-core:$tomcatEmbedCoreVersion")
 
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
