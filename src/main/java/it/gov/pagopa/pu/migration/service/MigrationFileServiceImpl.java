@@ -175,7 +175,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
 
   private Resource getDebtPositionTypeOrgOperatorsErrorsZip(Uploads upload) {
     String errorZipFileName = "ERROR-" + Utilities.replaceFileExtension(upload.getFileName(), ".zip");
-    InputStream errorZip = migrationFileRetrieverService.retrieveFile(
+    InputStream errorZip = migrationFileRetrieverService.retrieveErrorFile(
       upload.getOrganizationId(),
       Path.of(upload.getFilePathName()),
       errorZipFileName);

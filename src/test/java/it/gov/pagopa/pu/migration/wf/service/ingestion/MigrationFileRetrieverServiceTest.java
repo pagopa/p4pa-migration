@@ -169,7 +169,7 @@ class MigrationFileRetrieverServiceTest {
   }
 
   @Test
-  void givenArchivedErrorFileWhenRetrieveFileThenReturnDecryptedStream() throws IOException {
+  void givenArchivedErrorFileWhenRetrieveErrorFileThenReturnDecryptedStream() throws IOException {
     Long organizationId = 1L;
     Path organizationPath = tempDir.resolve(String.valueOf(organizationId));
     Path sourcePath = Path.of("migration-data", "debt-positions-type-org-operators");
@@ -182,7 +182,7 @@ class MigrationFileRetrieverServiceTest {
     when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationPath);
     when(fileStorerServiceMock.decryptFile(errorDirectory, filename)).thenReturn(expectedStream);
 
-    InputStream result = service.retrieveFile(organizationId, sourcePath, filename);
+    InputStream result = service.retrieveErrorFile(organizationId, sourcePath, filename);
 
     assertSame(expectedStream, result);
   }

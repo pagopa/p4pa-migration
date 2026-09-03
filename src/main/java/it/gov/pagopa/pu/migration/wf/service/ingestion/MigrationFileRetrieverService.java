@@ -104,7 +104,7 @@ public class MigrationFileRetrieverService {
         return plainFilePaths;
     }
 
-    public InputStream retrieveFile(Long organizationId, Path sourcePath, String filename) {
+    public InputStream retrieveErrorFile(Long organizationId, Path sourcePath, String filename) {
         Path errorDirectory = fileStorerService.buildOrganizationBasePath(organizationId)
                 .resolve(sourcePath)
                 .resolve(foldersPathsConfig.getProcessTargetSubFolders().getErrors());

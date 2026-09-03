@@ -409,7 +409,7 @@ class MigrationFileServiceTest {
       .fileName(fileName)
       .build();
     when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
-    when(migrationFileRetrieverServiceMock.retrieveFile(organizationId, Path.of(filePathName), errorZipFileName))
+    when(migrationFileRetrieverServiceMock.retrieveErrorFile(organizationId, Path.of(filePathName), errorZipFileName))
       .thenReturn(new ByteArrayInputStream("zip-content".getBytes()));
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
@@ -441,7 +441,7 @@ class MigrationFileServiceTest {
 
     Assertions.assertNull(result);
     Assertions.assertTrue(Mockito.mockingDetails(migrationFileRetrieverServiceMock).getInvocations().stream()
-      .anyMatch(invocation -> invocation.getMethod().getName().equals("retrieveFile")));
+      .anyMatch(invocation -> invocation.getMethod().getName().equals("retrieveErrorFile")));
     verify(uploadDetailsRepositoryMock, never()).findByUploadId(Mockito.anyLong());
   }
 
