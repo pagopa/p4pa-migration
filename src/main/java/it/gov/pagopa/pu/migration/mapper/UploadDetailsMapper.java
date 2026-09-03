@@ -3,6 +3,8 @@ package it.gov.pagopa.pu.migration.mapper;
 import it.gov.pagopa.pu.migration.model.UploadDetails;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 
+import java.util.Objects;
+
 public class UploadDetailsMapper {
   private UploadDetailsMapper(){}
 
@@ -20,6 +22,9 @@ public class UploadDetailsMapper {
       .numTotalRows(ingestionFlowFile.getNumTotalRows())
       .status(ingestionFlowFile.getStatus())
       .errorDescription(ingestionFlowFile.getErrorDescription())
+      .updateOperatorExternalId(Objects.requireNonNull(
+        ingestionFlowFile.getOperatorExternalId(),
+        "Ingestion flow file must have an authenticated operator"))
       .build();
   }
 }

@@ -148,12 +148,15 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     List<DebtPositionTypeOrgOperatorErrorDTO> errorList = new java.util.ArrayList<>();
     DebtPositionTypeOrgOperators savedEntity = new DebtPositionTypeOrgOperators();
     savedEntity.setOrganizationId(1L);
+    Uploads upload = new Uploads();
+    upload.setUpdateOperatorExternalId("authenticated-user");
     when(debtPositionTypeOrgOperatorsRepositoryMock.save(any(DebtPositionTypeOrgOperators.class))).thenReturn(savedEntity);
-    boolean consumed = service.consumeRow(1, dto, result, errorList, new Uploads());
+    boolean consumed = service.consumeRow(1, dto, result, errorList, upload);
     assertTrue(consumed);
     verify(organizationServiceMock).getOrganizationByIpaCode(anyString(), anyString());
     verify(debtPositionTypeOrgServiceMock).getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any());
-    verify(debtPositionTypeOrgOperatorsRepositoryMock).save(any(DebtPositionTypeOrgOperators.class));
+    verify(debtPositionTypeOrgOperatorsRepositoryMock).save(argThat(entity ->
+      "authenticated-user".equals(entity.getUpdateOperatorExternalId())));
   }
 
   @Test

@@ -20,10 +20,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Lazy
@@ -136,6 +133,9 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
         ));
         return false;
       }
+      entity.setUpdateOperatorExternalId(Objects.requireNonNull(
+        upload.getUpdateOperatorExternalId(),
+        "Upload must have an authenticated operator"));
 
       DebtPositionTypeOrgOperators savedEntity = repository.save(entity);
       log.info("Saved OperatorsDebtPositionTypeOrg: orgIpaCode={}, debtPositionTypeOrgCode={}, organizationId={}, debtPositionTypeOrgId={}",
