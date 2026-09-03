@@ -1,15 +1,18 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion;
 
+import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
+import it.gov.pagopa.pu.migration.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -27,6 +30,7 @@ public class MigrationFileRetrieverService {
      * The temporary directory used for working process.
      */
     private final Path tempDirectoryPath;
+    private final FoldersPathsConfig foldersPathsConfig;
 
     private final FileStorerService fileStorerService;
     private final FileValidatorService fileValidatorService;
@@ -34,11 +38,13 @@ public class MigrationFileRetrieverService {
 
     public MigrationFileRetrieverService(
       @Value("${folders.tmp}") String tempFolder,
+      FoldersPathsConfig foldersPathsConfig,
       FileStorerService fileStorerService,
       FileValidatorService fileValidatorService,
       ZipFileService zipFileService
     ) {
       this.tempDirectoryPath = Path.of(tempFolder);
+      this.foldersPathsConfig = foldersPathsConfig;
       this.fileStorerService = fileStorerService;
       this.fileValidatorService = fileValidatorService;
         this.zipFileService = zipFileService;
@@ -97,5 +103,20 @@ public class MigrationFileRetrieverService {
 
         log.debug("File process completed successfully for: {}", filenameNoCipher);
         return plainFilePaths;
+    }
+
+    public InputStream retrieveErrorFile(Long organizationId, Path sourcePath, String filename) {
+        String errorFilename = "ERROR-" + Utilities.replaceFileExtension(filename, ".zip");
+        Path errorDirectory = fileStorerService.buildOrganizationBasePath(organizationId)
+                .resolve(sourcePath)
+                .resolve(foldersPathsConfig.getProcessTargetSubFolders().getErrors());
+        Path encryptedFilePath = errorDirectory.resolve(errorFilename + AESUtils.CIPHER_EXTENSION);
+
+        if (!Files.isRegularFile(encryptedFilePath)) {
+            log.warn("File not found: {}", encryptedFilePath);
+            return null;
+        }
+
+        return fileStorerService.decryptFile(errorDirectory, errorFilename);
     }
 }

@@ -18,6 +18,7 @@ import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
+import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
@@ -33,6 +34,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,6 +62,8 @@ class MigrationFileServiceTest {
   private FileShareService fileShareServiceMock;
   @Mock
   private AuthnService authnService;
+  @Mock
+  private MigrationFileRetrieverService migrationFileRetrieverServiceMock;
 
   private MigrationFileService service;
 
@@ -73,7 +78,8 @@ class MigrationFileServiceTest {
       wfInvokerServiceMock,
       zipFileServiceMock,
       fileShareServiceMock,
-      authnService);
+      authnService,
+      migrationFileRetrieverServiceMock);
   }
 
   @AfterEach
@@ -385,6 +391,58 @@ class MigrationFileServiceTest {
 //endregion getUpload
 
 //region test getUploadsErrorsZip
+  @Test
+  void givenDebtPositionTypeOrgOperatorsErrorZipWhenGetUploadsErrorsZipThenReturnDecryptedResource() throws Exception {
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+    String filePathName = "migration-data/debt-positions-type-org-operators";
+    String fileName = "operators.csv";
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    Uploads uploads = Uploads.builder()
+      .uploadId(uploadId)
+      .organizationId(organizationId)
+      .fileType(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS)
+      .filePathName(filePathName)
+      .fileName(fileName)
+      .build();
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+    when(migrationFileRetrieverServiceMock.retrieveErrorFile(organizationId, Path.of(filePathName), fileName))
+      .thenReturn(new ByteArrayInputStream("zip-content".getBytes()));
+
+    Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
+
+    try (var inputStream = result.getInputStream()) {
+      Assertions.assertArrayEquals("zip-content".getBytes(), inputStream.readAllBytes());
+    }
+    verify(uploadDetailsRepositoryMock, never()).findByUploadId(Mockito.anyLong());
+  }
+
+  @Test
+  void givenDebtPositionTypeOrgOperatorsWithoutErrorZipWhenGetUploadsErrorsZipThenReturnNull() {
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    Uploads uploads = Uploads.builder()
+      .uploadId(uploadId)
+      .organizationId(organizationId)
+      .fileType(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS)
+      .filePathName("migration-data/debt-positions-type-org-operators")
+      .fileName("operators.csv")
+      .build();
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+
+    Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
+
+    Assertions.assertNull(result);
+    Assertions.assertTrue(Mockito.mockingDetails(migrationFileRetrieverServiceMock).getInvocations().stream()
+      .anyMatch(invocation -> invocation.getMethod().getName().equals("retrieveErrorFile")));
+    verify(uploadDetailsRepositoryMock, never()).findByUploadId(Mockito.anyLong());
+  }
+
   @Test
   void givenUploadDetailsWithErrorsWhenGetUploadsErrorsZipThenReturnResource() {
     long organizationId = 1L;

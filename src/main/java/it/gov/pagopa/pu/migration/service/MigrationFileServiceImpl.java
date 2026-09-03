@@ -17,15 +17,19 @@ import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
+import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,8 +46,9 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   private final ZipFileService zipFileService;
   private final FileShareService fileShareService;
   private final AuthnService authnService;
+  private final MigrationFileRetrieverService migrationFileRetrieverService;
 
-  public MigrationFileServiceImpl(FileValidatorService validatorService, FoldersPathsConfig foldersPathsConfig, FileStorerService fileStorerService, UploadsRepository uploadsRepository, UploadDetailsRepository uploadDetailsRepository, MigrationFileWfInvokerService wfInvokerService, ZipFileService zipFileService, FileShareService fileShareService, AuthnService authnService) {
+  public MigrationFileServiceImpl(FileValidatorService validatorService, FoldersPathsConfig foldersPathsConfig, FileStorerService fileStorerService, UploadsRepository uploadsRepository, UploadDetailsRepository uploadDetailsRepository, MigrationFileWfInvokerService wfInvokerService, ZipFileService zipFileService, FileShareService fileShareService, AuthnService authnService, MigrationFileRetrieverService migrationFileRetrieverService) {
     this.validatorService = validatorService;
     this.foldersPathsConfig = foldersPathsConfig;
     this.fileStorerService = fileStorerService;
@@ -53,6 +58,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
     this.zipFileService = zipFileService;
     this.fileShareService = fileShareService;
     this.authnService = authnService;
+    this.migrationFileRetrieverService = migrationFileRetrieverService;
   }
 
   @Override
@@ -128,6 +134,10 @@ public class MigrationFileServiceImpl implements MigrationFileService {
       throw new AuthorizationDeniedException("UploadId not related to requested organization");
     }
 
+    if (uploads.getFileType() == MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS) {
+      return getDebtPositionTypeOrgOperatorsErrorsZip(uploads);
+    }
+
     List<UploadDetails> uploadDetails = uploadDetailsRepository.findByUploadId(uploadId);
     if (uploadDetails.isEmpty()) {
       throw new NotFoundException("UPLOAD_DETAILS_NOT_FOUND", "Cannot find UploadDetails for uploadId " + uploadId);
@@ -160,5 +170,17 @@ public class MigrationFileServiceImpl implements MigrationFileService {
     }
 
     return zipFileService.zipper(pdfResources);
+  }
+
+  private Resource getDebtPositionTypeOrgOperatorsErrorsZip(Uploads upload) {
+    InputStream errorZip = migrationFileRetrieverService.retrieveErrorFile(
+      upload.getOrganizationId(),
+      Path.of(upload.getFilePathName()),
+      upload.getFileName());
+    if (errorZip == null) {
+      return null;
+    }
+
+    return new InputStreamResource(errorZip);
   }
 }
