@@ -17,7 +17,6 @@ import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
-import it.gov.pagopa.pu.migration.utils.Utilities;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
@@ -174,20 +173,14 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   }
 
   private Resource getDebtPositionTypeOrgOperatorsErrorsZip(Uploads upload) {
-    String errorZipFileName = "ERROR-" + Utilities.replaceFileExtension(upload.getFileName(), ".zip");
     InputStream errorZip = migrationFileRetrieverService.retrieveErrorFile(
       upload.getOrganizationId(),
       Path.of(upload.getFilePathName()),
-      errorZipFileName);
+      upload.getFileName());
     if (errorZip == null) {
       return null;
     }
 
-    return new InputStreamResource(errorZip) {
-      @Override
-      public String getFilename() {
-        return errorZipFileName;
-      }
-    };
+    return new InputStreamResource(errorZip);
   }
 }

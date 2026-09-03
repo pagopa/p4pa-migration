@@ -173,14 +173,15 @@ class MigrationFileRetrieverServiceTest {
     Long organizationId = 1L;
     Path organizationPath = tempDir.resolve(String.valueOf(organizationId));
     Path sourcePath = Path.of("migration-data", "debt-positions-type-org-operators");
-    String filename = "ERROR-operators.zip";
+    String filename = "operators.csv";
+    String errorFilename = "ERROR-operators.zip";
     Path errorDirectory = organizationPath.resolve(sourcePath).resolve("errors");
     Files.createDirectories(errorDirectory);
-    Files.createFile(errorDirectory.resolve(filename + AESUtils.CIPHER_EXTENSION));
+    Files.createFile(errorDirectory.resolve(errorFilename + AESUtils.CIPHER_EXTENSION));
     InputStream expectedStream = new java.io.ByteArrayInputStream("zip-content".getBytes());
 
     when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationPath);
-    when(fileStorerServiceMock.decryptFile(errorDirectory, filename)).thenReturn(expectedStream);
+    when(fileStorerServiceMock.decryptFile(errorDirectory, errorFilename)).thenReturn(expectedStream);
 
     InputStream result = service.retrieveErrorFile(organizationId, sourcePath, filename);
 

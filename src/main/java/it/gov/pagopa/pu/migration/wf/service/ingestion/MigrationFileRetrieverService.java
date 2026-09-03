@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
+import it.gov.pagopa.pu.migration.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -105,16 +106,17 @@ public class MigrationFileRetrieverService {
     }
 
     public InputStream retrieveErrorFile(Long organizationId, Path sourcePath, String filename) {
+        String errorFilename = "ERROR-" + Utilities.replaceFileExtension(filename, ".zip");
         Path errorDirectory = fileStorerService.buildOrganizationBasePath(organizationId)
                 .resolve(sourcePath)
                 .resolve(foldersPathsConfig.getProcessTargetSubFolders().getErrors());
-        Path encryptedFilePath = errorDirectory.resolve(filename + AESUtils.CIPHER_EXTENSION);
+        Path encryptedFilePath = errorDirectory.resolve(errorFilename + AESUtils.CIPHER_EXTENSION);
 
         if (!Files.isRegularFile(encryptedFilePath)) {
             log.warn("File not found: {}", encryptedFilePath);
             return null;
         }
 
-        return fileStorerService.decryptFile(errorDirectory, filename);
+        return fileStorerService.decryptFile(errorDirectory, errorFilename);
     }
 }

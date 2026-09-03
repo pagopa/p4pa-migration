@@ -398,7 +398,6 @@ class MigrationFileServiceTest {
     long uploadId = 2L;
     String filePathName = "migration-data/debt-positions-type-org-operators";
     String fileName = "operators.csv";
-    String errorZipFileName = "ERROR-operators.zip";
     UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
 
     Uploads uploads = Uploads.builder()
@@ -409,12 +408,11 @@ class MigrationFileServiceTest {
       .fileName(fileName)
       .build();
     when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
-    when(migrationFileRetrieverServiceMock.retrieveErrorFile(organizationId, Path.of(filePathName), errorZipFileName))
+    when(migrationFileRetrieverServiceMock.retrieveErrorFile(organizationId, Path.of(filePathName), fileName))
       .thenReturn(new ByteArrayInputStream("zip-content".getBytes()));
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
 
-    Assertions.assertEquals(errorZipFileName, result.getFilename());
     try (var inputStream = result.getInputStream()) {
       Assertions.assertArrayEquals("zip-content".getBytes(), inputStream.readAllBytes());
     }
