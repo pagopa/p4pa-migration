@@ -130,9 +130,9 @@ class MigrationFileServiceTest {
     String fileName = "fileName.zip";
     long fileSize = 123L;
 
-    Mockito.when(file.getOriginalFilename())
+    when(file.getOriginalFilename())
       .thenReturn(fileName);
-    Mockito.when(file.getSize())
+    when(file.getSize())
       .thenReturn(fileSize);
 
     UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
@@ -149,16 +149,16 @@ class MigrationFileServiceTest {
     Uploads storedUploads = new Uploads();
     WorkflowCreatedDTO expectedWfCreated = new WorkflowCreatedDTO();
 
-    Mockito.when(foldersPathsConfigMock.getMigrationFilePath(migrationFileType))
+    when(foldersPathsConfigMock.getMigrationFilePath(migrationFileType))
       .thenReturn(migrationFileSubFolder);
 
-    Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, migrationFileSubFolder, fileName))
+    when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, migrationFileSubFolder, fileName))
       .thenReturn(new SaveFileResultDTO(filePath, null));
 
-    Mockito.when(uploadsRepositoryMock.save(upload2Store))
+    when(uploadsRepositoryMock.save(upload2Store))
       .thenReturn(storedUploads);
 
-    Mockito.when(wfInvokerServiceMock.invokeWf(storedUploads))
+    when(wfInvokerServiceMock.invokeWf(storedUploads))
       .thenReturn(expectedWfCreated);
 
     // When
