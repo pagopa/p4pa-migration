@@ -136,6 +136,7 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
         ));
         return false;
       }
+      entity.setUpdateOperatorExternalId(upload.getUpdateOperatorExternalId());
 
       DebtPositionTypeOrgOperators savedEntity = repository.save(entity);
       log.info("Saved OperatorsDebtPositionTypeOrg: orgIpaCode={}, debtPositionTypeOrgCode={}, organizationId={}, debtPositionTypeOrgId={}",
