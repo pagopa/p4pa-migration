@@ -28,5 +28,7 @@ class UploadDetailsMapperTest {
     Assertions.assertSame(ingestionFlowFile.getNumTotalRows(), result.getNumTotalRows());
     Assertions.assertSame(ingestionFlowFile.getErrorDescription(), result.getErrorDescription());
     Assertions.assertSame(ingestionFlowFile.getStatus(), result.getStatus());
+    Assertions.assertSame(ingestionFlowFile.getOperatorExternalId(), result.getUpdateOperatorExternalId());
   }
+
 }

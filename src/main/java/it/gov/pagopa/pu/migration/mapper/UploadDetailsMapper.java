@@ -20,6 +20,8 @@ public class UploadDetailsMapper {
       .numTotalRows(ingestionFlowFile.getNumTotalRows())
       .status(ingestionFlowFile.getStatus())
       .errorDescription(ingestionFlowFile.getErrorDescription())
+      // Temporal executions have no logged-in user, so inherit the operator from the ingestion flow.
+      .updateOperatorExternalId(ingestionFlowFile.getOperatorExternalId())
       .build();
   }
 }
