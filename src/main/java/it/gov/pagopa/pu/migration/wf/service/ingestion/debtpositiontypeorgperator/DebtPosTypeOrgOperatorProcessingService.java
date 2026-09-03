@@ -136,6 +136,8 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
         ));
         return false;
       }
+      // Temporal executions have no logged-in user, so inherit the operator from the ingestion flow.
+      entity.setUpdateOperatorExternalId(upload.getUpdateOperatorExternalId());
 
       DebtPositionTypeOrgOperators savedEntity = repository.save(entity);
       log.info("Saved OperatorsDebtPositionTypeOrg: orgIpaCode={}, debtPositionTypeOrgCode={}, organizationId={}, debtPositionTypeOrgId={}",
