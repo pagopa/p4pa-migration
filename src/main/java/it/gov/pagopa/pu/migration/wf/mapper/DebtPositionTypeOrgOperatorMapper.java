@@ -1,18 +1,19 @@
 package it.gov.pagopa.pu.migration.wf.mapper;
 
-import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
 import it.gov.pagopa.pu.migration.model.DebtPositionTypeOrgOperators;
-import it.gov.pagopa.pu.migration.utils.AESUtils;
+import it.gov.pagopa.pu.migration.utils.HashAlgorithm;
+import it.gov.pagopa.pu.migration.wf.dto.debtpositiontypeorgoperator.DebtPositionTypeOrgOperatorMigrationFileDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
+
 @Service
 public class DebtPositionTypeOrgOperatorMapper {
-  private final String dataCipherPsw;
+  private final HashAlgorithm hashAlgorithm;
 
-  public DebtPositionTypeOrgOperatorMapper(
-    @Value("${encryption.file-encrypt-password}") String dataCipherPsw) {
-    this.dataCipherPsw = dataCipherPsw;
+  public DebtPositionTypeOrgOperatorMapper(@Value("${data-cipher.hash-pepper}") String hashPepper) {
+    hashAlgorithm = new HashAlgorithm("SHA-256", Base64.getDecoder().decode(hashPepper));
   }
 
   public DebtPositionTypeOrgOperators mapToOperators(DebtPositionTypeOrgOperatorMigrationFileDTO dto,
@@ -21,7 +22,7 @@ public class DebtPositionTypeOrgOperatorMapper {
     if (dto == null) {
       return null;
     }
-    byte [] cfOperatorHash = AESUtils.encrypt(this.dataCipherPsw, dto.getCfOperator());
+    byte [] cfOperatorHash = hashFiscalCode(dto.getCfOperator());
     return DebtPositionTypeOrgOperators.builder()
       .cfOperatorHash(cfOperatorHash)
       .organizationId(organizationId)
@@ -30,4 +31,11 @@ public class DebtPositionTypeOrgOperatorMapper {
       .build();
   }
 
+  @SuppressWarnings("squid:S1168") // null String if hashed should return still null
+  public byte[] hashFiscalCode(String value) {
+    if (value == null) {
+      return null;
+    }
+    return hashAlgorithm.apply(value.toUpperCase());
+  }
 }
