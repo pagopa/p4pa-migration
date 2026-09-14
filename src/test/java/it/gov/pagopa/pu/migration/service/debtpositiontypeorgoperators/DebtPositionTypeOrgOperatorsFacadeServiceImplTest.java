@@ -78,6 +78,7 @@ class DebtPositionTypeOrgOperatorsFacadeServiceImplTest {
     OffsetDateTime consumptionDateTime = OffsetDateTime.of(2026,9,10,12,0,0,0, ZoneOffset.UTC);
     ConsumeDebtPositionTypeOrgOperatorsDTO consumeDTO = new ConsumeDebtPositionTypeOrgOperatorsDTO();
     consumeDTO.setDebtPositionTypeOrgIds(debtPositionTypeOrgIds);
+    consumeDTO.setFiscalCode(fiscalCode);
 
     try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class);
          MockedStatic<OffsetDateTime> offsetDateTimeMockedStatic = mockStatic(OffsetDateTime.class)) {
@@ -90,7 +91,7 @@ class DebtPositionTypeOrgOperatorsFacadeServiceImplTest {
         .consumeDebtPositionTypeOrgOperators(organizationId, fiscalCodeHash, debtPositionTypeOrgIds, consumptionDateTime);
 
       // When
-      service.consumeDebtPositionTypeOrgOperators(organizationId, fiscalCode, consumeDTO, loggedUser);
+      service.consumeDebtPositionTypeOrgOperators(organizationId, consumeDTO, loggedUser);
     }
   }
 
@@ -104,6 +105,7 @@ class DebtPositionTypeOrgOperatorsFacadeServiceImplTest {
     String fiscalCode = "fiscalCode";
     ConsumeDebtPositionTypeOrgOperatorsDTO consumeDTO = new ConsumeDebtPositionTypeOrgOperatorsDTO();
     consumeDTO.setDebtPositionTypeOrgIds(Collections.emptyList());
+    consumeDTO.setFiscalCode(fiscalCode);
 
     try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = mockStatic(AuthorizationService.class)) {
       authorizationServiceMockedStatic
@@ -111,7 +113,7 @@ class DebtPositionTypeOrgOperatorsFacadeServiceImplTest {
         .thenAnswer(a -> null);
 
       // When
-      service.consumeDebtPositionTypeOrgOperators(organizationId, fiscalCode, consumeDTO, loggedUser);
+      service.consumeDebtPositionTypeOrgOperators(organizationId, consumeDTO, loggedUser);
 
       // Then
       authorizationServiceMockedStatic.verify(() -> AuthorizationService.validateAdminRole(organizationId, loggedUser));

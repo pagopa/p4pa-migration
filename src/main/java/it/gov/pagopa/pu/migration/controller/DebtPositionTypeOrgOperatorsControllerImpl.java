@@ -26,9 +26,9 @@ public class DebtPositionTypeOrgOperatorsControllerImpl implements DebtPositionT
   }
 
   @Override
-  public ResponseEntity<Void> consumeDebtPositionTypeOrgOperators(Long organizationId, String fiscalCode, ConsumeDebtPositionTypeOrgOperatorsDTO consumeDebtPositionTypeOrgOperatorsDTO) {
+  public ResponseEntity<Void> consumeDebtPositionTypeOrgOperators(Long organizationId, ConsumeDebtPositionTypeOrgOperatorsDTO consumeDebtPositionTypeOrgOperatorsDTO) {
     log.info("Consume DebtPositionTypeOrgOperators having organizationId {}", organizationId);
-    debtPositionTypeOrgOperatorsFacadeService.consumeDebtPositionTypeOrgOperators(organizationId,fiscalCode,consumeDebtPositionTypeOrgOperatorsDTO, SecurityUtils.getLoggedUser());
+    debtPositionTypeOrgOperatorsFacadeService.consumeDebtPositionTypeOrgOperators(organizationId,consumeDebtPositionTypeOrgOperatorsDTO, SecurityUtils.getLoggedUser());
     return ResponseEntity.ok().build();
   }
 }

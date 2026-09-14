@@ -337,12 +337,6 @@ paths:
           schema:
             type: integer
             format: int64
-        - name: fiscalCode
-          in: query
-          description: Operator's fiscal code
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -493,9 +487,12 @@ components:
       type: object
       required:
         - debtPositionTypeOrgIds
+        - fiscalCode
       properties:
         debtPositionTypeOrgIds:
           type: array
           items:
             type: integer
             format: int64
+        fiscalCode:
+          type: string

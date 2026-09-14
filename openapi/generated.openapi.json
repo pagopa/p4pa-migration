@@ -37,14 +37,6 @@
             "type" : "integer",
             "format" : "int64"
           }
-        }, {
-          "name" : "fiscalCode",
-          "in" : "query",
-          "description" : "Operator's fiscal code",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
         } ],
         "requestBody" : {
           "content" : {
@@ -671,7 +663,7 @@
         }
       },
       "ConsumeDebtPositionTypeOrgOperatorsDTO" : {
-        "required" : [ "debtPositionTypeOrgIds" ],
+        "required" : [ "debtPositionTypeOrgIds", "fiscalCode" ],
         "type" : "object",
         "properties" : {
           "debtPositionTypeOrgIds" : {
@@ -680,6 +672,9 @@
               "type" : "integer",
               "format" : "int64"
             }
+          },
+          "fiscalCode" : {
+            "type" : "string"
           }
         }
       },

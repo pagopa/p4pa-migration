@@ -67,14 +67,13 @@ class DebtPositionTypeOrgOperatorsControllerImplTest {
   void whenConsumeDebtPositionTypeOrgOperatorsThenOk() {
     // Given
     long organizationId = 1L;
-    String fiscalCode = "fiscalCode";
     ConsumeDebtPositionTypeOrgOperatorsDTO consumeDTO = podamFactory.manufacturePojo(ConsumeDebtPositionTypeOrgOperatorsDTO.class);
 
     doNothing().when(debtPositionTypeOrgOperatorsFacadeServiceMock)
-      .consumeDebtPositionTypeOrgOperators(organizationId, fiscalCode, consumeDTO, loggedUser);
+      .consumeDebtPositionTypeOrgOperators(organizationId, consumeDTO, loggedUser);
 
     // When
-    ResponseEntity<Void> response = controller.consumeDebtPositionTypeOrgOperators(organizationId, fiscalCode, consumeDTO);
+    ResponseEntity<Void> response = controller.consumeDebtPositionTypeOrgOperators(organizationId, consumeDTO);
 
     // Then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());

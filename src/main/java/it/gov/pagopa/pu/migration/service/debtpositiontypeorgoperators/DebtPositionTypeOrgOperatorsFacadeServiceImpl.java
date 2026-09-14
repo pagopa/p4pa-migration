@@ -33,7 +33,7 @@ public class DebtPositionTypeOrgOperatorsFacadeServiceImpl implements DebtPositi
 
   @Transactional
   @Override
-  public void consumeDebtPositionTypeOrgOperators(Long organizationId, String fiscalCode, ConsumeDebtPositionTypeOrgOperatorsDTO consumeDebtPositionTypeOrgOperatorsDTO, UserInfo loggedUser) {
+  public void consumeDebtPositionTypeOrgOperators(Long organizationId, ConsumeDebtPositionTypeOrgOperatorsDTO consumeDebtPositionTypeOrgOperatorsDTO, UserInfo loggedUser) {
     AuthorizationService.validateAdminRole(organizationId, loggedUser);
     if(CollectionUtils.isEmpty(consumeDebtPositionTypeOrgOperatorsDTO.getDebtPositionTypeOrgIds())){
       return;
@@ -41,7 +41,7 @@ public class DebtPositionTypeOrgOperatorsFacadeServiceImpl implements DebtPositi
 
     debtPositionTypeOrgOperatorsRepository.consumeDebtPositionTypeOrgOperators(
       organizationId,
-      debtPositionTypeOrgOperatorMapper.hashFiscalCode(fiscalCode),
+      debtPositionTypeOrgOperatorMapper.hashFiscalCode(consumeDebtPositionTypeOrgOperatorsDTO.getFiscalCode()),
       consumeDebtPositionTypeOrgOperatorsDTO.getDebtPositionTypeOrgIds(),
       OffsetDateTime.now(Utilities.ZONEID)
     );
