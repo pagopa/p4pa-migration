@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.migration.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.migration.dto.generated.ConsumeDebtPositionTypeOrgOperatorsDTO;
 import it.gov.pagopa.pu.migration.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.migration.service.debtpositiontypeorgoperators.DebtPositionTypeOrgOperatorsFacadeService;
 import it.gov.pagopa.pu.migration.utils.TestUtils;
@@ -19,6 +20,7 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
 
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +45,7 @@ class DebtPositionTypeOrgOperatorsControllerImplTest {
   }
 
   @Test
-  void givenCorrectRequestWhenGetUnconsumedDebtPositionTypeOrgIdsThenOk() {
+  void whenGetUnconsumedDebtPositionTypeOrgIdsThenOk() {
     // Given
     long organizationId = 1L;
     String fiscalCode = "fiscalCode";
@@ -59,5 +61,23 @@ class DebtPositionTypeOrgOperatorsControllerImplTest {
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertNotNull(response.getBody());
     Assertions.assertSame(expectedResult, response.getBody());
+  }
+
+  @Test
+  void whenConsumeDebtPositionTypeOrgOperatorsThenOk() {
+    // Given
+    long organizationId = 1L;
+    String fiscalCode = "fiscalCode";
+    ConsumeDebtPositionTypeOrgOperatorsDTO consumeDTO = podamFactory.manufacturePojo(ConsumeDebtPositionTypeOrgOperatorsDTO.class);
+
+    doNothing().when(debtPositionTypeOrgOperatorsFacadeServiceMock)
+      .consumeDebtPositionTypeOrgOperators(organizationId, fiscalCode, consumeDTO, loggedUser);
+
+    // When
+    ResponseEntity<Void> response = controller.consumeDebtPositionTypeOrgOperators(organizationId, fiscalCode, consumeDTO);
+
+    // Then
+    Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    Assertions.assertNull(response.getBody());
   }
 }
