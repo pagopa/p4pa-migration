@@ -26,7 +26,8 @@ import java.util.Objects;
 
   "spring.cloud.function.definition=",
 
-  "spring.temporal.test-server.enabled: true"
+  "spring.temporal.test-server.enabled: true",
+  "folders.shared: build"
 })
 class TaskQueueActivityUniquenessTest {
 
