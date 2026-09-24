@@ -19,6 +19,7 @@ public interface MigrationFileService {
   Uploads getUpload(String orgIpaCode, Long uploadId, UserInfo loggedUser);
   List<UploadDetails> getUploadDetails(String orgIpaCode, Long uploadId, UserInfo loggedUser);
   UploadDetails getUploadDetail(String orgIpaCode, Long uploadId, Long uploadDetailsId, UserInfo loggedUser);
+  Resource getUploadFile(String orgIpaCode, Long uploadId, UserInfo loggedUser);
   Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser);
 
 }

@@ -35,7 +35,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -390,6 +390,29 @@ class MigrationFileServiceTest {
   }
 //endregion getUpload
 
+  @Test
+  void whenGetUploadFileThenReturnResource() throws IOException {
+    // Give
+    long organizationId = 1L;
+    String orgIpaCode = "IPACODE";
+    long uploadId = 2L;
+    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
+
+    Uploads uploads = new Uploads();
+    uploads.setOrganizationId(organizationId);
+    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
+
+    ByteArrayInputStream inputStreamMock = new ByteArrayInputStream("file-content".getBytes());
+    when(migrationFileRetrieverServiceMock.retrieveFile(uploads)).thenReturn(inputStreamMock);
+
+    // When
+    Resource result = service.getUploadFile(orgIpaCode, uploadId, loggedUser);
+
+    try (var inputStream = result.getInputStream()) {
+      Assertions.assertArrayEquals("file-content".getBytes(), inputStream.readAllBytes());
+    }
+  }
+
 //region test getUploadsErrorsZip
   @Test
   void givenDebtPositionTypeOrgOperatorsErrorZipWhenGetUploadsErrorsZipThenReturnDecryptedResource() throws Exception {
@@ -408,7 +431,7 @@ class MigrationFileServiceTest {
       .fileName(fileName)
       .build();
     when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
-    when(migrationFileRetrieverServiceMock.retrieveErrorFile(organizationId, Path.of(filePathName), fileName))
+    when(migrationFileRetrieverServiceMock.retrieveErrorFile(uploads))
       .thenReturn(new ByteArrayInputStream("zip-content".getBytes()));
 
     Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
@@ -416,30 +439,6 @@ class MigrationFileServiceTest {
     try (var inputStream = result.getInputStream()) {
       Assertions.assertArrayEquals("zip-content".getBytes(), inputStream.readAllBytes());
     }
-    verify(uploadDetailsRepositoryMock, never()).findByUploadId(Mockito.anyLong());
-  }
-
-  @Test
-  void givenDebtPositionTypeOrgOperatorsWithoutErrorZipWhenGetUploadsErrorsZipThenReturnNull() {
-    long organizationId = 1L;
-    String orgIpaCode = "IPACODE";
-    long uploadId = 2L;
-    UserInfo loggedUser = buildAuthorizedUser(organizationId, orgIpaCode);
-
-    Uploads uploads = Uploads.builder()
-      .uploadId(uploadId)
-      .organizationId(organizationId)
-      .fileType(MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS)
-      .filePathName("migration-data/debt-positions-type-org-operators")
-      .fileName("operators.csv")
-      .build();
-    when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
-
-    Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
-
-    Assertions.assertNull(result);
-    Assertions.assertTrue(Mockito.mockingDetails(migrationFileRetrieverServiceMock).getInvocations().stream()
-      .anyMatch(invocation -> invocation.getMethod().getName().equals("retrieveErrorFile")));
     verify(uploadDetailsRepositoryMock, never()).findByUploadId(Mockito.anyLong());
   }
 
@@ -512,7 +511,7 @@ class MigrationFileServiceTest {
   }
 
   @Test
-  void givenUploadDetailsWithWarningButFileNotExistsWhenGetUploadsErrorsZipThenReturnNull() {
+  void givenUploadDetailsWithWarningButFileNotExistsWhenGetUploadsErrorsZipThenThrowNotFoundException() {
     long organizationId = 1L;
     String orgIpaCode = "IPACODE";
     long uploadId = 2L;
@@ -534,11 +533,11 @@ class MigrationFileServiceTest {
       Mockito.any(),
       Mockito.any()
     )).thenReturn(null);
-    when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
+    when(authnService.getAccessToken("ipa1")).thenReturn("token");
 
-    Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
-    Assertions.assertNull(result);
-    verify(zipFileServiceMock, never()).zipper(Mockito.anyList());
+    NotFoundException notFoundException = Assertions.assertThrows(NotFoundException.class, () -> service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser));
+
+    Assertions.assertEquals("UPLOAD_DETAILS_ERRORS_NOT_FOUND", notFoundException.getCode());
   }
 
 
@@ -554,12 +553,13 @@ class MigrationFileServiceTest {
     when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
 
     when(uploadDetailsRepositoryMock.findByUploadId(uploadId)).thenReturn(List.of());
-    Assertions.assertThrows(NotFoundException.class,
+    NotFoundException notFoundException = Assertions.assertThrows(NotFoundException.class,
       () -> service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser));
+    Assertions.assertEquals("UPLOAD_DETAILS_NOT_FOUND", notFoundException.getCode());
   }
 
   @Test
-  void givenUploadDetailsWithErrorsButFileNotExistsWhenGetUploadsErrorsZipThenReturnNull() {
+  void givenUploadDetailsWithErrorsButFileNotExistsWhenGetUploadsErrorsZipThenThrowNotFoundException() {
     long organizationId = 1L;
     String orgIpaCode = "IPACODE";
     long uploadId = 2L;
@@ -581,11 +581,10 @@ class MigrationFileServiceTest {
         Mockito.any(),
         Mockito.any()
     )).thenReturn(null);
-    when(authnService.getAccessToken(Mockito.anyString())).thenReturn("token");
+    when(authnService.getAccessToken("ipa1")).thenReturn("token");
 
-    Resource result = service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser);
-    Assertions.assertNull(result);
-    verify(zipFileServiceMock, never()).zipper(Mockito.anyList());
+    NotFoundException notFoundException = Assertions.assertThrows(NotFoundException.class, () -> service.getUploadsErrorsZip(orgIpaCode, uploadId, loggedUser));
+    Assertions.assertEquals("UPLOAD_DETAILS_ERRORS_NOT_FOUND", notFoundException.getCode());
   }
 
   @Test

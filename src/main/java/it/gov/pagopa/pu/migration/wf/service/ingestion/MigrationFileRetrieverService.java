@@ -1,11 +1,12 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion;
 
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
+import it.gov.pagopa.pu.migration.exception.common.NotFoundException;
+import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
-import it.gov.pagopa.pu.migration.utils.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -26,97 +27,112 @@ import java.util.List;
 @Service
 public class MigrationFileRetrieverService {
 
-    /**
-     * The temporary directory used for working process.
-     */
-    private final Path tempDirectoryPath;
-    private final FoldersPathsConfig foldersPathsConfig;
+  /**
+   * The temporary directory used for working process.
+   */
+  private final Path tempDirectoryPath;
+  private final FoldersPathsConfig foldersPathsConfig;
 
-    private final FileStorerService fileStorerService;
-    private final FileValidatorService fileValidatorService;
-    private final ZipFileService zipFileService;
+  private final FileStorerService fileStorerService;
+  private final FileValidatorService fileValidatorService;
+  private final ZipFileService zipFileService;
 
-    public MigrationFileRetrieverService(
-      @Value("${folders.tmp}") String tempFolder,
-      FoldersPathsConfig foldersPathsConfig,
-      FileStorerService fileStorerService,
-      FileValidatorService fileValidatorService,
-      ZipFileService zipFileService
-    ) {
-      this.tempDirectoryPath = Path.of(tempFolder);
-      this.foldersPathsConfig = foldersPathsConfig;
-      this.fileStorerService = fileStorerService;
-      this.fileValidatorService = fileValidatorService;
-        this.zipFileService = zipFileService;
+  public MigrationFileRetrieverService(
+    @Value("${folders.tmp}") String tempFolder,
+    FoldersPathsConfig foldersPathsConfig,
+    FileStorerService fileStorerService,
+    FileValidatorService fileValidatorService,
+    ZipFileService zipFileService
+  ) {
+    this.tempDirectoryPath = Path.of(tempFolder);
+    this.foldersPathsConfig = foldersPathsConfig;
+    this.fileStorerService = fileStorerService;
+    this.fileValidatorService = fileValidatorService;
+    this.zipFileService = zipFileService;
 
-        if (!Files.exists(tempDirectoryPath)) {
-            throw new IllegalStateException("Temp folder doesn't exist: " + tempDirectoryPath);
-        }
+    if (!Files.exists(tempDirectoryPath)) {
+      throw new IllegalStateException("Temp folder doesn't exist: " + tempDirectoryPath);
+    }
+  }
+
+  /**
+   * Handles the setup process for an ingestion file by performing the following steps:
+   * <ul>
+   *     <li>Decrypts the file using AES encryption.</li>
+   *     <li>Validates if the file is a valid ZIP archive.</li>
+   *     <li>Extracts the contents of the ZIP file to a temporary directory, in case the file is zipped.</li>
+   * </ul>
+   *
+   * @param sourcePath the relative path to the directory containing the file.
+   * @param filename   the name of the file to process.
+   * @return the path to the plain files (decrypted and, in case of archive file, unzipped).
+   */
+  public List<Path> retrieveAndUnzipFile(Long organizationId, Path sourcePath, String filename) {
+    log.debug("Retrieving file: {}", filename);
+    Path organizationFolder = fileStorerService.buildOrganizationBasePath(organizationId);
+    Path encryptedFilePath = organizationFolder
+      .resolve(sourcePath)
+      .resolve(filename + AESUtils.CIPHER_EXTENSION);
+
+    fileValidatorService.validateFile(encryptedFilePath);
+
+    Path workingPath = tempDirectoryPath
+      .resolve(String.valueOf(organizationId))
+      .resolve(sourcePath.subpath(0, sourcePath.getNameCount()));
+    try {
+      Files.createDirectories(workingPath);
+    } catch (IOException e) {
+      throw new IllegalStateException("Cannot create working directory: " + workingPath, e);
     }
 
-    /**
-     * Handles the setup process for an ingestion file by performing the following steps:
-     * <ul>
-     *     <li>Decrypts the file using AES encryption.</li>
-     *     <li>Validates if the file is a valid ZIP archive.</li>
-     *     <li>Extracts the contents of the ZIP file to a temporary directory, in case the file is zipped.</li>
-     * </ul>
-     *
-     * @param sourcePath the relative path to the directory containing the file.
-     * @param filename   the name of the file to process.
-     * @return the path to the plain files (decrypted and, in case of archive file, unzipped).
-     */
-    public List<Path> retrieveAndUnzipFile(Long organizationId, Path sourcePath, String filename) {
-        log.debug("Retrieving file: {}", filename);
-        Path organizationFolder = fileStorerService.buildOrganizationBasePath(organizationId);
-        Path encryptedFilePath = organizationFolder
-                .resolve(sourcePath)
-                .resolve(filename + AESUtils.CIPHER_EXTENSION);
+    String filenameNoCipher = filename.replace(AESUtils.CIPHER_EXTENSION, "");
+    Path decryptedFilePath = workingPath.resolve(filenameNoCipher);
 
-        fileValidatorService.validateFile(encryptedFilePath);
+    log.debug("Decrypting file: {}", encryptedFilePath);
+    fileStorerService.decryptFile(encryptedFilePath.toFile(), decryptedFilePath.toFile());
 
-        Path workingPath = tempDirectoryPath
-                .resolve(String.valueOf(organizationId))
-                .resolve(sourcePath.subpath(0, sourcePath.getNameCount()));
-        try {
-            Files.createDirectories(workingPath);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot create working directory: " + workingPath, e);
-        }
+    List<Path> plainFilePaths;
+    if (fileValidatorService.isZipFileByExtension(decryptedFilePath)) {
+      log.debug("Validating ZIP file: {}", decryptedFilePath);
+      fileValidatorService.isArchive(decryptedFilePath);
 
-        String filenameNoCipher = filename.replace(AESUtils.CIPHER_EXTENSION, "");
-        Path decryptedFilePath = workingPath.resolve(filenameNoCipher);
-
-        log.debug("Decrypting file: {}", encryptedFilePath);
-        fileStorerService.decryptFile(encryptedFilePath.toFile(), decryptedFilePath.toFile());
-
-        List<Path> plainFilePaths;
-        if(fileValidatorService.isZipFileByExtension(decryptedFilePath)){
-            log.debug("Validating ZIP file: {}", decryptedFilePath);
-            fileValidatorService.isArchive(decryptedFilePath);
-
-            log.debug("Unzipping files in : {}", decryptedFilePath);
-            plainFilePaths = zipFileService.unzip(decryptedFilePath);
-        } else {
-            plainFilePaths = List.of(decryptedFilePath);
-        }
-
-        log.debug("File process completed successfully for: {}", filenameNoCipher);
-        return plainFilePaths;
+      log.debug("Unzipping files in : {}", decryptedFilePath);
+      plainFilePaths = zipFileService.unzip(decryptedFilePath);
+    } else {
+      plainFilePaths = List.of(decryptedFilePath);
     }
 
-    public InputStream retrieveErrorFile(Long organizationId, Path sourcePath, String filename) {
-        String errorFilename = "ERROR-" + Utilities.replaceFileExtension(filename, ".zip");
-        Path errorDirectory = fileStorerService.buildOrganizationBasePath(organizationId)
-                .resolve(sourcePath)
-                .resolve(foldersPathsConfig.getProcessTargetSubFolders().getErrors());
-        Path encryptedFilePath = errorDirectory.resolve(errorFilename + AESUtils.CIPHER_EXTENSION);
+    log.debug("File process completed successfully for: {}", filenameNoCipher);
+    return plainFilePaths;
+  }
 
-        if (!Files.isRegularFile(encryptedFilePath)) {
-            log.warn("File not found: {}", encryptedFilePath);
-            return null;
-        }
+  public InputStream retrieveFile(Uploads upload) {
+    Path filePath = fileStorerService.getUploadedOrArchivedPath(
+      upload.getOrganizationId(),
+      foldersPathsConfig.getProcessTargetSubFolders().getArchive(),
+      upload.getFilePathName(),
+      upload.getFileName());
 
-        return fileStorerService.decryptFile(errorDirectory, errorFilename);
+    if (filePath == null) {
+      throw new NotFoundException("UPLOAD_FILE_NOT_FOUND", "Cannot find upload file for uploadId %s (orgId=%s, filePath=%s, fileName=%s)"
+        .formatted(upload.getUploadId(), upload.getOrganizationId(), upload.getFilePathName(), upload.getFileName()));
     }
+
+    return fileStorerService.decryptFile(filePath.getParent(), filePath.getFileName().toString());
+  }
+
+  public InputStream retrieveErrorFile(Uploads upload) {
+    String errorFilename = ErrorArchiverService.buildErrorZipFileName(upload.getFileName());
+    Path errorDirectory = fileStorerService.buildOrganizationBasePath(upload.getOrganizationId())
+      .resolve(Path.of(upload.getFilePathName()))
+      .resolve(foldersPathsConfig.getProcessTargetSubFolders().getErrors());
+    Path encryptedFilePath = errorDirectory.resolve(errorFilename + AESUtils.CIPHER_EXTENSION);
+
+    if (!Files.isRegularFile(encryptedFilePath)) {
+      throw new NotFoundException("UPLOAD_FILE_NOT_FOUND", "Cannot find upload error file for uploadId %s (orgId=%s, filePath=%s, fileName=%s)"
+        .formatted(upload.getUploadId(), upload.getOrganizationId(), upload.getFilePathName(), upload.getFileName()));
+    }
+
+    return fileStorerService.decryptFile(errorDirectory, errorFilename);
+  }
 }

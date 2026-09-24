@@ -164,6 +164,25 @@ class MigrationFileControllerTest {
       .andExpect(content().json("{\"uploadDetailId\":1}"));
   }
 
+  @Test
+  void whenGetMigrationFileThenInvokeService() throws Exception {
+    String orgIpaCode = "ORGIPA";
+    long uploadId = 0L;
+
+    UserInfo loggedUser = new UserInfo();
+    SecurityUtilsTest.configureSecurityContext(loggedUser);
+
+    byte[] fileContent = "result".getBytes();
+    Resource expectedResult = new ByteArrayResource(fileContent);
+
+    when(serviceMock.getUploadFile(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
+      .thenReturn(expectedResult);
+
+    mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}/file",orgIpaCode, uploadId)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      ).andExpect(status().isOk())
+      .andExpect(content().bytes(fileContent));
+  }
 
   @Test
   void whenGetMigrationErrorsThenInvokeService() throws Exception {

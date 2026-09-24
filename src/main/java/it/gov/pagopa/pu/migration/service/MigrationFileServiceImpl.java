@@ -28,8 +28,6 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
@@ -126,13 +124,14 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   }
 
   @Override
-  public Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
-    Long organizationId = AuthorizationService.validateAdminRoleOnBroker(orgIpaCode, loggedUser).getOrganizationId();
+  public Resource getUploadFile(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
+    Uploads upload = getUpload(orgIpaCode, uploadId, loggedUser);
+    return new InputStreamResource(migrationFileRetrieverService.retrieveFile(upload));
+  }
 
-    Uploads uploads = uploadsRepository.findById(uploadId).orElseThrow(() -> new NotFoundException("UPLOADS_NOT_FOUND", "Cannot find Upload having id " + uploadId));
-    if(!uploads.getOrganizationId().equals(organizationId)){
-      throw new AuthorizationDeniedException("UploadId not related to requested organization");
-    }
+  @Override
+  public Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
+    Uploads uploads = getUpload(orgIpaCode, uploadId, loggedUser);
 
     if (uploads.getFileType() == MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS) {
       return getDebtPositionTypeOrgOperatorsErrorsZip(uploads);
@@ -166,21 +165,13 @@ public class MigrationFileServiceImpl implements MigrationFileService {
       .toList();
 
     if (pdfResources.isEmpty()) {
-      return null;
+      throw new NotFoundException("UPLOAD_DETAILS_ERRORS_NOT_FOUND", "Cannot find error files for uploadId " + uploadId);
     }
 
     return zipFileService.zipper(pdfResources);
   }
 
   private Resource getDebtPositionTypeOrgOperatorsErrorsZip(Uploads upload) {
-    InputStream errorZip = migrationFileRetrieverService.retrieveErrorFile(
-      upload.getOrganizationId(),
-      Path.of(upload.getFilePathName()),
-      upload.getFileName());
-    if (errorZip == null) {
-      return null;
-    }
-
-    return new InputStreamResource(errorZip);
+    return new InputStreamResource(migrationFileRetrieverService.retrieveErrorFile(upload));
   }
 }

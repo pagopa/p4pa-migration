@@ -25,8 +25,11 @@ public class FileStorerService {
 
   public FileStorerService(FoldersPathsConfig foldersPathsConfig,
                            @Value(("${encryption.file-encrypt-password}")) String fileEncryptPassword) {
-    if (foldersPathsConfig.getShared() == null || foldersPathsConfig.getShared().isEmpty()) {
+    if (StringUtils.isEmpty(foldersPathsConfig.getShared())) {
       throw new IllegalStateException("Shared folder path is not configured.");
+    }
+    if (!Files.exists(Path.of(foldersPathsConfig.getShared()))) {
+      throw new IllegalStateException("Shared folder doesn't exist: " + foldersPathsConfig.getShared());
     }
     this.foldersPathsConfig = foldersPathsConfig;
     this.fileEncryptPassword = fileEncryptPassword;
