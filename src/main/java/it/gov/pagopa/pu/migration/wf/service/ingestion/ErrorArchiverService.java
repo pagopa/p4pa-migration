@@ -1,10 +1,11 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion;
 
-import it.gov.pagopa.pu.migration.wf.dto.ErrorFileDTO;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
+import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.utils.Utilities;
+import it.gov.pagopa.pu.migration.wf.dto.ErrorFileDTO;
 import it.gov.pagopa.pu.migration.wf.exception.NotRetryableActivityException;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -28,19 +29,16 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
 
     public static final String ERRORFILE_PREFIX = "ERROR-";
 
-    private final Path sharedDirectoryPath;
-    private final String errorFolder;
+    private final FileStorerService fileStorerService;
     private final FileArchiverService fileArchiverService;
     private final CsvService csvService;
 
     protected ErrorArchiverService(
-            String sharedFolder,
-            String errorFolder,
+            FileStorerService fileStorerService,
             FileArchiverService fileArchiverService,
             CsvService csvService
     ) {
-        this.sharedDirectoryPath = Path.of(sharedFolder);
-        this.errorFolder = errorFolder;
+        this.fileStorerService = fileStorerService;
         this.fileArchiverService = fileArchiverService;
         this.csvService = csvService;
     }
@@ -101,12 +99,7 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
             }
 
             if (!errorFiles.isEmpty()) {
-
-                Path targetDirectory = sharedDirectoryPath
-                        .resolve(String.valueOf(upload.getOrganizationId()))
-                        .resolve(upload.getFilePathName())
-                        .resolve(errorFolder);
-
+                Path targetDirectory = fileStorerService.buildErrorFolderPath(upload);
                 String zipFileName = buildErrorZipFileName(upload.getFileName());
                 Path zipFile = workingDirectory.resolve(zipFileName);
 

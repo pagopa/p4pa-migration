@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.migration.exception.FileUploadException;
 import it.gov.pagopa.pu.migration.exception.InvalidFileException;
+import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -86,25 +87,34 @@ public class FileStorerService {
     return concatenatePaths(foldersPathsConfig.getShared(), String.valueOf(organizationId));
   }
 
-  public boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String archivedSubFolder, String filePath, String fileName) {
-    return getUploadedOrArchivedPath(organizationId, archivedSubFolder, filePath, fileName) != null;
+  public boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String filePath, String fileName) {
+    return getUploadedOrArchivedPath(organizationId, filePath, fileName) != null;
   }
 
-  public Path getUploadedOrArchivedPath(Long organizationId, String archivedSubFolder, String filePathString, String fileName) {
+  public Path getUploadedOrArchivedPath(Long organizationId, String filePathString, String fileName) {
     Path filePath = buildOrganizationBasePath(organizationId)
       .resolve(filePathString);
     String fileNameCiphered = fileName + AESUtils.CIPHER_EXTENSION;
-    Path originalPath = FileStorerService.concatenatePaths(filePath.toString(), fileNameCiphered);
+
+    Path originalPath = filePath
+      .resolve(fileNameCiphered);
     if (Files.exists(originalPath)) {
       return originalPath;
     } else {
-      Path archivedPath = FileStorerService.concatenatePaths(filePath.resolve(archivedSubFolder).toString(), fileNameCiphered);
+      Path archivedPath = filePath.resolve(foldersPathsConfig.getProcessTargetSubFolders().getArchive())
+        .resolve(fileNameCiphered);
       if (Files.exists(archivedPath)) {
         return archivedPath;
       } else {
         return null;
       }
     }
+  }
+
+  public Path buildErrorFolderPath(Uploads upload) {
+    return buildOrganizationBasePath(upload.getOrganizationId())
+      .resolve(upload.getFilePathName())
+      .resolve(foldersPathsConfig.getProcessTargetSubFolders().getErrors());
   }
 
 }

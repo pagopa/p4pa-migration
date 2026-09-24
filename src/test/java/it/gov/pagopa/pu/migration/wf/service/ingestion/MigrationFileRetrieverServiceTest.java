@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion;
 
-import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.exception.InvalidFileException;
 import it.gov.pagopa.pu.migration.exception.common.NotFoundException;
 import it.gov.pagopa.pu.migration.model.Uploads;
@@ -41,7 +40,6 @@ class MigrationFileRetrieverServiceTest {
 
   private MigrationFileRetrieverService service;
 
-  private FoldersPathsConfig foldersPathsConfig;
   private Path zipFile;
 
   @TempDir
@@ -49,12 +47,7 @@ class MigrationFileRetrieverServiceTest {
 
   @BeforeEach
   void setup() throws IOException {
-    foldersPathsConfig = new FoldersPathsConfig();
-    FoldersPathsConfig.ProcessTargetSubFolders processTargetSubFolders = new FoldersPathsConfig.ProcessTargetSubFolders();
-    processTargetSubFolders.setErrors("errors");
-    processTargetSubFolders.setArchive("archive");
-    foldersPathsConfig.setProcessTargetSubFolders(processTargetSubFolders);
-    service = new MigrationFileRetrieverService(TEMPORARY_PATH, foldersPathsConfig, fileStorerServiceMock, fileValidatorServiceMock, zipFileServiceMock);
+    service = new MigrationFileRetrieverService(TEMPORARY_PATH, fileStorerServiceMock, fileValidatorServiceMock, zipFileServiceMock);
     zipFile = tempDir.resolve("encryptedFile.zip");
     try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipFile))) {
       addZipEntry(zos, "file1.txt", "This is the content of file1.");
@@ -184,7 +177,7 @@ class MigrationFileRetrieverServiceTest {
     Path filePath = Path.of("tmp/file.csv");
     InputStream expectedStream = new java.io.ByteArrayInputStream("zip-content".getBytes());
 
-    when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, foldersPathsConfig.getProcessTargetSubFolders().getArchive(), uploads.getFilePathName(), uploads.getFileName()))
+    when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, uploads.getFilePathName(), uploads.getFileName()))
       .thenReturn(filePath);
     when(fileStorerServiceMock.decryptFile(filePath.getParent(), "file.csv")).thenReturn(expectedStream);
 
@@ -201,7 +194,7 @@ class MigrationFileRetrieverServiceTest {
     uploads.setFilePathName("migration-data/debt-positions-type-org-operators");
     uploads.setFileName("operators.csv");
 
-    when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, foldersPathsConfig.getProcessTargetSubFolders().getArchive(), uploads.getFilePathName(), uploads.getFileName()))
+    when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, uploads.getFilePathName(), uploads.getFileName()))
       .thenReturn(null);
 
     @SuppressWarnings("resource")
@@ -218,13 +211,15 @@ class MigrationFileRetrieverServiceTest {
     uploads.setFileName("operators.csv");
 
     Path organizationPath = tempDir.resolve(String.valueOf(organizationId));
-    String errorFilename = "ERROR-operators.zip";
     Path errorDirectory = organizationPath.resolve(uploads.getFilePathName()).resolve("errors");
+    String errorFilename = "ERROR-operators.zip";
+
     Files.createDirectories(errorDirectory);
     Files.createFile(errorDirectory.resolve(errorFilename + AESUtils.CIPHER_EXTENSION));
+
     InputStream expectedStream = new java.io.ByteArrayInputStream("zip-content".getBytes());
 
-    when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationPath);
+    when(fileStorerServiceMock.buildErrorFolderPath(uploads)).thenReturn(errorDirectory);
     when(fileStorerServiceMock.decryptFile(errorDirectory, errorFilename)).thenReturn(expectedStream);
 
     InputStream result = service.retrieveErrorFile(uploads);

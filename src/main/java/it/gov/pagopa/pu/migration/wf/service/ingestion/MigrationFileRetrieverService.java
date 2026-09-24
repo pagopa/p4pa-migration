@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion;
 
-import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.exception.common.NotFoundException;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.service.file.FileStorerService;
@@ -9,7 +8,6 @@ import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -22,7 +20,6 @@ import java.util.List;
  * Service class responsible for handling encrypted ingestion files,
  * including decryption, validation, and extraction of ZIP files.
  */
-@Lazy
 @Slf4j
 @Service
 public class MigrationFileRetrieverService {
@@ -31,7 +28,6 @@ public class MigrationFileRetrieverService {
    * The temporary directory used for working process.
    */
   private final Path tempDirectoryPath;
-  private final FoldersPathsConfig foldersPathsConfig;
 
   private final FileStorerService fileStorerService;
   private final FileValidatorService fileValidatorService;
@@ -39,13 +35,11 @@ public class MigrationFileRetrieverService {
 
   public MigrationFileRetrieverService(
     @Value("${folders.tmp}") String tempFolder,
-    FoldersPathsConfig foldersPathsConfig,
     FileStorerService fileStorerService,
     FileValidatorService fileValidatorService,
     ZipFileService zipFileService
   ) {
     this.tempDirectoryPath = Path.of(tempFolder);
-    this.foldersPathsConfig = foldersPathsConfig;
     this.fileStorerService = fileStorerService;
     this.fileValidatorService = fileValidatorService;
     this.zipFileService = zipFileService;
@@ -109,7 +103,6 @@ public class MigrationFileRetrieverService {
   public InputStream retrieveFile(Uploads upload) {
     Path filePath = fileStorerService.getUploadedOrArchivedPath(
       upload.getOrganizationId(),
-      foldersPathsConfig.getProcessTargetSubFolders().getArchive(),
       upload.getFilePathName(),
       upload.getFileName());
 
@@ -122,10 +115,9 @@ public class MigrationFileRetrieverService {
   }
 
   public InputStream retrieveErrorFile(Uploads upload) {
+    Path errorDirectory = fileStorerService.buildErrorFolderPath(upload);
     String errorFilename = ErrorArchiverService.buildErrorZipFileName(upload.getFileName());
-    Path errorDirectory = fileStorerService.buildOrganizationBasePath(upload.getOrganizationId())
-      .resolve(Path.of(upload.getFilePathName()))
-      .resolve(foldersPathsConfig.getProcessTargetSubFolders().getErrors());
+
     Path encryptedFilePath = errorDirectory.resolve(errorFilename + AESUtils.CIPHER_EXTENSION);
 
     if (!Files.isRegularFile(encryptedFilePath)) {
