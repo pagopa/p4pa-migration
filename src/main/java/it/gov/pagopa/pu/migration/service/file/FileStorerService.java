@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.migration.exception.FileUploadException;
 import it.gov.pagopa.pu.migration.exception.InvalidFileException;
+import it.gov.pagopa.pu.migration.exception.common.ConflictException;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,11 @@ public class FileStorerService {
     fileName = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(fileName));
     FileValidatorService.validateFilename(fileName);
     byte[] fileHash;
+
+    if(checkIfAlreadyUploadedOrArchived(organizationId, relativePath, fileName)) {
+      throw new ConflictException("FILE_ALREADY_EXISTS", "File %s/%s already uploaded or archived for organization %s".formatted(relativePath, fileName, organizationId));
+    }
+
     Path relativeFileLocation = concatenatePaths(relativePath, fileName);
     Path organizationBasePath = buildOrganizationBasePath(organizationId);
     Path absolutePath = concatenatePaths(organizationBasePath.toString(), relativeFileLocation.toString());
