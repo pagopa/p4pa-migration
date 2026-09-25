@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.migration.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.migration.dto.FileResourceDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
 import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
@@ -19,7 +20,7 @@ public interface MigrationFileService {
   Uploads getUpload(String orgIpaCode, Long uploadId, UserInfo loggedUser);
   List<UploadDetails> getUploadDetails(String orgIpaCode, Long uploadId, UserInfo loggedUser);
   UploadDetails getUploadDetail(String orgIpaCode, Long uploadId, Long uploadDetailsId, UserInfo loggedUser);
-  Resource getUploadFile(String orgIpaCode, Long uploadId, UserInfo loggedUser);
+  FileResourceDTO getUploadFile(String orgIpaCode, Long uploadId, UserInfo loggedUser);
   Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser);
 
 }

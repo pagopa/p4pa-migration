@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.migration.controller;
 
 import it.gov.pagopa.pu.migration.controller.generated.MigrationFileApi;
+import it.gov.pagopa.pu.migration.dto.FileResourceDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.UploadMigrationFileResponseDTO;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
@@ -69,17 +70,17 @@ public class MigrationFileControllerImpl implements MigrationFileApi {
   public ResponseEntity<Resource> getMigrationFile(String orgIpaCode, Long uploadId) {
     log.info("Requesting migration file of upload {} from org {}", uploadId, orgIpaCode);
 
-    Resource uploadFile = service.getUploadFile(orgIpaCode, uploadId, SecurityUtils.getLoggedUser());
+    FileResourceDTO uploadFile = service.getUploadFile(orgIpaCode, uploadId, SecurityUtils.getLoggedUser());
     if (uploadFile != null){
       HttpHeaders headers = new HttpHeaders();
       headers.setContentDisposition(ContentDisposition.attachment()
-        .filename(buildZipErrorFileName(orgIpaCode, uploadId))
+        .filename(uploadFile.getFileName())
         .build());
 
       return ResponseEntity.ok()
         .headers(headers)
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-        .body(uploadFile);
+        .body(uploadFile.getResource());
     } else {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

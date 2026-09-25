@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.fileshare.FileShareService;
+import it.gov.pagopa.pu.migration.dto.FileResourceDTO;
 import it.gov.pagopa.pu.migration.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
@@ -400,17 +401,19 @@ class MigrationFileServiceTest {
 
     Uploads uploads = new Uploads();
     uploads.setOrganizationId(organizationId);
+    uploads.setFileName("file.txt");
     when(uploadsRepositoryMock.findById(uploadId)).thenReturn(Optional.of(uploads));
 
     ByteArrayInputStream inputStreamMock = new ByteArrayInputStream("file-content".getBytes());
     when(migrationFileRetrieverServiceMock.retrieveFile(uploads)).thenReturn(inputStreamMock);
 
     // When
-    Resource result = service.getUploadFile(orgIpaCode, uploadId, loggedUser);
+    FileResourceDTO result = service.getUploadFile(orgIpaCode, uploadId, loggedUser);
 
-    try (var inputStream = result.getInputStream()) {
+    try (var inputStream = result.getResource().getInputStream()) {
       Assertions.assertArrayEquals("file-content".getBytes(), inputStream.readAllBytes());
     }
+    Assertions.assertEquals(uploads.getFileName(), result.getFileName());
   }
 
 //region test getUploadsErrorsZip

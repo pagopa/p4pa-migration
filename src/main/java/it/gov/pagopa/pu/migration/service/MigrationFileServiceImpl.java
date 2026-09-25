@@ -124,9 +124,9 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   }
 
   @Override
-  public Resource getUploadFile(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
+  public FileResourceDTO getUploadFile(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
     Uploads upload = getUpload(orgIpaCode, uploadId, loggedUser);
-    return new InputStreamResource(migrationFileRetrieverService.retrieveFile(upload));
+    return new FileResourceDTO(new InputStreamResource(migrationFileRetrieverService.retrieveFile(upload)), upload.getFileName());
   }
 
   @Override
