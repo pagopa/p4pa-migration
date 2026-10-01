@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.migration.controller;
 
 import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.migration.dto.FileResourceDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
 import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
@@ -31,8 +32,7 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(value = MigrationFileControllerImpl.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
   classes = JwtAuthenticationFilter.class))
@@ -164,6 +164,26 @@ class MigrationFileControllerTest {
       .andExpect(content().json("{\"uploadDetailId\":1}"));
   }
 
+  @Test
+  void whenGetMigrationFileThenInvokeService() throws Exception {
+    String orgIpaCode = "ORGIPA";
+    long uploadId = 0L;
+
+    UserInfo loggedUser = new UserInfo();
+    SecurityUtilsTest.configureSecurityContext(loggedUser);
+
+    byte[] fileContent = "result".getBytes();
+    FileResourceDTO expectedResult = new FileResourceDTO(new ByteArrayResource(fileContent), "filename.txt");
+
+    when(serviceMock.getUploadFile(Mockito.eq(orgIpaCode), Mockito.eq(uploadId), Mockito.same(loggedUser)))
+      .thenReturn(expectedResult);
+
+    mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}/file",orgIpaCode, uploadId)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      ).andExpect(status().isOk())
+      .andExpect(content().bytes(fileContent))
+      .andExpect(header().string("Content-Disposition", "attachment; filename=\"filename.txt\""));
+  }
 
   @Test
   void whenGetMigrationErrorsThenInvokeService() throws Exception {
@@ -182,7 +202,8 @@ class MigrationFileControllerTest {
     mockMvc.perform(get("/migration/organization/{orgIpaCode}/migrations/{uploadId}/errors",orgIpaCode, uploadId)
         .contentType(MediaType.APPLICATION_OCTET_STREAM)
       ).andExpect(status().isOk())
-      .andExpect(content().bytes(fileContent));
+      .andExpect(content().bytes(fileContent))
+      .andExpect(header().string("Content-Disposition", "attachment; filename=\"ORGIPA_0_ERRORS.zip\""));
   }
 
   @Test

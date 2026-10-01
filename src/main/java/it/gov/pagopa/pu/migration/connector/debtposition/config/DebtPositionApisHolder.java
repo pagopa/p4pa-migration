@@ -9,12 +9,10 @@ import it.gov.pagopa.pu.migration.config.rest.HttpClientErrorJsonBodyHandler;
 import it.gov.pagopa.pu.migration.connector.debtposition.mapper.DebtPositionErrorDTOMapper;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import tools.jackson.databind.json.JsonMapper;
 
-@Lazy
 @Service
 public class DebtPositionApisHolder {
     private final DebtPositionTypeOrgEntityControllerApi debtPositionTypeOrgEntityApi;

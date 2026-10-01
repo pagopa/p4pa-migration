@@ -10,7 +10,6 @@ import it.gov.pagopa.pu.migration.wf.dto.debtposition.InstallmentIngestionFlowFi
 import it.gov.pagopa.pu.migration.wf.service.ingestion.ErrorArchiverService;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationProcessingService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.Writer;
@@ -20,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Lazy
 @Slf4j
 public class DebtPositionProcessingService extends MigrationProcessingService<InstallmentIngestionFlowFileDTO, DebtPositionMigrationFileResult, DebtPositionErrorDTO> {
 

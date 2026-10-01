@@ -35,7 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
   "springdoc.api-docs.enabled=true",
   "springdoc.swagger-ui.enabled=false",
   "spring.temporal.enabled=false",
-  "spring.temporal.connection.target="
+  "spring.temporal.connection.target=",
+  "folders.shared: build"
 })
 @Slf4j
 class OpenApiGeneratorTest {

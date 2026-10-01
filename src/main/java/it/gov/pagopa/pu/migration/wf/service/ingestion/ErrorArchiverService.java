@@ -1,12 +1,14 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion;
 
-import it.gov.pagopa.pu.migration.wf.dto.ErrorFileDTO;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
+import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.utils.Utilities;
+import it.gov.pagopa.pu.migration.wf.dto.ErrorFileDTO;
 import it.gov.pagopa.pu.migration.wf.exception.NotRetryableActivityException;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
@@ -25,21 +27,18 @@ import java.util.stream.Stream;
 @Slf4j
 public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
 
-    private static final String ERRORFILE_PREFIX = "ERROR-";
+    public static final String ERRORFILE_PREFIX = "ERROR-";
 
-    private final Path sharedDirectoryPath;
-    private final String errorFolder;
+    private final FileStorerService fileStorerService;
     private final FileArchiverService fileArchiverService;
     private final CsvService csvService;
 
     protected ErrorArchiverService(
-            String sharedFolder,
-            String errorFolder,
+            FileStorerService fileStorerService,
             FileArchiverService fileArchiverService,
             CsvService csvService
     ) {
-        this.sharedDirectoryPath = Path.of(sharedFolder);
-        this.errorFolder = errorFolder;
+        this.fileStorerService = fileStorerService;
         this.fileArchiverService = fileArchiverService;
         this.csvService = csvService;
     }
@@ -65,7 +64,7 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
                 .toList();
 
         try {
-            String errorFileName = ERRORFILE_PREFIX + Utilities.replaceFileExtension(fileName, ".csv");
+            String errorFileName = buildErrorFileName(fileName);
             Path errorCsvFilePath = workingDirectory.resolve(errorFileName);
 
             csvService.createCsv(errorCsvFilePath, getHeaders(), data);
@@ -76,7 +75,11 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
         }
     }
 
-    /**
+    public static @NonNull String buildErrorFileName(String fileName) {
+      return ERRORFILE_PREFIX + Utilities.replaceFileExtension(fileName, ".csv");
+    }
+
+  /**
      * Archives an error file to a specified target directory.
      * This method takes an error file and moves it to a target directory for archiving. It constructs
      * the original file path and the target directory path, then invokes the {@link FileArchiverService}
@@ -96,13 +99,8 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
             }
 
             if (!errorFiles.isEmpty()) {
-
-                Path targetDirectory = sharedDirectoryPath
-                        .resolve(String.valueOf(upload.getOrganizationId()))
-                        .resolve(upload.getFilePathName())
-                        .resolve(errorFolder);
-
-                String zipFileName = ERRORFILE_PREFIX + Utilities.replaceFileExtension(upload.getFileName(), ".zip");
+                Path targetDirectory = fileStorerService.buildErrorFolderPath(upload);
+                String zipFileName = buildErrorZipFileName(upload.getFileName());
                 Path zipFile = workingDirectory.resolve(zipFileName);
 
                 fileArchiverService.compressAndArchive(errorFiles, zipFile, targetDirectory);
@@ -115,5 +113,9 @@ public abstract class ErrorArchiverService<T extends ErrorFileDTO> {
             log.error("Something gone wrong while trying to archive error file!", e);
             return null;
         }
+    }
+
+    public static @NonNull String buildErrorZipFileName(String fileName) {
+      return ERRORFILE_PREFIX + Utilities.replaceFileExtension(fileName, ".zip");
     }
 }

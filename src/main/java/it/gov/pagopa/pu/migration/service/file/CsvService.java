@@ -6,7 +6,6 @@ import com.opencsv.bean.*;
 import com.opencsv.exceptions.CsvException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -17,7 +16,6 @@ import java.util.function.BiFunction;
 
 import static com.opencsv.enums.CSVReaderNullFieldIndicator.EMPTY_SEPARATORS;
 
-@Lazy
 @Service
 @Slf4j
 public class CsvService {

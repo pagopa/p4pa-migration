@@ -6,10 +6,8 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.migration.connector.auth.config.AuthApisHolder;
 import it.gov.pagopa.pu.migration.exception.InvalidAccessTokenException;
 import it.gov.pagopa.pu.migration.exception.common.RestInvokeNotAuthorizedException;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-@Lazy
 @Service
 public class AuthnClient {
 

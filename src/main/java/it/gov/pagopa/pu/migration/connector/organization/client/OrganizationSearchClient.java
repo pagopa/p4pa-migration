@@ -4,10 +4,8 @@ import it.gov.pagopa.pu.migration.connector.organization.config.OrganizationApis
 import it.gov.pagopa.pu.migration.exception.common.RestInvokeNotFoundException;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-@Lazy
 @Service
 @Slf4j
 public class OrganizationSearchClient {

@@ -3,12 +3,10 @@ package it.gov.pagopa.pu.migration.connector.debtposition;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.migration.connector.debtposition.client.DebtPositionTypeOrgClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Lazy
 @Service
 @Slf4j
 public class DebtPositionTypeOrgServiceImpl implements DebtPositionTypeOrgService {

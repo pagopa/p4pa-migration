@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.migration.controller;
 
 import it.gov.pagopa.pu.migration.controller.generated.MigrationFileApi;
+import it.gov.pagopa.pu.migration.dto.FileResourceDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.UploadMigrationFileResponseDTO;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
@@ -66,6 +67,26 @@ public class MigrationFileControllerImpl implements MigrationFileApi {
   }
 
   @Override
+  public ResponseEntity<Resource> getMigrationFile(String orgIpaCode, Long uploadId) {
+    log.info("Requesting migration file of upload {} from org {}", uploadId, orgIpaCode);
+
+    FileResourceDTO uploadFile = service.getUploadFile(orgIpaCode, uploadId, SecurityUtils.getLoggedUser());
+    if (uploadFile != null){
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentDisposition(ContentDisposition.attachment()
+        .filename(uploadFile.getFileName())
+        .build());
+
+      return ResponseEntity.ok()
+        .headers(headers)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+        .body(uploadFile.getResource());
+    } else {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+  }
+
+  @Override
   public ResponseEntity<Resource> getMigrationErrors(String orgIpaCode, Long uploadId){
     log.info("Requesting migration errors of upload {} from org {}", uploadId, orgIpaCode);
 
@@ -73,7 +94,7 @@ public class MigrationFileControllerImpl implements MigrationFileApi {
     if (uploadsErrorsZip != null){
       HttpHeaders headers = new HttpHeaders();
       headers.setContentDisposition(ContentDisposition.attachment()
-        .filename(buildZipFileName(orgIpaCode, uploadId))
+        .filename(buildZipErrorFileName(orgIpaCode, uploadId))
         .build());
 
       return ResponseEntity.ok()
@@ -83,10 +104,9 @@ public class MigrationFileControllerImpl implements MigrationFileApi {
     } else {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
   }
 
-  private String buildZipFileName(String orgIpaCode, Long uploadId) {
+  private String buildZipErrorFileName(String orgIpaCode, Long uploadId) {
     return orgIpaCode + "_" + uploadId + "_ERRORS.zip";
   }
 }

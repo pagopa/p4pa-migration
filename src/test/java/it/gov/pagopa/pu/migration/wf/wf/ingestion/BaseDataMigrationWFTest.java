@@ -192,6 +192,11 @@ public abstract class BaseDataMigrationWFTest<A extends MigrationFileTypeHandler
     when(ingestionFlowFileRetrieverActivityMock.getIngestionFlowFile(ingestionFlowFileId))
       .thenReturn(ingestionFlowFileAtStart)
       .thenReturn(ingestionFlowFileProcessing)
+      .thenReturn(ingestionFlowFileProcessing)
+      .thenReturn(ingestionFlowFileProcessing)
+      .thenReturn(ingestionFlowFileProcessing)
+      .thenReturn(ingestionFlowFileProcessing)
+      .thenReturn(ingestionFlowFileProcessing)
       .thenReturn(ingestionFlowFileCompleted);
 
     try (MockedStatic<Workflow> workflowMockedStatic = Mockito.mockStatic(Workflow.class)) {
@@ -202,8 +207,12 @@ public abstract class BaseDataMigrationWFTest<A extends MigrationFileTypeHandler
       verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
       verify(uploadDetailsUpdateActivityMock).updateDetailStatus(uploadDetailId, ingestionFlowFileCompleted);
       verify(uploadsStatusUpdateActivityMock).updateUploadStatus(uploadId, UploadsStatusEnum.PROCESSING, UploadsStatusEnum.COMPLETED, expectedResult);
-      workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofMinutes(1)), times(1));
-      workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofMinutes(2)), times(1));
+      workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofSeconds(10)));
+      workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofSeconds(15)));
+      workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofSeconds(22)));
+      workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofSeconds(33)));
+      workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofSeconds(49)));
+      workflowMockedStatic.verify(() -> Workflow.sleep(Duration.ofSeconds(60)), times(2));
     }
   }
 }
