@@ -13,8 +13,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class InstallmentIngestionFlowFileDTO {
 
-  @CsvBindByName(column = "IUPD")
+  @CsvBindByName(column = "iupdOrg")
   private String iupdOrg;
+
+  @CsvBindByName(column = "iupdPagopa")
+  private String iupdPagopa;
 
   @CsvBindByName(column = "descrizionePosizioneDebitoria")
   private String description;
