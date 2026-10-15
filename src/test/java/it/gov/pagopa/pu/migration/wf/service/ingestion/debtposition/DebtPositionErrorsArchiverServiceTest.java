@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.service.file.CsvService;
 import it.gov.pagopa.pu.migration.service.file.FileArchiverService;
+import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.utils.faker.UploadsFaker;
 import it.gov.pagopa.pu.migration.wf.dto.debtposition.DebtPositionErrorDTO;
 import it.gov.pagopa.pu.migration.wf.exception.NotRetryableActivityException;
@@ -12,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
@@ -24,11 +24,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DebtPositionErrorsArchiverServiceTest {
 
-
+  @Mock
+  private FileStorerService fileStorerServiceMock;
   @Mock
   private FileArchiverService fileArchiverServiceMock;
 
@@ -46,7 +48,7 @@ class DebtPositionErrorsArchiverServiceTest {
 
   @BeforeEach
   void setUp() {
-    service = new DebtPositionErrorsArchiverService(sharedDirectory, errorFolder, fileArchiverServiceMock, csvServiceMock);
+    service = new DebtPositionErrorsArchiverService(fileStorerServiceMock, fileArchiverServiceMock, csvServiceMock);
   }
 
   @Test
@@ -63,7 +65,7 @@ class DebtPositionErrorsArchiverServiceTest {
     service.writeErrors(workingDirectory, upload, errorDTOList, "fileName.cdv");
 
     // Then
-    Mockito.verify(csvServiceMock)
+    verify(csvServiceMock)
       .createCsv(eq(expectedErrorFilePath), any(), any());
   }
 
@@ -77,7 +79,7 @@ class DebtPositionErrorsArchiverServiceTest {
     service.writeErrors(workingDirectory, upload, List.of(), "fileName.csv");
 
     // Then
-    Mockito.verify(csvServiceMock, Mockito.times(0))
+    verify(csvServiceMock, times(0))
       .createCsv(eq(expectedErrorFilePath), any(), any());
   }
 
@@ -90,7 +92,7 @@ class DebtPositionErrorsArchiverServiceTest {
     Uploads upload = UploadsFaker.buildUploads(fileType);
     Path expectedErrorFilePath = workingDirectory.resolve("ERROR-fileName.csv");
 
-    Mockito.doThrow(new IOException("Error creating CSV"))
+    doThrow(new IOException("Error creating CSV"))
       .when(csvServiceMock)
       .createCsv(eq(expectedErrorFilePath), any(), any());
 
@@ -122,13 +124,16 @@ class DebtPositionErrorsArchiverServiceTest {
       Uploads upload = UploadsFaker.buildUploads(fileType);
       String expectedZipErrorFileName = "ERROR-fileName.zip";
 
+      when(fileStorerServiceMock.buildErrorFolderPath(upload))
+        .thenReturn(Path.of(sharedDirectory, upload.getOrganizationId() + "", upload.getFilePathName(), errorFolder));
+
       // When
       String result = service.archiveErrorFiles(workingDirectory, upload);
 
       // Then
       Assertions.assertEquals(expectedZipErrorFileName, result);
 
-      Mockito.verify(fileArchiverServiceMock)
+      verify(fileArchiverServiceMock)
         .compressAndArchive(List.of(errorFile), Path.of("build/test/" + expectedZipErrorFileName), Path.of(sharedDirectory, upload.getOrganizationId() + "", upload.getFilePathName(), errorFolder));
     } finally {
       Files.delete(errorFile);
@@ -145,7 +150,10 @@ class DebtPositionErrorsArchiverServiceTest {
       Uploads upload = UploadsFaker.buildUploads(fileType);
       String expectedZipErrorFileName = "ERROR-fileName.zip";
 
-      Mockito.doThrow(new IOException("Error")).when(fileArchiverServiceMock)
+      when(fileStorerServiceMock.buildErrorFolderPath(upload))
+        .thenReturn(Path.of(sharedDirectory, upload.getOrganizationId() + "", upload.getFilePathName(), errorFolder));
+
+      doThrow(new IOException("Error")).when(fileArchiverServiceMock)
         .compressAndArchive(List.of(errorFile), Path.of("build/test/" + expectedZipErrorFileName), Path.of(sharedDirectory, upload.getOrganizationId() + "", upload.getFilePathName(), errorFolder));
 
       // When

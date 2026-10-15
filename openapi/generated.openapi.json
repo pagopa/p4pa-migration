@@ -13,6 +13,9 @@
     "BearerAuth" : [ ]
   } ],
   "tags" : [ {
+    "name" : "debt-position-type-org-operators",
+    "description" : "the debt-position-type-org-operators API"
+  }, {
     "name" : "migration-file",
     "description" : "the migration-file API"
   }, {
@@ -20,6 +23,70 @@
     "description" : "the Workflow API"
   } ],
   "paths" : {
+    "/organization/{organizationId}/debt-position-type-orgs/consume" : {
+      "put" : {
+        "tags" : [ "debt-position-type-org-operators" ],
+        "summary" : "Consume DebtPositionTypeOrgOperators",
+        "description" : "Consume DebtPositionTypeOrgs for the operator",
+        "operationId" : "consumeDebtPositionTypeOrgOperators",
+        "parameters" : [ {
+          "name" : "organizationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConsumeDebtPositionTypeOrgOperatorsDTO"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          },
+          "401" : {
+            "description" : "Unauthorized - Missing or invalid token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
     "/migration/organization/{orgIpaCode}/{migrationFileType}" : {
       "post" : {
         "tags" : [ "migration-file" ],
@@ -84,15 +151,24 @@
         } ]
       }
     },
-    "/migration/workflows/{workflowId}/status" : {
+    "/organization/{organizationId}/debt-position-type-orgs/unconsumed" : {
       "get" : {
-        "tags" : [ "Workflow" ],
-        "summary" : "Get Workflow Status",
-        "description" : "Retrieve the current status of a Temporal workflow by its ID.",
-        "operationId" : "getWorkflowStatus",
+        "tags" : [ "debt-position-type-org-operators" ],
+        "summary" : "Get unconsumed DebtPositionTypeOrg ids",
+        "description" : "Retrieve the unconsumed DebtPositionTypeOrg ids for the operator",
+        "operationId" : "getUnconsumedDebtPositionTypeOrgIds",
         "parameters" : [ {
-          "name" : "workflowId",
+          "name" : "organizationId",
           "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "fiscalCode",
+          "in" : "query",
+          "description" : "Operator's fiscal code",
           "required" : true,
           "schema" : {
             "type" : "string"
@@ -100,17 +176,31 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Workflow status retrieved successfully",
+            "description" : "OK",
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/WorkflowStatusDTO"
+                  "type" : "array",
+                  "items" : {
+                    "type" : "integer",
+                    "format" : "int64"
+                  }
                 }
               }
             }
           },
-          "404" : {
-            "description" : "Workflow not found",
+          "401" : {
+            "description" : "Unauthorized - Missing or invalid token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -120,7 +210,7 @@
             }
           },
           "500" : {
-            "description" : "Server Error",
+            "description" : "Internal Server Error",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -242,6 +332,129 @@
         } ]
       }
     },
+    "/migration/organization/{orgIpaCode}/migrations/{uploadId}/file" : {
+      "get" : {
+        "tags" : [ "migration-file" ],
+        "summary" : "getMigrationFile",
+        "description" : "Service to retrieve the file of an upload request",
+        "operationId" : "getMigrationFile",
+        "parameters" : [ {
+          "name" : "orgIpaCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "uploadId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "ZIP file containing error files",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "No Content - No Errors Found",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized - Missing or invalid token",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden - No upload in error state",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found - Upload not found",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error - Error during errors processing",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
     "/migration/organization/{orgIpaCode}/migrations/{uploadId}/errors" : {
       "get" : {
         "tags" : [ "migration-file" ],
@@ -273,6 +486,12 @@
                   "type" : "string",
                   "format" : "binary"
                 }
+              },
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
               }
             }
           },
@@ -280,6 +499,12 @@
             "description" : "No Content - No Errors Found",
             "content" : {
               "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/json" : {
                 "schema" : {
                   "type" : "string",
                   "format" : "binary"
@@ -292,8 +517,12 @@
             "content" : {
               "application/octet-stream" : {
                 "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
                 }
               }
             }
@@ -303,8 +532,12 @@
             "content" : {
               "application/octet-stream" : {
                 "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
                 }
               }
             }
@@ -314,8 +547,12 @@
             "content" : {
               "application/octet-stream" : {
                 "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
                 }
               }
             }
@@ -325,8 +562,12 @@
             "content" : {
               "application/octet-stream" : {
                 "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
                 }
               }
             }
@@ -445,10 +686,121 @@
           "BearerAuth" : [ ]
         } ]
       }
+    },
+    "/internal/workflows/{workflowId}/status" : {
+      "get" : {
+        "tags" : [ "Workflow" ],
+        "summary" : "Get Workflow Status",
+        "description" : "Retrieve the current status of a Temporal workflow by its ID.",
+        "operationId" : "getWorkflowStatus",
+        "parameters" : [ {
+          "name" : "workflowId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Workflow status retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WorkflowStatusDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Workflow not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
     }
   },
   "components" : {
     "schemas" : {
+      "CategoryEnum" : {
+        "type" : "string",
+        "enum" : [ "NOT_FOUND", "BAD_REQUEST", "GENERIC_ERROR", "FILE_UPLOAD_ERROR", "INVALID_FILE", "FORBIDDEN", "CONFLICT", "UNAUTHORIZED", "TOO_MANY_REQUESTS" ]
+      },
+      "ErrorDTO" : {
+        "required" : [ "category", "code", "message" ],
+        "type" : "object",
+        "properties" : {
+          "category" : {
+            "$ref" : "#/components/schemas/CategoryEnum"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "fields" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorFieldDTO"
+            }
+          },
+          "traceId" : {
+            "type" : "string",
+            "nullable" : true
+          }
+        }
+      },
+      "ErrorFieldDTO" : {
+        "required" : [ "error", "field", "message" ],
+        "type" : "object",
+        "properties" : {
+          "field" : {
+            "type" : "string"
+          },
+          "error" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ConsumeDebtPositionTypeOrgOperatorsDTO" : {
+        "required" : [ "debtPositionTypeOrgIds", "fiscalCode" ],
+        "type" : "object",
+        "properties" : {
+          "debtPositionTypeOrgIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "fiscalCode" : {
+            "type" : "string"
+          }
+        }
+      },
       "UploadMigrationFileResponseDTO" : {
         "required" : [ "runId", "uploadId", "workflowId" ],
         "type" : "object",
@@ -465,69 +817,9 @@
           }
         }
       },
-      "CodeEnum" : {
-        "type" : "string",
-        "enum" : [ "NOT_FOUND", "BAD_REQUEST", "GENERIC_ERROR", "FILE_UPLOAD_ERROR", "INVALID_FILE", "FORBIDDEN" ]
-      },
-      "ErrorDTO" : {
-        "required" : [ "code", "message" ],
-        "type" : "object",
-        "properties" : {
-          "code" : {
-            "$ref" : "#/components/schemas/CodeEnum"
-          },
-          "message" : {
-            "type" : "string"
-          },
-          "traceId" : {
-            "type" : "string",
-            "nullable" : true
-          }
-        }
-      },
       "MigrationFileTypeEnum" : {
         "type" : "string",
         "enum" : [ "ORGANIZATIONS", "ORG_SIL_SERVICES", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG", "DEBT_POSITIONS_TYPE_ORG_OPERATORS", "PAYMENT_NOTIFICATION", "PAYMENTS_REPORTING", "TREASURY_CSV_COMPLETE", "ASSESSMENTS", "ASSESSMENTS_REGISTRY", "DEBT_POSITIONS", "DEBT_POSITIONS_PAID" ]
-      },
-      "WorkflowStatusDTO" : {
-        "required" : [ "runId", "status", "taskQueue", "workflowId", "workflowType" ],
-        "type" : "object",
-        "properties" : {
-          "workflowId" : {
-            "type" : "string"
-          },
-          "workflowType" : {
-            "type" : "string"
-          },
-          "status" : {
-            "type" : "string"
-          },
-          "runId" : {
-            "type" : "string"
-          },
-          "taskQueue" : {
-            "type" : "string"
-          },
-          "startDateTime" : {
-            "type" : "string",
-            "format" : "date-time",
-            "nullable" : true
-          },
-          "executionDateTime" : {
-            "type" : "string",
-            "format" : "date-time",
-            "nullable" : true
-          },
-          "endDateTime" : {
-            "type" : "string",
-            "format" : "date-time",
-            "nullable" : true
-          },
-          "duration" : {
-            "type" : "string",
-            "nullable" : true
-          }
-        }
       },
       "Uploads" : {
         "required" : [ "fileName", "filePathName", "fileSize", "fileType", "organizationId", "status" ],
@@ -594,7 +886,7 @@
       },
       "IngestionFlowFileTypeEnum" : {
         "type" : "string",
-        "enum" : [ "RECEIPT", "RECEIPT_PAGOPA", "PAYMENTS_REPORTING", "PAYMENTS_REPORTING_PAGOPA", "TREASURY_OPI", "TREASURY_CSV", "TREASURY_XLS", "TREASURY_POSTE", "TREASURY_CSV_COMPLETE", "DP_INSTALLMENTS", "PAYMENT_NOTIFICATION", "ORGANIZATIONS", "ORGANIZATIONS_SIL_SERVICE", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG", "DEBT_POSITIONS_TYPE_ORG_OPERATORS", "ASSESSMENTS", "ASSESSMENTS_REGISTRY", "SEND_NOTIFICATION" ]
+        "enum" : [ "RECEIPT", "RECEIPT_PAGOPA", "PAYMENTS_REPORTING", "PAYMENTS_REPORTING_PAGOPA", "TREASURY_OPI", "TREASURY_CSV", "TREASURY_XLS", "TREASURY_POSTE", "TREASURY_CSV_COMPLETE", "DP_INSTALLMENTS", "PAYMENT_NOTIFICATION", "ORGANIZATIONS", "ORGANIZATIONS_SIL_SERVICE", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG", "ASSESSMENTS", "ASSESSMENTS_REGISTRY", "SEND_NOTIFICATION" ]
       },
       "UploadDetails" : {
         "required" : [ "fileName", "filePathName", "fileSize", "ingestionFlowFileType", "organizationId", "status", "uploadId" ],
@@ -659,6 +951,46 @@
           "numCorrectlyImportedRows" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "WorkflowStatusDTO" : {
+        "required" : [ "runId", "status", "taskQueue", "workflowId", "workflowType" ],
+        "type" : "object",
+        "properties" : {
+          "workflowId" : {
+            "type" : "string"
+          },
+          "workflowType" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "runId" : {
+            "type" : "string"
+          },
+          "taskQueue" : {
+            "type" : "string"
+          },
+          "startDateTime" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "executionDateTime" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "endDateTime" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "duration" : {
+            "type" : "string",
+            "nullable" : true
           }
         }
       }

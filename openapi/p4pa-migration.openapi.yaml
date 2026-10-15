@@ -4,9 +4,9 @@ info:
   description: Api and Models
   version: 0.0.1
 servers:
-  - url: http://localhost:8080/migration
+  - url: http://localhost:8080
 paths:
-  /organization/{orgIpaCode}/{migrationFileType}:
+  /migration/organization/{orgIpaCode}/{migrationFileType}:
     post:
       tags:
         - migration-file
@@ -48,7 +48,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /organization/{orgIpaCode}:
+  /migration/organization/{orgIpaCode}:
     get:
       tags:
         - migration-file
@@ -86,7 +86,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /organization/{orgIpaCode}/migrations/{uploadId}:
+  /migration/organization/{orgIpaCode}/migrations/{uploadId}:
     get:
       tags:
         - migration-file
@@ -118,7 +118,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /organization/{orgIpaCode}/migrations/{uploadId}/details:
+  /migration/organization/{orgIpaCode}/migrations/{uploadId}/details:
     get:
       tags:
         - migration-file
@@ -152,7 +152,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /organization/{orgIpaCode}/migrations/{uploadId}/details/{uploadDetailsId}:
+  /migration/organization/{orgIpaCode}/migrations/{uploadId}/details/{uploadDetailsId}:
     get:
       tags:
         - migration-file
@@ -190,7 +190,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
-  /organization/{orgIpaCode}/migrations/{uploadId}/errors:
+  /migration/organization/{orgIpaCode}/migrations/{uploadId}/file:
+    get:
+      tags:
+        - migration-file
+      summary: getMigrationFile
+      description: Service to retrieve the file of an upload request
+      operationId: getMigrationFile
+      parameters:
+        - name: orgIpaCode
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: uploadId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: ZIP file containing error files
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '204':
+          description: No Content - No Errors Found
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+        '403':
+          description: Forbidden - No upload in error state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+        '404':
+          description: Not Found - Upload not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+        '500':
+          description: Internal Server Error - Error during errors processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+  /migration/organization/{orgIpaCode}/migrations/{uploadId}/errors:
     get:
       tags:
         - migration-file
@@ -221,13 +274,29 @@ paths:
           description: No Content - No Errors Found
         '401':
           description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
         '403':
           description: Forbidden - No upload in error state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
         '404':
           description: Not Found - Upload not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
         '500':
           description: Internal Server Error - Error during errors processing
-  /workflows/{workflowId}/status:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+  /internal/workflows/{workflowId}/status:
     get:
       tags:
         - Workflow
@@ -255,6 +324,94 @@ paths:
                 $ref: '#/components/schemas/ErrorDTO'
         '500':
           description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+  /organization/{organizationId}/debt-position-type-orgs/unconsumed:
+    get:
+      tags:
+        - debt-position-type-org-operators
+      summary: Get unconsumed DebtPositionTypeOrg ids
+      description: Retrieve the unconsumed DebtPositionTypeOrg ids for the operator
+      operationId: getUnconsumedDebtPositionTypeOrgIds
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: fiscalCode
+          in: query
+          description: Operator's fiscal code
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+  /organization/{organizationId}/debt-position-type-orgs/consume:
+    put:
+      tags:
+        - debt-position-type-org-operators
+      summary: Consume DebtPositionTypeOrgOperators
+      description: Consume DebtPositionTypeOrgs for the operator
+      operationId: consumeDebtPositionTypeOrgOperators
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsumeDebtPositionTypeOrgOperatorsDTO'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+        '500':
+          description: Internal Server Error
           content:
             application/json:
               schema:
@@ -340,10 +497,11 @@ components:
     ErrorDTO:
       type: object
       required:
+        - category
         - code
         - message
       properties:
-        code:
+        category:
           type: string
           enum:
             - NOT_FOUND
@@ -352,7 +510,42 @@ components:
             - FILE_UPLOAD_ERROR
             - INVALID_FILE
             - FORBIDDEN
+            - CONFLICT
+            - UNAUTHORIZED
+            - TOO_MANY_REQUESTS
+        code:
+          type: string
         message:
           type: string
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorFieldDTO"
         traceId:
+          type: string
+    ErrorFieldDTO:
+      type: object
+      required:
+        - field
+        - error
+        - message
+      properties:
+        field:
+          type: string
+        error:
+          type: string
+        message:
+          type: string
+    ConsumeDebtPositionTypeOrgOperatorsDTO:
+      type: object
+      required:
+        - debtPositionTypeOrgIds
+        - fiscalCode
+      properties:
+        debtPositionTypeOrgIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+        fiscalCode:
           type: string

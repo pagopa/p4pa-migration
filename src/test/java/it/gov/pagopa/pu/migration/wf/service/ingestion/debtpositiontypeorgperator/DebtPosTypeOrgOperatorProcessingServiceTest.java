@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion.debtpositiontypeorgperator;
 
-import it.gov.pagopa.pu.debtposition.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.debtposition.DebtPositionTypeOrgService;
 import it.gov.pagopa.pu.migration.connector.organization.OrganizationService;
@@ -35,8 +35,6 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
 
   @Mock
   private DebtPosTypeOrgOperatorsErrorsArchiverService errorsArchiverServiceMock;
-  @Mock
-  private Path workingDirectory;
   @Mock
   private OrganizationService organizationServiceMock;
   @Mock
@@ -151,11 +149,14 @@ class DebtPosTypeOrgOperatorProcessingServiceTest {
     DebtPositionTypeOrgOperators savedEntity = new DebtPositionTypeOrgOperators();
     savedEntity.setOrganizationId(1L);
     when(debtPositionTypeOrgOperatorsRepositoryMock.save(any(DebtPositionTypeOrgOperators.class))).thenReturn(savedEntity);
-    boolean consumed = service.consumeRow(1, dto, result, errorList, new Uploads());
+    Uploads upload = new Uploads();
+    upload.setUpdateOperatorExternalId("operator");
+    boolean consumed = service.consumeRow(1, dto, result, errorList, upload);
     assertTrue(consumed);
     verify(organizationServiceMock).getOrganizationByIpaCode(anyString(), anyString());
     verify(debtPositionTypeOrgServiceMock).getDebtPositionTypeOrgByCodeAndOrgId(anyString(), anyLong(), any());
-    verify(debtPositionTypeOrgOperatorsRepositoryMock).save(any(DebtPositionTypeOrgOperators.class));
+    verify(debtPositionTypeOrgOperatorsRepositoryMock).save(argThat(entity ->
+      "operator".equals(entity.getUpdateOperatorExternalId())));
   }
 
   @Test

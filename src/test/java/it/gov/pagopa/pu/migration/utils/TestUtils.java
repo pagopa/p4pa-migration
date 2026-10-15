@@ -12,15 +12,20 @@ import uk.co.jemos.podam.typeManufacturers.AbstractTypeManufacturer;
 import java.util.*;
 
 public class TestUtils {
-  private TestUtils() {
-  }
+
+  private TestUtils() {}
 
   static {
     clearDefaultTimezone();
+    clearLocale();
   }
 
   public static void clearDefaultTimezone() {
     TimeZone.setDefault(Constants.DEFAULT_TIMEZONE);
+  }
+
+  public static void clearLocale() {
+    Locale.setDefault(Locale.ITALY);
   }
 
   /**

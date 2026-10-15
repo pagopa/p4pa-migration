@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.migration.model.UploadDetails;
 import it.gov.pagopa.pu.migration.repository.UploadDetailsRepository;
 import it.gov.pagopa.pu.migration.wf.exception.UploadNotFoundException;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

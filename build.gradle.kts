@@ -6,15 +6,14 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
   java
-  id("org.springframework.boot") version "4.0.6"
+  id("org.springframework.boot") version "4.1.1"
   id("io.spring.dependency-management") version "1.1.7"
   jacoco
-  id("org.sonarqube") version "7.2.3.7755"
-  id("com.github.ben-manes.versions") version "0.54.0"
-  id("org.openapi.generator") version "7.21.0"
+  id("org.sonarqube") version "7.4.0.8496"
+  id("org.openapi.generator") version "7.25.0"
   id("org.ajoberstar.grgit") version "5.3.2"
-  id("com.gorylenko.gradle-git-properties") version "2.5.7"
-  id("com.github.jk1.dependency-license-report") version "3.1.2"
+  id("com.gorylenko.gradle-git-properties") version "4.0.1"
+  id("com.github.jk1.dependency-license-report") version "3.1.4"
 }
 
 group = "it.gov.pagopa.payhub"
@@ -42,7 +41,7 @@ licenseReport {
   outputDir = "$projectDir/dependency-licenses"
   filters = arrayOf(SpdxLicenseBundleNormalizer())
 }
-tasks.classes {
+tasks.dependencies {
   finalizedBy(tasks.generateLicenseReport)
 }
 
@@ -50,23 +49,29 @@ repositories {
   mavenCentral()
 }
 
-val springDocOpenApiVersion = "3.0.3"
-val janinoVersion = "3.1.12"
-val openApiToolsVersion = "0.2.10"
-val micrometerVersion = "1.6.5"
-val httpClientVersion = "5.6.1"
-val httpCoreVersion = "5.4.2"
-val bouncycastleVersion = "1.84"
-val postgresJdbcVersion = "42.7.10"
+val springDocOpenApiVersion = "3.1.1"
+val openApiToolsVersion = "0.2.11"
+val micrometerVersion = "1.7.1"
+val httpClientVersion = "5.6.4"
+val httpCoreVersion = "5.4.4"
+val kafkaAppender = "0.2.0-RC2"
+val lz4JavaVersion = "1.12.0"
+val bouncycastleVersion = "1.86"
+val postgresJdbcVersion = "42.7.13"
 val podamVersion = "8.0.2.RELEASE"
-val temporalVersion = "1.34.0"
-val protobufJavaVersion = "4.34.1"
-val grpcBomVersion = "1.80.0"
-val guavaVersion = "33.6.0-jre"
-val otelVersion = "1.61.0"
+val temporalVersion = "1.38.0"
+val protobufJavaVersion = "4.36.0"
+val grpcBomVersion = "1.83.1"
+val guavaVersion = "33.7.0-jre"
+val otelVersion = "1.65.0"
 val openCsvVersion = "5.12.0"
 val commonsBeanUtilsVersion = "1.11.0"
 val commonsLang3Version = "3.20.0"
+
+// CVE Security dependencies
+val tomcatEmbedCoreVersion = "11.0.26"
+val jackson2DatabindVersion = "2.22.3"
+val jackson3DatabindVersion = "3.1.7"
 
 
 dependencies {
@@ -82,15 +87,19 @@ dependencies {
     exclude(group = "org.apache.commons", module = "commons-lang3")
   }
   implementation("org.apache.commons:commons-lang3:${commonsLang3Version}")
-  implementation("org.codehaus.janino:janino:$janinoVersion")
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
   implementation("io.micrometer:micrometer-registry-prometheus")
   implementation("org.openapitools:jackson-databind-nullable:$openApiToolsVersion")
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
+  implementation("org.apache.httpcomponents.core5:httpcore5-h2:$httpCoreVersion")
   implementation("org.apache.httpcomponents.core5:httpcore5:$httpCoreVersion")
-  implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
-  implementation("org.postgresql:postgresql:${postgresJdbcVersion}")
-  implementation("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}")
+  implementation("com.github.danielwegener:logback-kafka-appender:$kafkaAppender") {
+    exclude(group = "org.lz4", module = "lz4-java")
+  }
+  implementation("at.yawk.lz4:lz4-java:$lz4JavaVersion")
+  implementation("org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion")
+  implementation("org.postgresql:postgresql:$postgresJdbcVersion")
+  implementation("commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion")
   //temporal
   implementation("io.temporal:temporal-spring-boot-starter:$temporalVersion") {
     exclude(group = "com.google.protobuf", module = "protobuf-java")
@@ -99,13 +108,18 @@ dependencies {
     exclude(group = "com.google.guava", module = "guava")
   }
   implementation("com.google.protobuf:protobuf-java:$protobufJavaVersion")
-  implementation("com.google.protobuf:protobuf-java-util:${protobufJavaVersion}")
-  implementation(platform("io.grpc:grpc-bom:${grpcBomVersion}"))
+  implementation("com.google.protobuf:protobuf-java-util:$protobufJavaVersion")
+  implementation(platform("io.grpc:grpc-bom:$grpcBomVersion"))
   implementation("com.google.guava:guava:$guavaVersion")
-  implementation("io.opentelemetry:opentelemetry-opentracing-shim:${otelVersion}")
+  implementation("io.opentelemetry:opentelemetry-opentracing-shim:$otelVersion")
 
   //openCsv
-  implementation("com.opencsv:opencsv:${openCsvVersion}")
+  implementation("com.opencsv:opencsv:$openCsvVersion")
+
+  // CVE Security dependencies
+  implementation("org.apache.tomcat.embed:tomcat-embed-core:$tomcatEmbedCoreVersion")
+  implementation("com.fasterxml.jackson.core:jackson-databind:$jackson2DatabindVersion")
+  implementation("tools.jackson.core:jackson-databind:$jackson3DatabindVersion")
 
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
@@ -116,7 +130,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-security-test")
   testImplementation("org.mockito:mockito-core")
   testImplementation("org.projectlombok:lombok")
-  testImplementation("uk.co.jemos.podam:podam:${podamVersion}")
+  testImplementation("uk.co.jemos.podam:podam:$podamVersion")
   testImplementation("com.h2database:h2")
 }
 
@@ -131,10 +145,10 @@ dependencies {
 }
 tasks {
   jar {
-      from("${rootProject.projectDir}") {
-          include("LICENSE.md")
-          into("META-INF")
-      }
+    from("${rootProject.projectDir}") {
+      include("LICENSE.md")
+      into("META-INF")
+    }
   }
   test {
     jvmArgs("-javaagent:${mockitoAgent.asPath}")
@@ -155,12 +169,32 @@ val projectInfo = mapOf(
   "version" to project.version
 )
 
+configure<SourceSetContainer> {
+  named("main") {
+    java.srcDir("$projectDir/build/generated/src/main/java")
+  }
+}
+
+springBoot {
+  buildInfo()
+  mainClass.value("it.gov.pagopa.pu.migration.PuMigrationApplication")
+}
+
+tasks.named<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask>("dependencyUpdates") {
+  revision = "release"
+  outputFormatter = "json"
+  checkForGradleUpdate = false
+  checkEmbeddedKotlin = false
+  rejectPreReleases = true
+}
+
 tasks {
   val processResources by getting(ProcessResources::class) {
     filesMatching("**/application.yml") {
       expand(projectInfo)
     }
   }
+  processResources.dependsOn("dependenciesBuild")
 }
 
 tasks.compileJava {
@@ -181,17 +215,6 @@ tasks.register("dependenciesBuild") {
   )
 }
 
-configure<SourceSetContainer> {
-  named("main") {
-    java.srcDir("$projectDir/build/generated/src/main/java")
-  }
-}
-
-springBoot {
-  buildInfo()
-  mainClass.value("it.gov.pagopa.pu.migration.PuMigrationApplication")
-}
-
 openApiGenerate {
   generatorName.set("spring")
   inputSpec.set("$rootDir/openapi/p4pa-migration.openapi.yaml")
@@ -209,7 +232,8 @@ openApiGenerate {
     mapOf(
       "dateLibrary" to "java8",
       "requestMappingMode" to "api_interface",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "interfaceOnly" to "true",
       "useTags" to "true",
       "useBeanValidation" to "true",
@@ -238,7 +262,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-auth.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
   invokerPackage.set("it.gov.pagopa.pu.auth.generated")
-  apiPackage.set("it.gov.pagopa.pu.auth.controller.generated")
+  apiPackage.set("it.gov.pagopa.pu.auth.client.generated")
   modelPackage.set("it.gov.pagopa.pu.auth.dto.generated")
   configOptions.set(
     mapOf(
@@ -246,7 +270,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -259,6 +284,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateFILESHARE") {
@@ -268,7 +295,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-fileshare.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.fileshare.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.fileshare.generated")
+  apiPackage.set("it.gov.pagopa.pu.fileshare.client.generated")
   modelPackage.set("it.gov.pagopa.pu.fileshare.dto.generated")
   typeMappings.set(
     mapOf(
@@ -281,7 +309,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -295,6 +324,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePROCESSEXECUTION") {
@@ -304,8 +335,9 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-process-executions.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.p4paprocessexecutions.controller.generated")
-  modelPackage.set("it.gov.pagopa.pu.p4paprocessexecutions.dto.generated")
+  invokerPackage.set("it.gov.pagopa.pu.processexecutions.generated")
+  apiPackage.set("it.gov.pagopa.pu.processexecutions.client.generated")
+  modelPackage.set("it.gov.pagopa.pu.processexecutions.dto.generated")
   typeMappings.set(
     mapOf(
       "LocalDateTime" to "java.time.LocalDateTime"
@@ -317,7 +349,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -330,6 +363,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateORGANIZATION") {
@@ -348,7 +383,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -361,6 +397,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 
@@ -371,9 +409,9 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-debt-positions.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  invokerPackage.set("it.gov.pagopa.pu.debtposition.generated")
-  apiPackage.set("it.gov.pagopa.pu.debtposition.client.generated")
-  modelPackage.set("it.gov.pagopa.pu.debtposition.dto.generated")
+  invokerPackage.set("it.gov.pagopa.pu.debtpositions.generated")
+  apiPackage.set("it.gov.pagopa.pu.debtpositions.client.generated")
+  modelPackage.set("it.gov.pagopa.pu.debtpositions.dto.generated")
   typeMappings.set(
     mapOf(
       "LocalDateTime" to "java.time.LocalDateTime",
@@ -386,7 +424,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -399,4 +438,6 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }

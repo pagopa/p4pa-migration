@@ -13,8 +13,8 @@ import it.gov.pagopa.pu.migration.wf.config.stub.DataMigrationWfConfig;
 import it.gov.pagopa.pu.migration.wf.dto.MigrationFileResult;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
 import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -29,9 +29,9 @@ import java.util.Set;
 @Slf4j
 public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware {
 
-  private static final int INITIAL_DELAY_MINUTES = 1;
-  private static final int MAX_DELAY_MINUTES = 10;
-  private static final int DELAY_BACKOFF_COEFFICIENT = 2;
+  private static final int INITIAL_DELAY_SECONDS = 10;
+  private static final int MAX_DELAY_SECONDS = 60;
+  private static final double DELAY_BACKOFF_COEFFICIENT = 1.5;
 
   private static final Set<IngestionFlowFileStatus> INGESTION_FLOW_FILE_TERMINAL_STATUSES = Set.of(
     IngestionFlowFileStatus.COMPLETED,
@@ -70,8 +70,6 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
 
   public void migrate(long uploadId) {
     log.info("Starting {} on uploadId {}", getClass().getSimpleName(), uploadId);
-    // FIXME: could start a new ingestion if there other organizationId uploads PROCESSING?
-    //  Or should we await as done in it.gov.pagopa.pu.workflow.wf.ingestionflow.debtposition.wfingestion.DebtPositionIngestionFlowWFImpl
     uploadsStatusUpdateActivity.updateUploadStatus(uploadId, UploadsStatusEnum.UPLOADED, UploadsStatusEnum.PROCESSING, null);
 
     MigrationFileResult result;
@@ -126,7 +124,7 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
   private IngestionFlowFile waitIngestionFlowFileProcessing(long uploadId, UploadDetails detail, int[] attemptCounter) {
     IngestionFlowFile ingestionFlowFile;
 
-    int delayMinutes = INITIAL_DELAY_MINUTES;
+    int delaySeconds = INITIAL_DELAY_SECONDS;
 
     while ((ingestionFlowFile = ingestionFlowFileRetrieverActivity.getIngestionFlowFile(detail.getIngestionFlowFileId())) != null &&
       !INGESTION_FLOW_FILE_TERMINAL_STATUSES.contains(ingestionFlowFile.getStatus())) {
@@ -140,11 +138,11 @@ public abstract class BaseDataMigrationWFImpl implements ApplicationContextAware
       log.info("IngestionFlowFile status not terminated ({}), retrying for ingestionFlowFileId {}",
         ingestionFlowFile.getStatus(), ingestionFlowFile.getIngestionFlowFileId());
 
-      Workflow.sleep(Duration.ofMinutes(delayMinutes));
+      Workflow.sleep(Duration.ofSeconds(delaySeconds));
 
-      if (delayMinutes < MAX_DELAY_MINUTES) {
-        delayMinutes *= DELAY_BACKOFF_COEFFICIENT;
-        delayMinutes = Math.min(delayMinutes, MAX_DELAY_MINUTES);
+      if (delaySeconds < MAX_DELAY_SECONDS) {
+        delaySeconds = (int) (delaySeconds * DELAY_BACKOFF_COEFFICIENT);
+        delaySeconds = Math.min(delaySeconds, MAX_DELAY_SECONDS);
       }
     }
 

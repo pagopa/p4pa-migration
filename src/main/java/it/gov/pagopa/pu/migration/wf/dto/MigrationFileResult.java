@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.migration.wf.dto;
 
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

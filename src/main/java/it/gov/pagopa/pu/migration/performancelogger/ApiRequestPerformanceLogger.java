@@ -8,12 +8,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * It will execute {@link PerformanceLogger} on each Api request
  */
 @Service
-@Order(-101) // Set in order to be executed after ServerHttpObservationFilter (which will handle traceId): configured through properties management.observations.http.server.filter.order
+@Order(-101)
+// Set in order to be executed after ServerHttpObservationFilter (which will handle traceId): configured through properties management.observations.http.server.filter.order
 public class ApiRequestPerformanceLogger implements Filter {
 
     private static final List<String> blackListPathPrefixList = List.of(
@@ -48,7 +50,18 @@ public class ApiRequestPerformanceLogger implements Filter {
                 .noneMatch(requestURI::startsWith);
     }
 
-    static String getRequestDetails(HttpServletRequest request) {
-        return "%s %s".formatted(request.getMethod(), request.getRequestURI());
+    private String getRequestDetails(HttpServletRequest request) {
+        String parentAppTag = Optional.ofNullable(request.getHeader(RestInvokePerformanceLogger.REST_INVOKE_HEADER_APP_NAME))
+                .map(n -> "][parentApp=" + n)
+                .orElse("");
+
+        String parentSpanIdTag = Optional.ofNullable(request.getHeader(RestInvokePerformanceLogger.REST_INVOKE_HEADER_CORRELATION_ID))
+                .map(n -> "][parentId=" + n)
+                .orElse("");
+
+        return "%s %s%s%s".formatted(
+                request.getMethod(), request.getRequestURI(),
+                parentAppTag,
+                parentSpanIdTag);
     }
 }

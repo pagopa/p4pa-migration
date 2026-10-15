@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.migration.connector.organization.config;
 
+import it.gov.pagopa.pu.migration.config.json.JsonConfig;
 import it.gov.pagopa.pu.migration.connector.BaseApiHolderTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,47 +13,65 @@ import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class OrganizationApisHolderTest extends BaseApiHolderTest {
-    @Mock
-    private RestTemplateBuilder restTemplateBuilderMock;
+  @Mock
+  private RestTemplateBuilder restTemplateBuilderMock;
 
-    private OrganizationApisHolder organizationApisHolder;
+  private OrganizationApisHolder apisHolder;
+  private OrganizationApiClientConfig apiClientConfig;
 
-    @BeforeEach
-    void setUp() {
-        Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
-        Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-        OrganizationApiClientConfig clientConfig = OrganizationApiClientConfig.builder()
-                .baseUrl("http://example.com")
-                .build();
-        organizationApisHolder = new OrganizationApisHolder(clientConfig, restTemplateBuilderMock);
-    }
+  @BeforeEach
+  void setUp() {
+    when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
+    when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
 
-    @AfterEach
-    void verifyNoMoreInteractions() {
-        Mockito.verifyNoMoreInteractions(
-                restTemplateBuilderMock,
-                restTemplateMock
-        );
-    }
+    apiClientConfig = OrganizationApiClientConfig.builder()
+      .baseUrl("http://example.com")
+      .maxAttempts(3)
+      .build();
+    apisHolder = new OrganizationApisHolder(apiClientConfig, restTemplateBuilderMock, new JsonConfig().objectMapperJackson3());
 
-    @Test
-    void whenGetOrganizationSearchControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
-        assertAuthenticationShouldBeSetInThreadSafeMode(
-                accessToken -> organizationApisHolder.getOrganizationSearchControllerApi(accessToken)
-                        .crudOrganizationsFindByIpaCode("ORGIPACODE"),
-                new ParameterizedTypeReference<>() {},
-                organizationApisHolder::unload);
-    }
+    verifyHttpClientErrorJsonBodyHandlerConfiguration(apisHolder.getOrganizationSearchControllerApi(null));
+  }
+
+  @AfterEach
+  void verifyNoMoreInteractions() {
+    Mockito.verifyNoMoreInteractions(
+      restTemplateBuilderMock,
+      restTemplateMock
+    );
+  }
+
+  @Test
+  void testRetryConfiguration() {
+    assertRetry(apiClientConfig,
+      accessToken -> apisHolder.getOrganizationSearchControllerApi(accessToken)
+        .crudOrganizationsFindByIpaCode("ORGIPACODE"),
+      new ParameterizedTypeReference<>() {}
+    );
+  }
+
+  @Test
+  void whenGetOrganizationSearchControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken -> apisHolder.getOrganizationSearchControllerApi(accessToken)
+        .crudOrganizationsFindByIpaCode("ORGIPACODE"),
+      new ParameterizedTypeReference<>() {
+      },
+      apisHolder::unload);
+  }
 
   @Test
   void whenGetOrganizationEntityControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken -> organizationApisHolder.getOrganizationEntityControllerApi(accessToken)
+      accessToken -> apisHolder.getOrganizationEntityControllerApi(accessToken)
         .crudGetOrganization("1"),
-      new ParameterizedTypeReference<>() {},
-      organizationApisHolder::unload);
+      new ParameterizedTypeReference<>() {
+      },
+      apisHolder::unload);
   }
 
 

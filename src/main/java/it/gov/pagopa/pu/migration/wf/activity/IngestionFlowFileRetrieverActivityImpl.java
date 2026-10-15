@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.migration.connector.auth.AuthnService;
 import it.gov.pagopa.pu.migration.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.migration.wf.exception.IngestionFlowFileNotFoundException;
 import it.gov.pagopa.pu.migration.wf.utils.WfConstants;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

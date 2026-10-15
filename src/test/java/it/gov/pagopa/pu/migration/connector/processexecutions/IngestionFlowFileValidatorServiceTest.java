@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.migration.connector.processexecutions;
 
 import it.gov.pagopa.pu.migration.connector.processexecutions.client.IngestionFlowFileEntityClient;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileValidatorServiceTest {
@@ -39,7 +41,7 @@ class IngestionFlowFileValidatorServiceTest {
     String accessToken = "ACCESSTOKEN";
     IngestionFlowFile expectedResult = new IngestionFlowFile();
 
-    Mockito.when(entityClientMock.getIngestionFlowFile(Mockito.same(organizationId), Mockito.same(accessToken)))
+    when(entityClientMock.getIngestionFlowFile(Mockito.same(organizationId), Mockito.same(accessToken)))
       .thenReturn(expectedResult);
 
     // When

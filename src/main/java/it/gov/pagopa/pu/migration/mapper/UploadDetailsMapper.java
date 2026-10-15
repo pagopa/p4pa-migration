@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.migration.mapper;
 
 import it.gov.pagopa.pu.migration.model.UploadDetails;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 
 public class UploadDetailsMapper {
   private UploadDetailsMapper(){}
@@ -20,6 +20,8 @@ public class UploadDetailsMapper {
       .numTotalRows(ingestionFlowFile.getNumTotalRows())
       .status(ingestionFlowFile.getStatus())
       .errorDescription(ingestionFlowFile.getErrorDescription())
+      // Temporal executions have no logged-in user, so inherit the operator from the ingestion flow.
+      .updateOperatorExternalId(ingestionFlowFile.getOperatorExternalId())
       .build();
   }
 }

@@ -16,7 +16,6 @@ import it.gov.pagopa.pu.migration.wf.mapper.DebtPositionTypeOrgOperatorMapper;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.ErrorArchiverService;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationProcessingService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Lazy
 @Slf4j
 public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessingService<DebtPositionTypeOrgOperatorMigrationFileDTO, DebtPositionTypeOrgOperatorMigrationFileResult, DebtPositionTypeOrgOperatorErrorDTO> {
 
@@ -136,6 +134,8 @@ public class DebtPosTypeOrgOperatorProcessingService extends MigrationProcessing
         ));
         return false;
       }
+      // Temporal executions have no logged-in user, so inherit the operator from the ingestion flow.
+      entity.setUpdateOperatorExternalId(upload.getUpdateOperatorExternalId());
 
       DebtPositionTypeOrgOperators savedEntity = repository.save(entity);
       log.info("Saved OperatorsDebtPositionTypeOrg: orgIpaCode={}, debtPositionTypeOrgCode={}, organizationId={}, debtPositionTypeOrgId={}",

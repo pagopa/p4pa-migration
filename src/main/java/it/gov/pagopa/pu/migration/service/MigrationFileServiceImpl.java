@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.migration.dto.FileResourceDTO;
 import it.gov.pagopa.pu.migration.dto.generated.MigrationFileTypeEnum;
 import it.gov.pagopa.pu.migration.dto.generated.WorkflowCreatedDTO;
 import it.gov.pagopa.pu.migration.enums.UploadsStatusEnum;
-import it.gov.pagopa.pu.migration.exception.EntityNotFoundException;
+import it.gov.pagopa.pu.migration.exception.common.NotFoundException;
 import it.gov.pagopa.pu.migration.model.UploadDetails;
 import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.repository.UploadDetailsRepository;
@@ -17,10 +17,12 @@ import it.gov.pagopa.pu.migration.service.file.FileStorerService;
 import it.gov.pagopa.pu.migration.service.file.FileValidatorService;
 import it.gov.pagopa.pu.migration.service.file.ZipFileService;
 import it.gov.pagopa.pu.migration.service.wf.MigrationFileWfInvokerService;
+import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationFileRetrieverService;
 import it.gov.pagopa.pu.migration.wf.utils.WfUtilities;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
@@ -42,8 +44,9 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   private final ZipFileService zipFileService;
   private final FileShareService fileShareService;
   private final AuthnService authnService;
+  private final MigrationFileRetrieverService migrationFileRetrieverService;
 
-  public MigrationFileServiceImpl(FileValidatorService validatorService, FoldersPathsConfig foldersPathsConfig, FileStorerService fileStorerService, UploadsRepository uploadsRepository, UploadDetailsRepository uploadDetailsRepository, MigrationFileWfInvokerService wfInvokerService, ZipFileService zipFileService, FileShareService fileShareService, AuthnService authnService) {
+  public MigrationFileServiceImpl(FileValidatorService validatorService, FoldersPathsConfig foldersPathsConfig, FileStorerService fileStorerService, UploadsRepository uploadsRepository, UploadDetailsRepository uploadDetailsRepository, MigrationFileWfInvokerService wfInvokerService, ZipFileService zipFileService, FileShareService fileShareService, AuthnService authnService, MigrationFileRetrieverService migrationFileRetrieverService) {
     this.validatorService = validatorService;
     this.foldersPathsConfig = foldersPathsConfig;
     this.fileStorerService = fileStorerService;
@@ -53,6 +56,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
     this.zipFileService = zipFileService;
     this.fileShareService = fileShareService;
     this.authnService = authnService;
+    this.migrationFileRetrieverService = migrationFileRetrieverService;
   }
 
   @Override
@@ -94,7 +98,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
     Long organizationId = AuthorizationService.validateAdminRoleOnBroker(orgIpaCode, loggedUser)
       .getOrganizationId();
 
-    Uploads uploads = uploadsRepository.findById(uploadId).orElseThrow(() -> new EntityNotFoundException("Cannot find Upload having id " + uploadId));
+    Uploads uploads = uploadsRepository.findById(uploadId).orElseThrow(() -> new NotFoundException("UPLOADS_NOT_FOUND", "Cannot find Upload having id " + uploadId));
     if(!uploads.getOrganizationId().equals(organizationId)){
       throw new AuthorizationDeniedException("UploadId not related to requested org");
     }
@@ -112,7 +116,7 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   public UploadDetails getUploadDetail(String orgIpaCode, Long uploadId, Long uploadDetailsId, UserInfo loggedUser) {
     getUpload(orgIpaCode, uploadId, loggedUser);
 
-    UploadDetails uploadDetail = uploadDetailsRepository.findById(uploadDetailsId).orElseThrow(() -> new EntityNotFoundException("Cannot find Upload Details having id " + uploadDetailsId));
+    UploadDetails uploadDetail = uploadDetailsRepository.findById(uploadDetailsId).orElseThrow(() -> new NotFoundException("UPLOAD_DETAILS_NOT_FOUND", "Cannot find Upload Details having id " + uploadDetailsId));
     if(!uploadDetail.getUploadId().equals(uploadId)){
       throw new AuthorizationDeniedException("UploadDetailsId not related to requested upload");
     }
@@ -120,17 +124,22 @@ public class MigrationFileServiceImpl implements MigrationFileService {
   }
 
   @Override
-  public Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
-    Long organizationId = AuthorizationService.validateAdminRoleOnBroker(orgIpaCode, loggedUser).getOrganizationId();
+  public FileResourceDTO getUploadFile(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
+    Uploads upload = getUpload(orgIpaCode, uploadId, loggedUser);
+    return new FileResourceDTO(new InputStreamResource(migrationFileRetrieverService.retrieveFile(upload)), upload.getFileName());
+  }
 
-    Uploads uploads = uploadsRepository.findById(uploadId).orElseThrow(() -> new EntityNotFoundException("Cannot find Upload having id " + uploadId));
-    if(!uploads.getOrganizationId().equals(organizationId)){
-      throw new AuthorizationDeniedException("UploadId not related to requested organization");
+  @Override
+  public Resource getUploadsErrorsZip(String orgIpaCode, Long uploadId, UserInfo loggedUser) {
+    Uploads uploads = getUpload(orgIpaCode, uploadId, loggedUser);
+
+    if (uploads.getFileType() == MigrationFileTypeEnum.DEBT_POSITIONS_TYPE_ORG_OPERATORS) {
+      return getDebtPositionTypeOrgOperatorsErrorsZip(uploads);
     }
 
     List<UploadDetails> uploadDetails = uploadDetailsRepository.findByUploadId(uploadId);
     if (uploadDetails.isEmpty()) {
-      throw new EntityNotFoundException("Cannot find UploadDetails for uploadId " + uploadId);
+      throw new NotFoundException("UPLOAD_DETAILS_NOT_FOUND", "Cannot find UploadDetails for uploadId " + uploadId);
     }
     List<FileResourceDTO> pdfResources = uploadDetails.stream()
       .filter(uploadDetail -> uploadDetail.getStatus().equals(IngestionFlowFileStatus.ERROR) || uploadDetail.getStatus().equals(IngestionFlowFileStatus.WARNING))
@@ -156,9 +165,13 @@ public class MigrationFileServiceImpl implements MigrationFileService {
       .toList();
 
     if (pdfResources.isEmpty()) {
-      return null;
+      throw new NotFoundException("UPLOAD_DETAILS_ERRORS_NOT_FOUND", "Cannot find error files for uploadId " + uploadId);
     }
 
     return zipFileService.zipper(pdfResources);
+  }
+
+  private Resource getDebtPositionTypeOrgOperatorsErrorsZip(Uploads upload) {
+    return new InputStreamResource(migrationFileRetrieverService.retrieveErrorFile(upload));
   }
 }
