@@ -103,7 +103,7 @@ public class DebtPositionProcessingService extends MigrationProcessingService<In
                                                                 List<DebtPositionErrorDTO> errorList) {
     Path workingDirectory = file.getParent();
     String fileName = file.getFileName().toString();
-    String fileNameRenamed = fileName.replaceFirst("-\\d+_\\d+\\.csv$", "-migration_2_0.csv");
+    String fileNameRenamed = fileName.replaceFirst("-\\d+_\\d+\\.csv$", "-migration-2_0.csv");
     if(fileNameRenamed.equals(fileName) || fileNameRenamed.contains(" ")){
       String errorMsg = "Incorrect file name format, expected pattern '<fileName>-<numberVersion>_<numberVersion>.csv' not found. Found" + fileName;
       log.error(errorMsg);
