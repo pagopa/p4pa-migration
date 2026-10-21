@@ -42,12 +42,12 @@
 </tr>
 <tr>
 <td><a href='https://github.com/FasterXML/jackson'>com.fasterxml.jackson.core:jackson-annotations</a></td>
-<td>2.21</td>
+<td>2.22</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
 <td><a href='https://github.com/FasterXML/jackson-core'>com.fasterxml.jackson.core:jackson-core</a></td>
-<td>2.21.5</td>
+<td>2.22.3</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
@@ -112,7 +112,7 @@
 </tr>
 <tr>
 <td><a href='https://github.com/google/guava/'>com.google.guava:guava</a></td>
-<td>33.7.0-jre</td>
+<td>33.7.2-jre</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
@@ -127,12 +127,12 @@
 </tr>
 <tr>
 <td><a href='https://developers.google.com/protocol-buffers/'>com.google.protobuf:protobuf-java</a></td>
-<td>4.36.0</td>
+<td>4.36.2</td>
 <td><a href='https://opensource.org/licenses/BSD-3-Clause'>BSD-3-Clause</a></td>
 </tr>
 <tr>
 <td><a href='https://developers.google.com/protocol-buffers/'>com.google.protobuf:protobuf-java-util</a></td>
-<td>4.36.0</td>
+<td>4.36.2</td>
 <td><a href='https://opensource.org/licenses/BSD-3-Clause'>BSD-3-Clause</a></td>
 </tr>
 <tr>
@@ -217,7 +217,7 @@
 </tr>
 <tr>
 <td><a href='https://github.com/grpc/grpc-java'>io.grpc:grpc-bom</a></td>
-<td>1.83.1</td>
+<td>1.85.1</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
@@ -317,7 +317,7 @@
 </tr>
 <tr>
 <td><a href='https://github.com/nexus-rpc/sdk-java'>io.nexusrpc:nexus-sdk</a></td>
-<td>0.5.0-alpha</td>
+<td>0.6.0-alpha</td>
 <td><a href='https://opensource.org/licenses/mit'>MIT</a></td>
 </tr>
 <tr>
@@ -367,7 +367,7 @@
 </tr>
 <tr>
 <td><a href='https://github.com/open-telemetry/opentelemetry-java'>io.opentelemetry:opentelemetry-opentracing-shim</a></td>
-<td>1.65.0</td>
+<td>1.67.0</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
@@ -477,37 +477,37 @@
 </tr>
 <tr>
 <td><a href='https://github.com/temporalio/sdk-java'>io.temporal:temporal-opentracing</a></td>
-<td>1.38.0</td>
+<td>1.40.0</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
 <td><a href='https://github.com/temporalio/sdk-java'>io.temporal:temporal-sdk</a></td>
-<td>1.38.0</td>
+<td>1.40.0</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
 <td><a href='https://github.com/temporalio/sdk-java'>io.temporal:temporal-serviceclient</a></td>
-<td>1.38.0</td>
+<td>1.40.0</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
 <td><a href='https://github.com/temporalio/sdk-java'>io.temporal:temporal-spring-boot-autoconfigure</a></td>
-<td>1.38.0</td>
+<td>1.40.0</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
 <td><a href='https://github.com/temporalio/sdk-java'>io.temporal:temporal-spring-boot-starter</a></td>
-<td>1.38.0</td>
+<td>1.40.0</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
 <td><a href='https://github.com/temporalio/sdk-java'>io.temporal:temporal-test-server</a></td>
-<td>1.38.0</td>
+<td>1.40.0</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
 <td><a href='https://github.com/temporalio/sdk-java'>io.temporal:temporal-testing</a></td>
-<td>1.38.0</td>
+<td>1.40.0</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
@@ -577,7 +577,7 @@
 </tr>
 <tr>
 <td><a href='https://commons.apache.org/proper/commons-lang/'>org.apache.commons:commons-lang3</a></td>
-<td>3.20.0</td>
+<td>3.21.0</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
@@ -587,7 +587,7 @@
 </tr>
 <tr>
 <td>org.apache.httpcomponents.client5:httpclient5</td>
-<td>5.6.4</td>
+<td>5.6.5</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
@@ -722,7 +722,7 @@
 </tr>
 <tr>
 <td><a href='https://github.com/OpenAPITools/jackson-databind-nullable'>org.openapitools:jackson-databind-nullable</a></td>
-<td>0.2.11</td>
+<td>0.2.12</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
@@ -732,7 +732,7 @@
 </tr>
 <tr>
 <td><a href='https://jdbc.postgresql.org/'>org.postgresql:postgresql</a></td>
-<td>42.7.13</td>
+<td>42.7.14</td>
 <td><a href='https://opensource.org/licenses/BSD-2-Clause'>BSD-2-Clause</a></td>
 </tr>
 <tr>
@@ -1112,17 +1112,17 @@
 </tr>
 <tr>
 <td><a href='https://github.com/FasterXML/jackson-bom'>tools.jackson:jackson-bom</a></td>
-<td>3.1.7</td>
+<td>3.2.3</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
 <td><a href='https://github.com/FasterXML/jackson-core'>tools.jackson.core:jackson-core</a></td>
-<td>3.1.5</td>
+<td>3.2.3</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 <tr>
 <td><a href='https://github.com/FasterXML/jackson'>tools.jackson.core:jackson-databind</a></td>
-<td>3.1.7</td>
+<td>3.2.3</td>
 <td><a href='https://www.apache.org/licenses/LICENSE-2.0'>Apache-2.0</a></td>
 </tr>
 </table>
