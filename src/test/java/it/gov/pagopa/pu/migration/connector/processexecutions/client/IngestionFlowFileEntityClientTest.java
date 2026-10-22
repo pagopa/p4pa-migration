@@ -72,7 +72,7 @@ class IngestionFlowFileEntityClientTest {
       .thenReturn(ingestionFlowFileEntityControllerApiMock);
 
     when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileId+""))
-      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
 
     IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
@@ -108,7 +108,7 @@ class IngestionFlowFileEntityClientTest {
     when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
       .thenReturn(ingestionFlowFileEntityControllerApiMock);
     when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileIdString))
-      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
 
     // When
     IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
