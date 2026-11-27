@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.migration.connector.fileshare.client;
 
-import it.gov.pagopa.pu.fileshare.controller.generated.IngestionFlowFileApi;
+import it.gov.pagopa.pu.fileshare.client.generated.IngestionFlowFileApi;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.dto.generated.UploadIngestionFlowFileResponseDTO;
@@ -14,6 +14,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FileShareClientTest {
@@ -45,16 +48,16 @@ class FileShareClientTest {
     Long organizationId = 0L;
     IngestionFlowFileType ingestionFlowFileType = IngestionFlowFileType.DP_INSTALLMENTS;
     String fileName = "FILENAME";
-    Resource file = Mockito.mock(Resource.class);
+    Resource file = mock(Resource.class);
 
     Long expectedResult = 1L;
 
-    Mockito.when(file.getFilename())
+    when(file.getFilename())
         .thenReturn(fileName);
 
-    Mockito.when(apisHolderMock.getIngestionFlowFileApi(accessToken))
+    when(apisHolderMock.getIngestionFlowFileApi(accessToken))
       .thenReturn(ingestionFlowFileApiMock);
-    Mockito.when(ingestionFlowFileApiMock.uploadIngestionFlowFile(
+    when(ingestionFlowFileApiMock.uploadIngestionFlowFile(
         Mockito.same(organizationId),
         Mockito.same(ingestionFlowFileType),
         Mockito.eq(FileOrigin.SIL),
@@ -79,11 +82,11 @@ class FileShareClientTest {
     String accessToken = "ACCESSTOKEN";
     Long organizationId = 123L;
     Long ingestionFlowFileId = 456L;
-    Resource expectedResource = Mockito.mock(Resource.class);
+    Resource expectedResource = mock(Resource.class);
 
-    Mockito.when(apisHolderMock.getIngestionFlowFileApi(accessToken))
+    when(apisHolderMock.getIngestionFlowFileApi(accessToken))
       .thenReturn(ingestionFlowFileApiMock);
-    Mockito.when(ingestionFlowFileApiMock.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId))
+    when(ingestionFlowFileApiMock.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId))
       .thenReturn(expectedResource);
 
     // When

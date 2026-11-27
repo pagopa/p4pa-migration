@@ -1,11 +1,13 @@
 package it.gov.pagopa.pu.migration.exception;
 
-public class FileUploadException extends RuntimeException {
+import it.gov.pagopa.pu.migration.exception.common.BaseBusinessException;
+
+public class FileUploadException extends BaseBusinessException {
   public FileUploadException(String message) {
-    super(message);
+    this(message, null);
   }
 
   public FileUploadException(String message, Throwable e) {
-    super(message,e);
+    super("FILE_UPLOAD_ERROR", message,e);
   }
 }

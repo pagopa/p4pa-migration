@@ -2,8 +2,13 @@ package it.gov.pagopa.pu.migration.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+
+import java.time.OffsetDateTime;
 
 @Entity
 @AllArgsConstructor
@@ -24,4 +29,5 @@ public class DebtPositionTypeOrgOperators extends BaseEntity {
     private Long debtPositionTypeOrgId;
     @NotNull
     private String debtPositionTypeOrgCode;
+    private OffsetDateTime consumptionDateTime;
 }

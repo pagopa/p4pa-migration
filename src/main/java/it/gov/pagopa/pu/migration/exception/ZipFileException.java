@@ -1,7 +1,9 @@
 package it.gov.pagopa.pu.migration.exception;
 
-public class ZipFileException extends RuntimeException {
+import it.gov.pagopa.pu.migration.exception.common.BaseBusinessException;
+
+public class ZipFileException extends BaseBusinessException {
   public ZipFileException(String message, Throwable e) {
-    super(message, e);
+    super("ZIP_FILE_ERROR", message, e);
   }
 }

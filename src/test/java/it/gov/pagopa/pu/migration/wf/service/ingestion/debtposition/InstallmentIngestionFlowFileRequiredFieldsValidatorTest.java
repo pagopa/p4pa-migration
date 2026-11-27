@@ -1,12 +1,12 @@
 package it.gov.pagopa.pu.migration.wf.service.ingestion.debtposition;
 
-import it.gov.pagopa.pu.debtposition.dto.generated.PersonEntityType;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.migration.wf.dto.debtposition.InstallmentIngestionFlowFileDTO;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static it.gov.pagopa.pu.debtposition.dto.generated.Action.I;
+import static it.gov.pagopa.pu.debtpositions.dto.generated.Action.I;
 import static it.gov.pagopa.pu.migration.wf.service.ingestion.debtposition.InstallmentIngestionFlowFileRequiredFieldsValidator.setDefaultValues;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

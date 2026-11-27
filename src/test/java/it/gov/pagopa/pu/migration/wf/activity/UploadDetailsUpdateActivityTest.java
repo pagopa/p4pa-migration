@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.migration.wf.activity;
 import it.gov.pagopa.pu.migration.model.UploadDetails;
 import it.gov.pagopa.pu.migration.repository.UploadDetailsRepository;
 import it.gov.pagopa.pu.migration.wf.exception.UploadNotFoundException;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UploadDetailsUpdateActivityTest {
@@ -37,7 +39,7 @@ class UploadDetailsUpdateActivityTest {
     UploadDetails newEntity = new UploadDetails();
     UploadDetails storedEntity = new UploadDetails();
 
-    Mockito.when(repositoryMock.save(Mockito.same(newEntity)))
+    when(repositoryMock.save(Mockito.same(newEntity)))
       .thenReturn(storedEntity);
 
     // When
@@ -53,7 +55,7 @@ class UploadDetailsUpdateActivityTest {
     long uploadDetailId = 1L;
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
 
-    Mockito.when(repositoryMock.updateStatus(Mockito.same(uploadDetailId), Mockito.same(ingestionFlowFile)))
+    when(repositoryMock.updateStatus(Mockito.same(uploadDetailId), Mockito.same(ingestionFlowFile)))
       .thenReturn(1);
 
     // When, Then
@@ -66,7 +68,7 @@ class UploadDetailsUpdateActivityTest {
     long uploadDetailId = 1L;
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
 
-    Mockito.when(repositoryMock.updateStatus(Mockito.same(uploadDetailId), Mockito.same(ingestionFlowFile)))
+    when(repositoryMock.updateStatus(Mockito.same(uploadDetailId), Mockito.same(ingestionFlowFile)))
       .thenReturn(0);
 
     // When, Then

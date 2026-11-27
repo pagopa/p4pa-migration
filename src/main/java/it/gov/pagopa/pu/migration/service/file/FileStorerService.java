@@ -4,6 +4,8 @@ import it.gov.pagopa.pu.migration.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.migration.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.migration.exception.FileUploadException;
 import it.gov.pagopa.pu.migration.exception.InvalidFileException;
+import it.gov.pagopa.pu.migration.exception.common.ConflictException;
+import it.gov.pagopa.pu.migration.model.Uploads;
 import it.gov.pagopa.pu.migration.utils.AESUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -25,8 +27,11 @@ public class FileStorerService {
 
   public FileStorerService(FoldersPathsConfig foldersPathsConfig,
                            @Value(("${encryption.file-encrypt-password}")) String fileEncryptPassword) {
-    if (foldersPathsConfig.getShared() == null || foldersPathsConfig.getShared().isEmpty()) {
+    if (StringUtils.isEmpty(foldersPathsConfig.getShared())) {
       throw new IllegalStateException("Shared folder path is not configured.");
+    }
+    if (!Files.exists(Path.of(foldersPathsConfig.getShared()))) {
+      throw new IllegalStateException("Shared folder doesn't exist: " + foldersPathsConfig.getShared());
     }
     this.foldersPathsConfig = foldersPathsConfig;
     this.fileEncryptPassword = fileEncryptPassword;
@@ -41,6 +46,11 @@ public class FileStorerService {
     fileName = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(fileName));
     FileValidatorService.validateFilename(fileName);
     byte[] fileHash;
+
+    if(checkIfAlreadyUploadedOrArchived(organizationId, relativePath, fileName)) {
+      throw new ConflictException("FILE_ALREADY_EXISTS", "File %s/%s already uploaded or archived for organization %s".formatted(relativePath, fileName, organizationId));
+    }
+
     Path relativeFileLocation = concatenatePaths(relativePath, fileName);
     Path organizationBasePath = buildOrganizationBasePath(organizationId);
     Path absolutePath = concatenatePaths(organizationBasePath.toString(), relativeFileLocation.toString());
@@ -83,25 +93,34 @@ public class FileStorerService {
     return concatenatePaths(foldersPathsConfig.getShared(), String.valueOf(organizationId));
   }
 
-  public boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String archivedSubFolder, String filePath, String fileName) {
-    return getUploadedOrArchivedPath(organizationId, archivedSubFolder, filePath, fileName) != null;
+  public boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String filePath, String fileName) {
+    return getUploadedOrArchivedPath(organizationId, filePath, fileName) != null;
   }
 
-  public Path getUploadedOrArchivedPath(Long organizationId, String archivedSubFolder, String filePathString, String fileName) {
+  public Path getUploadedOrArchivedPath(Long organizationId, String filePathString, String fileName) {
     Path filePath = buildOrganizationBasePath(organizationId)
       .resolve(filePathString);
     String fileNameCiphered = fileName + AESUtils.CIPHER_EXTENSION;
-    Path originalPath = FileStorerService.concatenatePaths(filePath.toString(), fileNameCiphered);
+
+    Path originalPath = filePath
+      .resolve(fileNameCiphered);
     if (Files.exists(originalPath)) {
       return originalPath;
     } else {
-      Path archivedPath = FileStorerService.concatenatePaths(filePath.resolve(archivedSubFolder).toString(), fileNameCiphered);
+      Path archivedPath = filePath.resolve(foldersPathsConfig.getProcessTargetSubFolders().getArchive())
+        .resolve(fileNameCiphered);
       if (Files.exists(archivedPath)) {
         return archivedPath;
       } else {
         return null;
       }
     }
+  }
+
+  public Path buildErrorFolderPath(Uploads upload) {
+    return buildOrganizationBasePath(upload.getOrganizationId())
+      .resolve(upload.getFilePathName())
+      .resolve(foldersPathsConfig.getProcessTargetSubFolders().getErrors());
   }
 
 }

@@ -18,6 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class ApiRequestPerformanceLoggerTest {
     public static final String APPENDER_NAME = "API_REQUEST";
@@ -33,19 +35,16 @@ class ApiRequestPerformanceLoggerTest {
 
     @BeforeEach
     void init() {
-        httpServletRequestMock = Mockito.mock(HttpServletRequest.class);
-        httpServletResponseMock = Mockito.mock(HttpServletResponse.class);
+        httpServletRequestMock = mock(HttpServletRequest.class);
+        httpServletResponseMock = mock(HttpServletResponse.class);
         filter = new ApiRequestPerformanceLogger();
-    }
 
-    @BeforeEach
-    void setupMemoryAppender() {
         this.memoryAppender = PerformanceLoggerTest.buildPerformanceLoggerMemoryAppender(APPENDER_NAME);
     }
 
     @AfterEach
     void verifyNoMoreInteractions() throws ServletException, IOException {
-        Mockito.verify(filterChainMock)
+        verify(filterChainMock)
                 .doFilter(httpServletRequestMock, httpServletResponseMock);
 
         Mockito.verifyNoMoreInteractions(
@@ -58,7 +57,7 @@ class ApiRequestPerformanceLoggerTest {
     @Test
     void givenNotHttpServletRequestWhenDoFilterThenDontPerformanceLog() throws ServletException, IOException {
         // Given
-        httpServletRequestMock = Mockito.mock(ServletRequest.class);
+        httpServletRequestMock = mock(ServletRequest.class);
 
         // When
         filter.doFilter(httpServletRequestMock, httpServletResponseMock, filterChainMock);
@@ -70,7 +69,7 @@ class ApiRequestPerformanceLoggerTest {
     @Test
     void givenNotHttpServletResponseWhenDoFilterThenDontPerformanceLog() throws ServletException, IOException {
         // Given
-        httpServletResponseMock = Mockito.mock(ServletResponse.class);
+        httpServletResponseMock = mock(ServletResponse.class);
 
         // When
         filter.doFilter(httpServletRequestMock, httpServletResponseMock, filterChainMock);
@@ -92,9 +91,13 @@ class ApiRequestPerformanceLoggerTest {
     }
 
     @Test
-    void givenCoveredPathWhenDoFilterThenDontPerformanceLog() throws ServletException, IOException {
+    void givenCoveredPathNoRestInvokeHeadersWhenDoFilterThenDontPerformanceLog() throws ServletException, IOException {
         // Given
         configureRequestPath("/api/test");
+        when(((HttpServletRequest)httpServletRequestMock).getHeader(RestInvokePerformanceLogger.REST_INVOKE_HEADER_APP_NAME))
+                .thenReturn(null);
+        when(((HttpServletRequest)httpServletRequestMock).getHeader(RestInvokePerformanceLogger.REST_INVOKE_HEADER_CORRELATION_ID))
+                .thenReturn(null);
 
         // When
         filter.doFilter(httpServletRequestMock, httpServletResponseMock, filterChainMock);
@@ -102,16 +105,40 @@ class ApiRequestPerformanceLoggerTest {
         // Then
         PerformanceLoggerTest.assertPerformanceLogMessage(APPENDER_NAME, "GET /api/test", "HttpStatus: 200", memoryAppender);
 
-        Mockito.verify(((HttpServletRequest)httpServletRequestMock), Mockito.times(2))
+        verify(((HttpServletRequest)httpServletRequestMock), times(2))
                 .getRequestURI();
-        Mockito.verify(((HttpServletRequest)httpServletRequestMock), Mockito.times(1))
+        verify(((HttpServletRequest)httpServletRequestMock), times(1))
                 .getMethod();
-        Mockito.verify(((HttpServletResponse)httpServletResponseMock))
+        verify(((HttpServletResponse)httpServletResponseMock))
+                .getStatus();
+    }
+
+    @Test
+    void givenCoveredPathHeadersWhenDoFilterThenDontPerformanceLog() throws ServletException, IOException {
+        // Given
+        configureRequestPath("/api/test");
+
+        when(((HttpServletRequest)httpServletRequestMock).getHeader(RestInvokePerformanceLogger.REST_INVOKE_HEADER_APP_NAME))
+                .thenReturn("RESTINVOKEAPPNAME");
+        when(((HttpServletRequest)httpServletRequestMock).getHeader(RestInvokePerformanceLogger.REST_INVOKE_HEADER_CORRELATION_ID))
+                .thenReturn("PARENTSPANID");
+
+        // When
+        filter.doFilter(httpServletRequestMock, httpServletResponseMock, filterChainMock);
+
+        // Then
+        PerformanceLoggerTest.assertPerformanceLogMessage(APPENDER_NAME, "GET /api/test]\\[parentApp=RESTINVOKEAPPNAME]\\[parentId=PARENTSPANID", "HttpStatus: 200", memoryAppender);
+
+        verify(((HttpServletRequest)httpServletRequestMock), times(2))
+                .getRequestURI();
+        verify(((HttpServletRequest)httpServletRequestMock), times(1))
+                .getMethod();
+        verify(((HttpServletResponse)httpServletResponseMock))
                 .getStatus();
     }
 
     private void configureRequestPath(String path) {
-        Mockito.when(((HttpServletRequest)httpServletRequestMock).getRequestURI())
+        when(((HttpServletRequest)httpServletRequestMock).getRequestURI())
                 .thenReturn(path);
         Mockito.lenient().when(((HttpServletRequest) httpServletRequestMock).getMethod())
                 .thenReturn("GET");

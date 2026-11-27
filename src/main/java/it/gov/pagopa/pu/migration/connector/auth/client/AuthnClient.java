@@ -5,11 +5,9 @@ import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.migration.connector.auth.config.AuthApisHolder;
 import it.gov.pagopa.pu.migration.exception.InvalidAccessTokenException;
-import org.springframework.context.annotation.Lazy;
+import it.gov.pagopa.pu.migration.exception.common.RestInvokeNotAuthorizedException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
-@Lazy
 @Service
 public class AuthnClient {
 
@@ -21,15 +19,15 @@ public class AuthnClient {
 
   public AccessToken postToken(String clientId, String grantType, String scope, String subjectToken, String subjectIssuer, String subjectTokenType, String clientSecret) {
     return authApisHolder.getAuthnApi(null)
-      .postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret);
+      .postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret, null);
   }
 
   public UserInfo getUserInfo(String accessToken) {
     try {
       return authApisHolder.getAuthnApi(accessToken)
         .getUserInfo();
-    } catch (HttpClientErrorException.Unauthorized e) {
-      throw new InvalidAccessTokenException(e.getResponseBodyAsString());
+    } catch (RestInvokeNotAuthorizedException e) {
+      throw new InvalidAccessTokenException(e.getMessage());
     }
   }
 

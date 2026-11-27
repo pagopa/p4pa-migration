@@ -1,7 +1,9 @@
 package it.gov.pagopa.pu.migration.exception;
 
-public class WorkflowNotFoundException extends RuntimeException {
+import it.gov.pagopa.pu.migration.exception.common.BaseBusinessException;
+
+public class WorkflowNotFoundException extends BaseBusinessException {
   public WorkflowNotFoundException(String message) {
-    super(message);
+    super("WORKFLOW_NOT_FOUND", message);
   }
 }

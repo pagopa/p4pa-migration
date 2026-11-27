@@ -40,7 +40,13 @@ class AuthnServiceTest {
         // Given
         String expectedResult = "TOKEN";
         Mockito.when(accessTokenRetrieverMock.getAccessToken(orgIpaCode))
-                .thenReturn(AccessToken.builder().accessToken(expectedResult).tokenType("TOKENTYPE").expiresIn(0).build());
+                .thenReturn(AccessToken.builder()
+                  .accessToken(expectedResult)
+                  .tokenType("TOKENTYPE")
+                  .expiresIn(0)
+                  .refreshToken("REFRESHTOKEN")
+                  .refreshExpiresIn(0)
+                  .build());
 
         // When
         String result = orgIpaCode == null ? authnService.getAccessToken() : authnService.getAccessToken(orgIpaCode);

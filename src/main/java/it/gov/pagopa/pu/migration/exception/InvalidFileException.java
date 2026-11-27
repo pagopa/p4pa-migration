@@ -1,12 +1,14 @@
 package it.gov.pagopa.pu.migration.exception;
 
-public class InvalidFileException extends RuntimeException {
+import it.gov.pagopa.pu.migration.exception.common.BaseBusinessException;
+
+public class InvalidFileException extends BaseBusinessException {
 
   public InvalidFileException(String message) {
     this(message, null);
   }
 
   public InvalidFileException(String message, Throwable e) {
-    super(message, e);
+    super("INVALID_FILE", message, e);
   }
 }

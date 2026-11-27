@@ -10,7 +10,6 @@ import it.gov.pagopa.pu.migration.wf.dto.debtposition.InstallmentIngestionFlowFi
 import it.gov.pagopa.pu.migration.wf.service.ingestion.ErrorArchiverService;
 import it.gov.pagopa.pu.migration.wf.service.ingestion.MigrationProcessingService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.Writer;
@@ -20,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Lazy
 @Slf4j
 public class DebtPositionProcessingService extends MigrationProcessingService<InstallmentIngestionFlowFileDTO, DebtPositionMigrationFileResult, DebtPositionErrorDTO> {
 
@@ -105,7 +103,7 @@ public class DebtPositionProcessingService extends MigrationProcessingService<In
                                                                 List<DebtPositionErrorDTO> errorList) {
     Path workingDirectory = file.getParent();
     String fileName = file.getFileName().toString();
-    String fileNameRenamed = fileName.replaceFirst("-\\d+_\\d+\\.csv$", "-migration_2_0.csv");
+    String fileNameRenamed = fileName.replaceFirst("-\\d+_\\d+\\.csv$", "-migration-2_0.csv");
     if(fileNameRenamed.equals(fileName) || fileNameRenamed.contains(" ")){
       String errorMsg = "Incorrect file name format, expected pattern '<fileName>-<numberVersion>_<numberVersion>.csv' not found. Found" + fileName;
       log.error(errorMsg);

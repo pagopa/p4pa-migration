@@ -17,6 +17,10 @@ public class Utilities {
     return MDC.get("traceId");
   }
 
+  public static String getSpanId(){
+    return MDC.get("spanId");
+  }
+
   public static OffsetDateTime protobufTimestamp2OffsetDateTime(Timestamp ts){
     if(ts.getSeconds()>0) {
       return Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos()).atZone(ZONEID).toOffsetDateTime();
